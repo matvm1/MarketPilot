@@ -1,4 +1,4 @@
-package domain.entities.auth;
+package main.java.domain.entities.auth;
 
 public class UserRoleAsset {
     private Role role;

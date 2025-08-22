@@ -1,4 +1,4 @@
-package domain.entities.auth;
+package main.java.domain.entities.auth;
 
 import java.util.HashSet;
 import java.util.Set;

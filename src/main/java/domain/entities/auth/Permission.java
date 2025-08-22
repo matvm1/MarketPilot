@@ -1,4 +1,4 @@
-package domain.entities.auth;
+package main.java.domain.entities.auth;
 
 public enum Permission {
     CREATE_USER,
