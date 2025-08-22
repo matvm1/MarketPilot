@@ -4,14 +4,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class User {
-    private int id;
-    private Set<UserRole> roles;
+    private final int id;
+    private final Set<UserRoleAsset> roles;
 
     private String firstName;
     private String middleName;
     private String lastName;
 
-    public User(int id, Set<UserRole> roles, String firstName, String middleName,
+    public User(int id, Set<UserRoleAsset> roles, String firstName, String middleName,
                 String lastName) {
         this.id = id;
         this.roles = new HashSet<>(roles);
@@ -50,5 +50,13 @@ public class User {
 
     public String getFullName() {
         return firstName + " " + middleName + " " + lastName;
+    }
+
+    public Role getActiveRole() {
+        for (UserRoleAsset userRoleAsset : roles)
+            if (userRoleAsset.getRole().isActive())
+                return userRoleAsset.getRole();
+
+        throw new IllegalStateException("No user role is active");
     }
 }

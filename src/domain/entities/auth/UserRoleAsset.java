@@ -1,12 +1,12 @@
 package domain.entities.auth;
 
-public class UserRole {
+public class UserRoleAsset {
     private Role role;
 
     private String emailAddress;
     private String phoneNumber;
 
-    public UserRole(Role role, String emailAddress, String phoneNumber) {
+    public UserRoleAsset(Role role, String emailAddress, String phoneNumber) {
         this.role = role;
         this.emailAddress = emailAddress;
         this.phoneNumber = phoneNumber;
@@ -26,5 +26,9 @@ public class UserRole {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public Role getRole() {
+        return role;
     }
 }
