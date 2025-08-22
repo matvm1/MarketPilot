@@ -1,10 +1,10 @@
-package main.java.domain.entities.auth;
+package domain.entities.auth;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class Role {
-    private enum RoleName {
+    public enum RoleName {
         Admin,
         PersonalInvestor,
         Analyst,

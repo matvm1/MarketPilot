@@ -1,4 +1,4 @@
-package main.java.domain.entities.auth;
+package domain.entities.auth;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,6 +13,11 @@ public class User {
 
     public User(int id, Set<UserRoleAsset> roles, String firstName, String middleName,
                 String lastName) {
+        if (firstName == null)
+            throw new IllegalArgumentException("firstName cannot be null");
+        if (lastName == null)
+            throw new IllegalArgumentException("firstName cannot be null");
+
         this.id = id;
         this.roles = new HashSet<>(roles);
         this.firstName = firstName;
