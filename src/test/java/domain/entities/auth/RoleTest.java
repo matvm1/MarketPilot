@@ -47,4 +47,9 @@ public class RoleTest {
     void hasPermissionReturnsFalseWhenRolesDoesNotHavePermission() {
         assertFalse(dummyRole.hasPermission(Permission.PUBLISH_ARTICLE));
     }
+
+    @Test
+    void hasPermissionReturnsFalseWhenPermissionIsNull() {
+        assertFalse(dummyRole.hasPermission(null));
+    }
 }

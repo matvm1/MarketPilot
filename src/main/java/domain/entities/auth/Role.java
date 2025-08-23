@@ -27,6 +27,9 @@ public class Role {
     }
 
     public boolean hasPermission(Permission permission) {
+        if (permission == null)
+            return false;
+
         return permissions.contains(permission);
     }
 }
