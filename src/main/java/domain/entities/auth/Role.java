@@ -13,19 +13,17 @@ public class Role {
 
     private RoleName roleName;
     private Set<Permission> permissions;
-    private boolean isActive;
 
     public Role(RoleName roleName, Set<Permission> permissions) {
+        if (roleName == null)
+            throw new IllegalArgumentException("roleName cannot be null");
+        if (permissions == null)
+            throw new IllegalArgumentException("permissions cannot be null");
+        if (permissions.isEmpty())
+            throw new IllegalArgumentException("permissions cannot be empty");
+
         this.roleName = roleName;
         this.permissions = new HashSet<>(permissions);
-    }
-
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
     }
 
     public boolean hasPermission(Permission permission) {

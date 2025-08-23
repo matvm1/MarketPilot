@@ -76,10 +76,10 @@ public class User {
     }
 
     public Role getActiveRole() {
-        for (UserRoleAsset userRoleAsset : roles)
-            if (userRoleAsset.getRole().isActive())
+        /*for (UserRoleAsset userRoleAsset : roles)
+            if (userRoleAsset.isActive())
                 return userRoleAsset.getRole();
-
+*/
         throw new IllegalStateException("No user role is active");
     }
 }
