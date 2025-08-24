@@ -32,4 +32,15 @@ public class Role {
 
         return permissions.contains(permission);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+
+        if (!(o instanceof Role))
+            return false;
+
+        return ((Role)o).permissions.equals(permissions) && ((Role)o).roleName == roleName;
+    }
 }

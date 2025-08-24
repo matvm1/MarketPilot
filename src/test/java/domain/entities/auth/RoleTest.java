@@ -52,4 +52,34 @@ public class RoleTest {
     void hasPermissionReturnsFalseWhenPermissionIsNull() {
         assertFalse(dummyRole.hasPermission(null));
     }
+
+    @Test
+    void equalsReturnsTrueWhenTwoRolesAreEqual() {
+        Set<Permission> perms1 = new HashSet<>();
+        perms1.add(Permission.CREATE_USER);
+        perms1.add(Permission.DELETE_USER);
+        Role r1 = new Role(Role.RoleName.Admin, perms1);
+
+        Set<Permission> perms2 = new HashSet<>();
+        perms2.add(Permission.CREATE_USER);
+        perms2.add(Permission.DELETE_USER);
+        Role r2 = new Role(Role.RoleName.Admin, perms2);
+
+        assertEquals(r1, r2);
+    }
+
+    @Test
+    void equalsReturnsFalseWhenTwoRolesAreNotEqual() {
+        Set<Permission> perms1 = new HashSet<>();
+        perms1.add(Permission.CREATE_WATCHLIST);
+        perms1.add(Permission.PUBLISH_ARTICLE);
+        Role r1 = new Role(Role.RoleName.Analyst, perms1);
+
+        Set<Permission> perms2 = new HashSet<>();
+        perms2.add(Permission.CREATE_USER);
+        perms2.add(Permission.DELETE_USER);
+        Role r2 = new Role(Role.RoleName.Admin, perms2);
+
+        assertNotEquals(r1, r2);
+    }
 }
