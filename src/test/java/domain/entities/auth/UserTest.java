@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("User Name Validation Tests")
 class UserTest {
@@ -19,6 +19,7 @@ class UserTest {
     void setUp() {
         // Initialize dummy user for constructor and setter tests (object state)
         Set<Permission> dummyPermissions = new HashSet<>();
+        dummyPermissions.add(Permission.PLACE_TRADE);
         Role dummyRole = new Role(Role.RoleName.PersonalInvestor, dummyPermissions);
         UserRoleAsset dummyRoleAsset = new UserRoleAsset(dummyRole);
         dummyUserRoleAssets = new HashSet<>();
@@ -88,5 +89,18 @@ class UserTest {
     @Test
     void setLastNameThrowsForBlankArg() {
         assertThrows(IllegalArgumentException.class, () -> dummyUser.setLastName("\n"));
+    }
+
+    // TODO: Check active role based on session state (logged in/out)
+    // TODO: Write test that assures only one role is active at any given time
+    @Test
+    void getActiveRoleReturnsActiveRole() {
+        dummyUser.setActiveRole(Role.RoleName.PersonalInvestor);
+        assertInstanceOf(Role.class, dummyUser.getActiveRole());
+        Role activeRole = null;
+        for (UserRoleAsset userRoleAsset : dummyUser.getUserRoleAssets())
+            if (userRoleAsset.isActive())
+                activeRole = userRoleAsset.getRole();
+        assertEquals(activeRole, dummyUser.getActiveRole());
     }
 }
