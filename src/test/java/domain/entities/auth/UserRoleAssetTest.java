@@ -32,6 +32,18 @@ public class UserRoleAssetTest {
     }
 
     @Test
+    void isActiveReturnsTrueWhenActive() {
+        dummyUserRoleAsset.setActive();
+        assertTrue(dummyUserRoleAsset.isActive());
+    }
+
+    @Test
+    void isActiveReturnsFalseWhenInactive() {
+        dummyUserRoleAsset.setInactive();
+        assertFalse(dummyUserRoleAsset.isActive());
+    }
+
+    @Test
     void setActiveReturnsTrueWhenPreviouslyInactive() {
         assertTrue(dummyUserRoleAsset.setActive());
     }
