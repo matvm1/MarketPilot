@@ -2,30 +2,35 @@ package domain.entities.auth;
 
 public class UserRoleAsset {
     private Role role;
+    private boolean isActive;
 
-    private String emailAddress;
-    private String phoneNumber;
-
-    public UserRoleAsset(Role role, String emailAddress, String phoneNumber) {
+    public UserRoleAsset(Role role) {
+        if (role == null)
+            throw new IllegalArgumentException("role cannot be null");
         this.role = role;
-        this.emailAddress = emailAddress;
-        this.phoneNumber = phoneNumber;
+        isActive = false;
     }
 
-    public String getEmailAddress() {
-        return emailAddress;
+    public boolean isActive() {
+        return isActive;
     }
 
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
+    // returns true if active state was toggled
+    public boolean setActive() {
+        if (isActive)
+            return false;
+
+        isActive = true;
+        return true;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
+    // returns true if active state was toggled
+    public boolean setInactive() {
+        if (!isActive)
+            return false;
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+        isActive = false;
+        return true;
     }
 
     public Role getRole() {

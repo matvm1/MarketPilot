@@ -11,7 +11,7 @@ public class Role {
         Public
     }
 
-    private RoleName roleName;
+    private final RoleName roleName;
     private Set<Permission> permissions;
 
     public Role(RoleName roleName, Set<Permission> permissions) {
