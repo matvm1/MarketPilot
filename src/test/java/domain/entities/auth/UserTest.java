@@ -13,15 +13,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DisplayName("User Name Validation Tests")
 class UserTest {
 
-    Set<UserRoleAsset> dummyUserRoleAssets;
-    User dummyUser;
+    private Set<UserRoleAsset> dummyUserRoleAssets;
+    private User dummyUser;
 
     @BeforeEach
     void setUp() {
         // Initialize dummy user for constructor and setter tests (object state)
         Set<Permission> dummyPermissions = new HashSet<>();
         Role dummyRole = new Role(Role.RoleName.PersonalInvestor, dummyPermissions);
-        UserRoleAsset dummyRoleAsset = new UserRoleAsset(dummyRole, "", "");
+        UserRoleAsset dummyRoleAsset = new UserRoleAsset(dummyRole);
         dummyUserRoleAssets = new HashSet<>();
         dummyUserRoleAssets.add(dummyRoleAsset);
         dummyUser = new User(1, dummyUserRoleAssets, "John", "M", "Doe");

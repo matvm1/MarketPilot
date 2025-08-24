@@ -9,8 +9,8 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RoleTest {
-    Set<Permission> dummyPermissions;
-    Role dummyRole;
+    private Set<Permission> dummyPermissions;
+    private Role dummyRole;
 
     @BeforeEach
     void setUp() {
