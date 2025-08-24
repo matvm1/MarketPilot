@@ -35,7 +35,7 @@ public class RoleTest {
     @Test
     void constructorThrowsForEmptyPermissions() {
         assertThrows(IllegalArgumentException.class, () ->
-                new Role(Role.RoleName.Public, new HashSet<Permission>()));
+                new Role(Role.RoleName.Public, new HashSet<>()));
     }
 
     @Test

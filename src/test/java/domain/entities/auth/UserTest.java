@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("User Name Validation Tests")
@@ -62,7 +61,7 @@ class UserTest {
     @Test
     void constructorThrowsForEmptyRolesSet() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, new HashSet<UserRoleAsset>(), "John", "M", "Doe"));
+                new User(1, new HashSet<>(), "John", "M", "Doe"));
     }
 
     @Test
