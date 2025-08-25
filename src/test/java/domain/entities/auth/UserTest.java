@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("User Name Validation Tests")
 class UserTest {
     private User testUser;
-    private Set<UserRoleAsset> testUserRoleAssets;
+    private Set<UserRoleAssignment> testUserRoleAssignments;
 
     @BeforeEach
     void setUp() {
@@ -21,44 +21,44 @@ class UserTest {
         investorPermissions.add(Permission.PLACE_TRADE);
         Role personalInvestorRole = new Role(Role.RoleName.PersonalInvestor, investorPermissions);
         Role analystRole = new Role(Role.RoleName.Analyst, investorPermissions);
-        UserRoleAsset investorRoleAsset = new UserRoleAsset(personalInvestorRole);
-        UserRoleAsset analystRoleAsset = new UserRoleAsset(personalInvestorRole);
-        testUserRoleAssets = new HashSet<>();
-        testUserRoleAssets.add(investorRoleAsset);
-        testUserRoleAssets.add(analystRoleAsset);
-        testUser = new User(1, testUserRoleAssets, "John", "M", "Doe");
+        UserRoleAssignment investorRoleAsset = new UserRoleAssignment(personalInvestorRole);
+        UserRoleAssignment analystRoleAsset = new UserRoleAssignment(personalInvestorRole);
+        testUserRoleAssignments = new HashSet<>();
+        testUserRoleAssignments.add(investorRoleAsset);
+        testUserRoleAssignments.add(analystRoleAsset);
+        testUser = new User(1, testUserRoleAssignments, "John", "M", "Doe");
     }
 
     // --- Constructor Tests ---
     @Test
     void constructorThrowsForNonPositiveId() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(0, testUserRoleAssets, "John", "M", "Doe"));
+                new User(0, testUserRoleAssignments, "John", "M", "Doe"));
     }
 
     @Test
     void constructorThrowsForNullFirstName() {
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, testUserRoleAssets, null, "M", "Doe"),
+                        new User(1, testUserRoleAssignments, null, "M", "Doe"),
                 "Expected constructor to throw for null first name");
     }
 
     @Test
     void constructorThrowsForBlankFirstName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, testUserRoleAssets, "      ", "M", "Doe"));
+                new User(1, testUserRoleAssignments, "      ", "M", "Doe"));
     }
 
     @Test
     void constructorThrowsForNullLastName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, testUserRoleAssets, "John", "M", null));
+                new User(1, testUserRoleAssignments, "John", "M", null));
     }
 
     @Test
     void constructorThrowsForBlankLastName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, testUserRoleAssets, "John", "M", ""));
+                new User(1, testUserRoleAssignments, "John", "M", ""));
     }
 
     @Test

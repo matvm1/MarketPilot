@@ -5,19 +5,19 @@ import java.util.Set;
 
 public class User {
     private final int id;
-    private final Set<UserRoleAsset> userRoleAssets;
+    private final Set<UserRoleAssignment> userRoleAssignments;
 
     private String firstName;
     private String middleName;
     private String lastName;
 
-    public User(int id, Set<UserRoleAsset> userRoleAssets, String firstName, String middleName,
+    public User(int id, Set<UserRoleAssignment> userRoleAssignments, String firstName, String middleName,
                 String lastName) {
         if (id <= 0)
             throw new IllegalArgumentException("id cannot be non-positive");
-        if (userRoleAssets == null)
+        if (userRoleAssignments == null)
             throw new IllegalArgumentException("roles cannot be null");
-        if (userRoleAssets.isEmpty())
+        if (userRoleAssignments.isEmpty())
             throw new IllegalArgumentException("roles cannot be empty");
         if (firstName == null)
             throw new IllegalArgumentException("firstName cannot be null");
@@ -29,7 +29,7 @@ public class User {
             throw new IllegalArgumentException("lastName cannot be empty");
 
         this.id = id;
-        this.userRoleAssets = new HashSet<>(userRoleAssets);
+        this.userRoleAssignments = new HashSet<>(userRoleAssignments);
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
@@ -75,7 +75,7 @@ public class User {
         return firstName + " " + middleName + " " + lastName;
     }
 
-    public Set<UserRoleAsset> getUserRoleAssets() {
-        return userRoleAssets;
+    public Set<UserRoleAssignment> getUserRoleAssets() {
+        return userRoleAssignments;
     }
 }

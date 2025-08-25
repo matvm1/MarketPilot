@@ -1,10 +1,10 @@
 package domain.entities.auth;
 
-public class UserRoleAsset {
+public class UserRoleAssignment {
     private Role role;
     private boolean isActive;
 
-    public UserRoleAsset(Role role) {
+    public UserRoleAssignment(Role role) {
         if (role == null)
             throw new IllegalArgumentException("role cannot be null");
         this.role = role;
