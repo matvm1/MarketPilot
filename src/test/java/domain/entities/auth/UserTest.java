@@ -11,52 +11,54 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("User Name Validation Tests")
 class UserTest {
-
-    private Set<UserRoleAsset> dummyUserRoleAssets;
-    private User dummyUser;
+    private User testUser;
+    private Set<UserRoleAsset> testUserRoleAssets;
 
     @BeforeEach
     void setUp() {
         // Initialize dummy user for constructor and setter tests (object state)
-        Set<Permission> dummyPermissions = new HashSet<>();
-        dummyPermissions.add(Permission.PLACE_TRADE);
-        Role dummyRole = new Role(Role.RoleName.PersonalInvestor, dummyPermissions);
-        UserRoleAsset dummyRoleAsset = new UserRoleAsset(dummyRole);
-        dummyUserRoleAssets = new HashSet<>();
-        dummyUserRoleAssets.add(dummyRoleAsset);
-        dummyUser = new User(1, dummyUserRoleAssets, "John", "M", "Doe");
+        Set<Permission> investorPermissions = new HashSet<>();
+        investorPermissions.add(Permission.PLACE_TRADE);
+        Role personalInvestorRole = new Role(Role.RoleName.PersonalInvestor, investorPermissions);
+        Role analystRole = new Role(Role.RoleName.Analyst, investorPermissions);
+        UserRoleAsset investorRoleAsset = new UserRoleAsset(personalInvestorRole);
+        UserRoleAsset analystRoleAsset = new UserRoleAsset(personalInvestorRole);
+        testUserRoleAssets = new HashSet<>();
+        testUserRoleAssets.add(investorRoleAsset);
+        testUserRoleAssets.add(analystRoleAsset);
+        testUser = new User(1, testUserRoleAssets, "John", "M", "Doe");
     }
 
     // --- Constructor Tests ---
     @Test
     void constructorThrowsForNonPositiveId() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(0, dummyUserRoleAssets, "John", "M", "Doe"));
+                new User(0, testUserRoleAssets, "John", "M", "Doe"));
     }
 
     @Test
     void constructorThrowsForNullFirstName() {
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, dummyUserRoleAssets, null, "M", "Doe"),
+                        new User(1, testUserRoleAssets, null, "M", "Doe"),
                 "Expected constructor to throw for null first name");
     }
 
     @Test
     void constructorThrowsForBlankFirstName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, dummyUserRoleAssets, "      ", "M", "Doe"));
+                new User(1, testUserRoleAssets, "      ", "M", "Doe"));
     }
 
     @Test
     void constructorThrowsForNullLastName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, dummyUserRoleAssets, "John", "M", null));
+                new User(1, testUserRoleAssets, "John", "M", null));
     }
 
     @Test
     void constructorThrowsForBlankLastName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, dummyUserRoleAssets, "John", "M", ""));
+                new User(1, testUserRoleAssets, "John", "M", ""));
     }
 
     @Test
@@ -73,34 +75,21 @@ class UserTest {
 
     @Test
     void setFirstNameThrowsForNullArg() {
-        assertThrows(IllegalArgumentException.class, () -> dummyUser.setFirstName(null));
+        assertThrows(IllegalArgumentException.class, () -> testUser.setFirstName(null));
     }
 
     @Test
     void setFirstNameThrowsForBlankArg() {
-        assertThrows(IllegalArgumentException.class, () -> dummyUser.setFirstName("     "));
+        assertThrows(IllegalArgumentException.class, () -> testUser.setFirstName("     "));
     }
 
     @Test
     void setLastNameThrowsForNullArg() {
-        assertThrows(IllegalArgumentException.class, () -> dummyUser.setLastName(null));
+        assertThrows(IllegalArgumentException.class, () -> testUser.setLastName(null));
     }
 
     @Test
     void setLastNameThrowsForBlankArg() {
-        assertThrows(IllegalArgumentException.class, () -> dummyUser.setLastName("\n"));
-    }
-
-    // TODO: Check active role based on session state (logged in/out)
-    // TODO: Write test that assures only one role is active at any given time
-    @Test
-    void getActiveRoleReturnsActiveRole() {
-        dummyUser.setActiveRole(Role.RoleName.PersonalInvestor);
-        assertInstanceOf(Role.class, dummyUser.getActiveRole());
-        Role activeRole = null;
-        for (UserRoleAsset userRoleAsset : dummyUser.getUserRoleAssets())
-            if (userRoleAsset.isActive())
-                activeRole = userRoleAsset.getRole();
-        assertEquals(activeRole, dummyUser.getActiveRole());
+        assertThrows(IllegalArgumentException.class, () -> testUser.setLastName("\n"));
     }
 }

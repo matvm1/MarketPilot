@@ -5,19 +5,19 @@ import java.util.Set;
 
 public class User {
     private final int id;
-    private final Set<UserRoleAsset> roles;
+    private final Set<UserRoleAsset> userRoleAssets;
 
     private String firstName;
     private String middleName;
     private String lastName;
 
-    public User(int id, Set<UserRoleAsset> roles, String firstName, String middleName,
+    public User(int id, Set<UserRoleAsset> userRoleAssets, String firstName, String middleName,
                 String lastName) {
         if (id <= 0)
             throw new IllegalArgumentException("id cannot be non-positive");
-        if (roles == null)
+        if (userRoleAssets == null)
             throw new IllegalArgumentException("roles cannot be null");
-        if (roles.isEmpty())
+        if (userRoleAssets.isEmpty())
             throw new IllegalArgumentException("roles cannot be empty");
         if (firstName == null)
             throw new IllegalArgumentException("firstName cannot be null");
@@ -29,7 +29,7 @@ public class User {
             throw new IllegalArgumentException("lastName cannot be empty");
 
         this.id = id;
-        this.roles = new HashSet<>(roles);
+        this.userRoleAssets = new HashSet<>(userRoleAssets);
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
@@ -75,11 +75,7 @@ public class User {
         return firstName + " " + middleName + " " + lastName;
     }
 
-    public Role getActiveRole() {
-        /*for (UserRoleAsset userRoleAsset : roles)
-            if (userRoleAsset.isActive())
-                return userRoleAsset.getRole();
-*/
-        throw new IllegalStateException("No user role is active");
+    public Set<UserRoleAsset> getUserRoleAssets() {
+        return userRoleAssets;
     }
 }
