@@ -5,20 +5,16 @@ import java.util.Set;
 
 public class User {
     private final int id;
-    private final Set<UserRoleAssignment> userRoleAssignments;
+    private Set<UserRoleAssignment> userRoleAssignments;
 
     private String firstName;
     private String middleName;
     private String lastName;
 
-    public User(int id, Set<UserRoleAssignment> userRoleAssignments, String firstName, String middleName,
+    public User(int id, String firstName, String middleName,
                 String lastName) {
         if (id <= 0)
             throw new IllegalArgumentException("id cannot be non-positive");
-        if (userRoleAssignments == null)
-            throw new IllegalArgumentException("roles cannot be null");
-        if (userRoleAssignments.isEmpty())
-            throw new IllegalArgumentException("roles cannot be empty");
         if (firstName == null)
             throw new IllegalArgumentException("firstName cannot be null");
         if (firstName.isBlank())
@@ -29,7 +25,6 @@ public class User {
             throw new IllegalArgumentException("lastName cannot be empty");
 
         this.id = id;
-        this.userRoleAssignments = new HashSet<>(userRoleAssignments);
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
@@ -37,6 +32,15 @@ public class User {
 
     public int getId() {
         return id;
+    }
+
+    public void grantRoles(Set<UserRoleAssignment> userRoleAssignments) {
+        if (userRoleAssignments == null)
+            throw new IllegalArgumentException("userRoleAssignments cannot be null");
+        if (userRoleAssignments.isEmpty())
+            throw new IllegalArgumentException("userRoleAssignment cannot be empty");
+
+        this.userRoleAssignments = userRoleAssignments;
     }
 
     public String getFirstName() {
@@ -75,7 +79,7 @@ public class User {
         return firstName + " " + middleName + " " + lastName;
     }
 
-    public Set<UserRoleAssignment> getUserRoleAssets() {
+    public Set<UserRoleAssignment> getUserRoleAssignments() {
         return userRoleAssignments;
     }
 }

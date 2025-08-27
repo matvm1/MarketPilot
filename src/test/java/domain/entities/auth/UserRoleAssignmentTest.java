@@ -16,52 +16,58 @@ public class UserRoleAssignmentTest {
     void setUp() {
         Set<Permission> dummyPermissions = new HashSet<>();
         dummyPermissions.add(Permission.PLACE_TRADE);
-        dummyRole = new Role(Role.RoleName.PersonalInvestor, dummyPermissions);
-        dummyUserRoleAssignment = new UserRoleAssignment(dummyRole);
+        dummyRole = TestRoles.PERSONAL_INVESTOR_ROLE;
+        dummyUserRoleAssignment = new UserRoleAssignment(new User(1, "John", "M", "Doe"), dummyRole);
     }
 
     @Test
-    void constructorThrowsForNullRole() {
+    void constructor_throwsForNullUser() {
         assertThrows(IllegalArgumentException.class, () ->
-                new UserRoleAssignment(null));
+                new UserRoleAssignment(null, dummyRole));
     }
 
     @Test
-    void constructorInitIsActiveToFalse() {
+    void constructor_throwsForNullRole() {
+        assertThrows(IllegalArgumentException.class, () ->
+                new UserRoleAssignment(new User(1, "John", "M", "Doe"), null));
+    }
+
+    @Test
+    void constructor_initIsActiveToFalse() {
         assertFalse(dummyUserRoleAssignment.isActive());
     }
 
     @Test
-    void isActiveReturnsTrueWhenActive() {
+    void isActive_returnsTrueWhenActive() {
         dummyUserRoleAssignment.setActive();
         assertTrue(dummyUserRoleAssignment.isActive());
     }
 
     @Test
-    void isActiveReturnsFalseWhenInactive() {
+    void isActive_returnsFalseWhenInactive() {
         dummyUserRoleAssignment.setInactive();
         assertFalse(dummyUserRoleAssignment.isActive());
     }
 
     @Test
-    void setActiveReturnsTrueWhenPreviouslyInactive() {
+    void setActive_returnsTrueWhenPreviouslyInactive() {
         assertTrue(dummyUserRoleAssignment.setActive());
     }
 
     @Test
-    void setActiveReturnsFalseWhenPreviouslyActive() {
+    void setActive_returnsFalseWhenPreviouslyActive() {
         dummyUserRoleAssignment.setActive();
         assertFalse(dummyUserRoleAssignment.setActive());
     }
 
     @Test
-    void setInactiveReturnsTrueWhenPreviouslyActive() {
+    void setInactive_returnsTrueWhenPreviouslyActive() {
         dummyUserRoleAssignment.setActive();
         assertTrue(dummyUserRoleAssignment.setInactive());
     }
 
     @Test
-    void setInactiveReturnsFalseWhenPreviouslyInactive() {
+    void setInactive_returnsFalseWhenPreviouslyInactive() {
         assertFalse(dummyUserRoleAssignment.setInactive());
     }
 }

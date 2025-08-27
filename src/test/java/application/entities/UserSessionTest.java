@@ -1,6 +1,7 @@
 package application.entities;
 
 import domain.entities.auth.*;
+import domain.services.UserFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,14 +24,12 @@ public class UserSessionTest {
 
     @BeforeEach
     void setUp() {
-        Set<UserRoleAssignment> userRoleAssignments = new HashSet<>();
-        investorRoleAssignment = new UserRoleAssignment(new Role(Role.RoleName.PersonalInvestor,
-                RolePermissionSets.PERSONAL_INVESTOR_PERMISSIONS));
-        analystRoleAssignment = new UserRoleAssignment(new Role(Role.RoleName.Analyst,
-            RolePermissionSets.ANALYST_PERMISSIONS));
-        userRoleAssignments.add(investorRoleAssignment);
-        userRoleAssignments.add(analystRoleAssignment);
-        analystAndInvestorUser = new User(2, userRoleAssignments, "John", "M", "Doe");
+        UserFactory userFactory = new UserFactory();
+        Set<Role> investorAndAnalystRoles = new HashSet<>();
+        investorAndAnalystRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
+        investorAndAnalystRoles.add(TestRoles.ANALYST_ROLE);
+        analystAndInvestorUser = userFactory.createUser(2, investorAndAnalystRoles, "John", "M", "Doe");
+
         investorSessionStart = Instant.parse("2025-01-01T10:00:00Z");
         investorSession = new UserSession(investorRoleAssignment, investorSessionStart);
         // TODO: session state management - can't have a personal and employee session running at once
@@ -39,31 +38,31 @@ public class UserSessionTest {
     }
 
     @Test
-    void constructorThrowsForNullUserRoleAssignment() {
+    void constructor_throwsForNullUserRoleAssignment() {
         assertThrows(IllegalArgumentException.class, () ->
                 new UserSession(null, Instant.now()));
     }
 
     @Test
-    void constructorThrowsForNullSessionStartInstant() {
+    void constructor_throwsForNullSessionStartInstant() {
         assertThrows(IllegalArgumentException.class, () ->
                 new UserSession(investorRoleAssignment, null));
     }
 
     @Test
-    void getEffectivePermissionsReturnsCorrectFlatSetOfPermissions() {
-        assertEquals(RolePermissionSets.PERSONAL_INVESTOR_PERMISSIONS, investorSession.getPermissions());
-        assertEquals(RolePermissionSets.ANALYST_PERMISSIONS, analystSession.getPermissions());
+    void getEffectivePermissions_returnsCorrectFlatSetOfPermissions() {
+        assertEquals(TestRolePermissionSets.PERSONAL_INVESTOR_PERMISSIONS, investorSession.getPermissions());
+        assertEquals(TestRolePermissionSets.ANALYST_PERMISSIONS, analystSession.getPermissions());
     }
 
     @Test
-    void testSessionIsNotExpired() {
+    void isExpired_returnsFalseWhenNotExpired() {
         Instant now = investorSessionStart.plus(Duration.ofHours(2));
         assertFalse(investorSession.isExpired(now));
     }
 
     @Test
-    void testSessionIsExpired() {
+    void isExpired_returnsTrueWhenIsExpired() {
         Instant now = investorSessionStart.plus(Duration.ofHours(4));
         assertFalse(investorSession.isExpired(now));
     }

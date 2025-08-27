@@ -16,80 +16,69 @@ class UserTest {
 
     @BeforeEach
     void setUp() {
-        // Initialize dummy user for constructor and setter tests (object state)
-        Set<Permission> investorPermissions = new HashSet<>();
-        investorPermissions.add(Permission.PLACE_TRADE);
-        Role personalInvestorRole = new Role(Role.RoleName.PersonalInvestor, investorPermissions);
-        Role analystRole = new Role(Role.RoleName.Analyst, investorPermissions);
-        UserRoleAssignment investorRoleAsset = new UserRoleAssignment(personalInvestorRole);
-        UserRoleAssignment analystRoleAsset = new UserRoleAssignment(personalInvestorRole);
-        testUserRoleAssignments = new HashSet<>();
-        testUserRoleAssignments.add(investorRoleAsset);
-        testUserRoleAssignments.add(analystRoleAsset);
-        testUser = new User(1, testUserRoleAssignments, "John", "M", "Doe");
-    }
-
-    // --- Constructor Tests ---
-    @Test
-    void constructorThrowsForNonPositiveId() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new User(0, testUserRoleAssignments, "John", "M", "Doe"));
+        testUser = new User(1, "John", "M", "Doe");
     }
 
     @Test
-    void constructorThrowsForNullFirstName() {
+    void constructor_throwsForNonPositiveId() {
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, testUserRoleAssignments, null, "M", "Doe"),
+                new User(0, "John", "M", "Doe"));
+    }
+
+    @Test
+    void constructor_throwsForNullFirstName() {
+        assertThrows(IllegalArgumentException.class, () ->
+                        new User(1, null, "M", "Doe"),
                 "Expected constructor to throw for null first name");
     }
 
     @Test
-    void constructorThrowsForBlankFirstName() {
+    void constructor_throwsForBlankFirstName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, testUserRoleAssignments, "      ", "M", "Doe"));
+                new User(1, "      ", "M", "Doe"));
     }
 
     @Test
-    void constructorThrowsForNullLastName() {
+    void constructor_throwsForNullLastName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, testUserRoleAssignments, "John", "M", null));
+                new User(1, "John", "M", null));
     }
 
     @Test
-    void constructorThrowsForBlankLastName() {
+    void constructor_throwsForBlankLastName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, testUserRoleAssignments, "John", "M", ""));
+                new User(1, "John", "M", ""));
     }
 
     @Test
-    void constructorThrowsForEmptyRolesSet() {
+    void grantRoles_throwsForNullUserRolesSet() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, new HashSet<>(), "John", "M", "Doe"));
+                testUser.grantRoles(null));
     }
 
     @Test
-    void constructorThrowsForNullRolesSet() {
+    void grantRoles_throwsForEmptyUserRolesSet() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, null, "John", "M", "Doe"));
+                testUser.grantRoles(new HashSet<>()));
     }
 
     @Test
-    void setFirstNameThrowsForNullArg() {
+    void setFirstName_throwsForNullArg() {
         assertThrows(IllegalArgumentException.class, () -> testUser.setFirstName(null));
     }
 
     @Test
-    void setFirstNameThrowsForBlankArg() {
+    void setFirstName_throwsForBlankArg() {
         assertThrows(IllegalArgumentException.class, () -> testUser.setFirstName("     "));
     }
 
     @Test
-    void setLastNameThrowsForNullArg() {
+    void setLastName_throwsForNullString() {
         assertThrows(IllegalArgumentException.class, () -> testUser.setLastName(null));
     }
 
     @Test
-    void setLastNameThrowsForBlankArg() {
+    void setLastName_throwsForBlankString() {
         assertThrows(IllegalArgumentException.class, () -> testUser.setLastName("\n"));
     }
 }

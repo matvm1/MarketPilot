@@ -4,9 +4,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public final class RolePermissionSets {
+public final class TestRolePermissionSets {
 
-    private RolePermissionSets() {}
+    private TestRolePermissionSets() {}
 
     public static final Set<Permission> AUTHENTICATED_BASE_PERMISSIONS = Set.of(
             Permission.VIEW_QUOTE,
