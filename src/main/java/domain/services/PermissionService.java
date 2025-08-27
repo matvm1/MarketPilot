@@ -1,4 +1,4 @@
-package main.java.domain.services;
+package domain.services;
 
 public class PermissionService {
 }

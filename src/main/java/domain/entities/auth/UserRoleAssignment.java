@@ -1,7 +1,7 @@
 package domain.entities.auth;
 
 public class UserRoleAssignment {
-    private Role role;
+    private final Role role;
     private boolean isActive;
 
     public UserRoleAssignment(Role role) {
