@@ -1,8 +1,6 @@
 package application.entities;
 
 import domain.entities.auth.Permission;
-import domain.entities.auth.Role;
-import domain.entities.auth.User;
 import domain.entities.auth.UserRoleAssignment;
 
 import java.time.Duration;
@@ -10,9 +8,8 @@ import java.time.Instant;
 import java.util.Set;
 
 public class UserSession {
-    private UserRoleAssignment userRoleAssignment;
+    private final UserRoleAssignment userRoleAssignment;
     private final Instant expirationTime;
-    private final Duration sessionDuration = Duration.ofHours(4);
 
     public UserSession(UserRoleAssignment userRoleAssignment, Instant sessionStart) {
         if (userRoleAssignment == null)
@@ -21,6 +18,7 @@ public class UserSession {
             throw new IllegalArgumentException("sessionStart cannot be null");
 
         this.userRoleAssignment = userRoleAssignment;
+        Duration sessionDuration = Duration.ofHours(4);
         expirationTime = sessionStart.plus(sessionDuration);
     }
 
