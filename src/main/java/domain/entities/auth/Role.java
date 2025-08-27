@@ -26,6 +26,10 @@ public class Role {
         this.permissions = new HashSet<>(permissions);
     }
 
+    public Set<Permission> getPermissions() {
+        return permissions;
+    }
+
     public boolean hasPermission(Permission permission) {
         if (permission == null)
             return false;

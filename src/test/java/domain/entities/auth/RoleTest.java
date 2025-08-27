@@ -39,6 +39,11 @@ public class RoleTest {
     }
 
     @Test
+    void getPermissionsIsNotNull() {
+        assertNotEquals(null, dummyRole.getPermissions());
+    }
+
+    @Test
     void hasPermissionReturnsTrueWhenRoleHasPermission() {
         assertTrue(dummyRole.hasPermission(Permission.CREATE_USER));
     }
