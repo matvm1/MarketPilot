@@ -14,8 +14,6 @@ public class UserRoleAssignmentTest {
 
     @BeforeEach
     void setUp() {
-        Set<Permission> dummyPermissions = new HashSet<>();
-        dummyPermissions.add(Permission.PLACE_TRADE);
         dummyRole = TestRoles.PERSONAL_INVESTOR_ROLE;
         dummyUserRoleAssignment = new UserRoleAssignment(new User(1, "John", "M", "Doe"), dummyRole);
     }

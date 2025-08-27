@@ -5,14 +5,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("User Name Validation Tests")
 class UserTest {
     private User testUser;
-    private Set<UserRoleAssignment> testUserRoleAssignments;
 
     @BeforeEach
     void setUp() {
