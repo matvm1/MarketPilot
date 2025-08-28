@@ -1,4 +1,4 @@
-package application.entities;
+package application.auth;
 
 import domain.entities.auth.*;
 import domain.services.UserFactory;
