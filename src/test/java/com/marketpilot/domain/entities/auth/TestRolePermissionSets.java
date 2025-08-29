@@ -1,7 +1,5 @@
 package com.marketpilot.domain.entities.auth;
 
-import com.marketpilot.domain.entities.auth.Permission;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;

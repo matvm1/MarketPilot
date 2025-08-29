@@ -1,7 +1,5 @@
 package com.marketpilot.domain.entities.auth;
 
-import com.marketpilot.application.services.TestDependencyInversionViolation;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,7 +12,7 @@ public class Role {
     }
 
     private final RoleName roleName;
-    private Set<Permission> permissions;
+    private final Set<Permission> permissions;
 
     public Role(RoleName roleName, Set<Permission> permissions) {
         if (roleName == null)

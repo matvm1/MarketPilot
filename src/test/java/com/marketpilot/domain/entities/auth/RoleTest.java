@@ -1,7 +1,5 @@
 package com.marketpilot.domain.entities.auth;
 
-import com.marketpilot.domain.entities.auth.Permission;
-import com.marketpilot.domain.entities.auth.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
