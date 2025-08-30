@@ -1,6 +1,6 @@
 package com.marketpilot.application.services;
 
-import com.marketpilot.application.ports.Authentication;
+import com.marketpilot.application.dto.AuthenticationResult;
 import com.marketpilot.domain.entities.auth.*;
 import com.marketpilot.domain.services.UserFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,11 +32,11 @@ public class UserSessionTest {
 
         investorSessionStart = Instant.parse("2025-01-01T10:00:00Z");
         userInvestorRoleAssignment = new UserRoleAssignment(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE);
-        investorSession = new UserSession(new MockAuthentication(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), investorSessionStart);
+        investorSession = new UserSession(new AuthenticationResult(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), investorSessionStart);
         // TODO: session state management - can't have a personal and employee session running at once
         analystSessionStart = Instant.parse("2025-01-02T10:00:00Z");
         userAnalystRoleAssignment = new UserRoleAssignment(investorAndAnalystUser, TestRoles.ANALYST_ROLE);
-        analystSession = new UserSession(new MockAuthentication(investorAndAnalystUser, TestRoles.ANALYST_ROLE), analystSessionStart);
+        analystSession = new UserSession(new AuthenticationResult(investorAndAnalystUser, TestRoles.ANALYST_ROLE), analystSessionStart);
     }
 
     @Test
@@ -48,7 +48,7 @@ public class UserSessionTest {
     @Test
     void constructor_throwsForNullSessionStartInstant() {
         assertThrows(IllegalArgumentException.class, () ->
-                new UserSession(new MockAuthentication(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), null));
+                new UserSession(new AuthenticationResult(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), null));
     }
 
     @Test
@@ -67,16 +67,5 @@ public class UserSessionTest {
     void isExpired_returnsTrueWhenIsExpired() {
         Instant now = investorSessionStart.plus(Duration.ofHours(4));
         assertFalse(investorSession.isExpired(now));
-    }
-
-    private record MockAuthentication(User principal, Role role) implements Authentication {
-        private MockAuthentication {
-            if (principal == null) {
-                throw new IllegalArgumentException("principal cannot be null");
-            }
-            if (role == null) {
-                throw new IllegalArgumentException("role cannot be null");
-            }
-        }
     }
 }

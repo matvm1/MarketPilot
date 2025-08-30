@@ -1,6 +1,6 @@
 package com.marketpilot.application.services;
 
-import com.marketpilot.application.ports.Authentication;
+import com.marketpilot.application.dto.AuthenticationResult;
 import com.marketpilot.domain.entities.auth.Permission;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
@@ -14,7 +14,7 @@ public class UserSession {
     private final Role sessionRole;
     private final Instant expirationTime;
 
-    public UserSession(Authentication auth, Instant sessionStart) {
+    public UserSession(AuthenticationResult auth, Instant sessionStart) {
         if (auth == null)
             throw new IllegalArgumentException("auth cannot be null");
         if (sessionStart == null)
