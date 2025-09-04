@@ -28,7 +28,7 @@ public class UserSessionTest {
         Set<Role> investorAndAnalystRoles = new HashSet<>();
         investorAndAnalystRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
         investorAndAnalystRoles.add(TestRoles.ANALYST_ROLE);
-        investorAndAnalystUser = userFactory.createUser(2, investorAndAnalystRoles, "John", "M", "Doe");
+        investorAndAnalystUser = userFactory.createUser(2, investorAndAnalystRoles, "johnmdoe", "John", "M", "Doe");
 
         investorSessionStart = Instant.parse("2025-01-01T10:00:00Z");
         userInvestorRoleAssignment = new UserRoleAssignment(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE);

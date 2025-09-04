@@ -16,6 +16,6 @@ class AuthenticationResultTest {
     @Test
     void constructor_throwsForNullRole() {
         assertThrows(IllegalArgumentException.class, () ->
-                new AuthenticationResult(new User(1, "John", "M", "Doe"), null));
+                new AuthenticationResult(new User(1, "johnmdoe", "John", "M", "Doe"), null));
     }
 }

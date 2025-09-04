@@ -14,38 +14,52 @@ class UserTest {
 
     @BeforeEach
     void setUp() {
-        testUser = new User(1, "John", "M", "Doe");
+        testUser = new User(1, "johnmdoe", "John", "M", "Doe");
     }
 
     @Test
     void constructor_throwsForNonPositiveId() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(0, "John", "M", "Doe"));
+                new User(0, "johnmdoe", "John", "M", "Doe"));
+    }
+
+    @Test
+    void constructor_throwsForNullUsername() {
+        assertThrows(IllegalArgumentException.class, () ->
+                        new User(1, null, "John", "M", "Doe"),
+                "Expected constructor to throw for null first name");
+    }
+
+    @Test
+    void constructor_throwsForBlankUsername() {
+        assertThrows(IllegalArgumentException.class, () ->
+                        new User(1, "     ", "John", "M", "Doe"),
+                "Expected constructor to throw for null first name");
     }
 
     @Test
     void constructor_throwsForNullFirstName() {
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, null, "M", "Doe"),
+                        new User(1, "johnmdoe", null, "M", "Doe"),
                 "Expected constructor to throw for null first name");
     }
 
     @Test
     void constructor_throwsForBlankFirstName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, "      ", "M", "Doe"));
+                new User(1, "johnmdoe", "      ", "M", "Doe"));
     }
 
     @Test
     void constructor_throwsForNullLastName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, "John", "M", null));
+                new User(1, "johnmdoe", "John", "M", null));
     }
 
     @Test
     void constructor_throwsForBlankLastName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, "John", "M", ""));
+                new User(1, "johnmdoe", "John", "M", ""));
     }
 
     @Test

@@ -26,14 +26,14 @@ public class UserFactoryTest {
 
     @Test
     void createUser_returnsUserWithNonNullAndNonEmptyRoleAssignments() {
-        User user = userFactory.createUser(1, investorAndAnalystRoles, "John", "M", "Doe");
+        User user = userFactory.createUser(1, investorAndAnalystRoles, "johnmdoe", "John", "M", "Doe");
         assertNotEquals(null, user.getUserRoleAssignments());
         assertFalse(user.getUserRoleAssignments().isEmpty());
     }
 
     @Test
     void createUsr_userRoleAssignmentsReferBackToUser() {
-        User user = userFactory.createUser(1, investorAndAnalystRoles, "John", "M", "Doe");
+        User user = userFactory.createUser(1, investorAndAnalystRoles, "johnmdoe", "John", "M", "Doe");
         for (UserRoleAssignment userRoleAssignment : user.getUserRoleAssignments())
             assertEquals(userRoleAssignment.getUser(), user);
     }

@@ -6,14 +6,19 @@ public class User {
     private final int id;
     private Set<UserRoleAssignment> userRoleAssignments;
 
+    private String username;
     private String firstName;
     private String middleName;
     private String lastName;
 
-    public User(int id, String firstName, String middleName,
+    public User(int id, String username, String firstName, String middleName,
                 String lastName) {
         if (id <= 0)
             throw new IllegalArgumentException("id cannot be non-positive");
+        if (username == null)
+            throw new IllegalArgumentException("username cannot be null");
+        if (username.isBlank())
+            throw new IllegalArgumentException("username cannot be blank");
         if (firstName == null)
             throw new IllegalArgumentException("firstName cannot be null");
         if (firstName.isBlank())
@@ -23,6 +28,7 @@ public class User {
         if (lastName.isBlank())
             throw new IllegalArgumentException("lastName cannot be empty");
 
+        this.username = username;
         this.id = id;
         this.firstName = firstName;
         this.middleName = middleName;
@@ -40,6 +46,10 @@ public class User {
             throw new IllegalArgumentException("userRoleAssignment cannot be empty");
 
         this.userRoleAssignments = userRoleAssignments;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public String getFirstName() {

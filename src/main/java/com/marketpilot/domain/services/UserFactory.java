@@ -8,9 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class UserFactory {
-    public User createUser(int id, Set<Role> rolesToAssign, String firstName, String middleName,
+    public User createUser(int id, Set<Role> rolesToAssign, String username, String firstName, String middleName,
                            String lastName) {
-        User newUser = new User(id, firstName, middleName, lastName);
+        User newUser = new User(id, username, firstName, middleName, lastName);
         Set<UserRoleAssignment> userRoleAssignments = new HashSet<>();
         for (Role role : rolesToAssign)
             userRoleAssignments.add(new UserRoleAssignment(newUser, role));

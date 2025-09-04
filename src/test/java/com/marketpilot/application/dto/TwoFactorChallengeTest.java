@@ -12,15 +12,15 @@ class TwoFactorChallengeTest {
     }
 
     @Test
-    void constructor_throwsForNullChallengeToken() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new TwoFactorAuthenticationChallenge("johnmdoe", null));
-    }
-
-    @Test
     void constructor_throwsForBlankUserName() {
         assertThrows(IllegalArgumentException.class, () ->
                 new TwoFactorAuthenticationChallenge("   ", "a1b2c3d4-e5f6-7890-1234-567890abcdef"));
+    }
+
+    @Test
+    void constructor_throwsForNullChallengeToken() {
+        assertThrows(IllegalArgumentException.class, () ->
+                new TwoFactorAuthenticationChallenge("johnmdoe", null));
     }
 
     @Test
