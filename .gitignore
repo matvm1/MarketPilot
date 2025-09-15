@@ -31,3 +31,6 @@ bin/
 
 ### Maven ###
 target/
+
+### secrets ###
+src/main/secrets/
