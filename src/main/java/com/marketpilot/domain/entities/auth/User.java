@@ -6,16 +6,17 @@ import java.util.Set;
 
 public class User {
     private final int id;
+    private final String employeeId;
     private Set<UserRoleAssignment> userRoleAssignments;
-
-    private String username;
+    private final String username;
+    private String personalEmail;
+    private String employeeEmail;
     private String firstName;
     private String middleName;
     private String lastName;
 
     public User(int id, String employeeId, String username, String personalEmail, String employeeEmail,
-                String firstName, String middleName,
-                String lastName) {
+                String firstName, String middleName, String lastName) {
         EmailValidator emailValidator = EmailValidator.getInstance();
         if (id <= 0)
             throw new IllegalArgumentException("id cannot be non-positive");
@@ -48,16 +49,35 @@ public class User {
         if (lastName.isBlank())
             throw new IllegalArgumentException("lastName cannot be empty");
 
-        this.username = username;
         this.id = id;
+        this.employeeId = employeeId;
+        this.username = username;
+        this.personalEmail = personalEmail;
+        this.employeeEmail = employeeEmail;
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
     }
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
+
+    public String getEmployeeId() { return employeeId; }
+
+    public Set<UserRoleAssignment> getUserRoleAssignments() { return userRoleAssignments; }
+
+    public String getPersonalEmail() { return personalEmail; }
+
+    public String getEmployeeEmail() { return employeeEmail; }
+
+    public String getUsername() { return username; }
+
+    public String getFirstName() { return firstName; }
+
+    public String getMiddleName() { return middleName; }
+
+    public String getLastName() { return lastName; }
+
+    public String getFullName() { return firstName + " " + middleName + " " + lastName; }
 
     public void grantRoles(Set<UserRoleAssignment> userRoleAssignments) {
         if (userRoleAssignments == null)
@@ -68,14 +88,6 @@ public class User {
         this.userRoleAssignments = userRoleAssignments;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
     public void setFirstName(String firstName) {
         if (firstName == null)
             throw new IllegalArgumentException("firstName cannot be null");
@@ -84,16 +96,8 @@ public class User {
         this.firstName = firstName;
     }
 
-    public String getMiddleName() {
-        return middleName;
-    }
-
     public void setMiddleName(String middleName) {
         this.middleName = middleName;
-    }
-
-    public String getLastName() {
-        return lastName;
     }
 
     public void setLastName(String lastName) {
@@ -102,13 +106,5 @@ public class User {
         if (lastName.isBlank())
             throw new IllegalArgumentException("firstName cannot be empty");
         this.lastName = lastName;
-    }
-
-    public String getFullName() {
-        return firstName + " " + middleName + " " + lastName;
-    }
-
-    public Set<UserRoleAssignment> getUserRoleAssignments() {
-        return userRoleAssignments;
     }
 }
