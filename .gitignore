@@ -33,4 +33,4 @@ bin/
 target/
 
 ### secrets ###
-src/main/secrets/
+secrets/
