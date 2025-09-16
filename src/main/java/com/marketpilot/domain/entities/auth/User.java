@@ -15,11 +15,9 @@ public class User {
     private String middleName;
     private String lastName;
 
-    public User(int id, String employeeId, String username, String personalEmail, String employeeEmail,
+    public User(String employeeId, String username, String personalEmail, String employeeEmail,
                 String firstName, String middleName, String lastName) {
         EmailValidator emailValidator = EmailValidator.getInstance();
-        if (id <= 0)
-            throw new IllegalArgumentException("id cannot be non-positive");
         if (employeeId == null && employeeEmail != null)
             throw new IllegalArgumentException("employeeId cannot be null when employeeEmail is not null");
         if (employeeId != null && employeeEmail == null)
@@ -49,7 +47,8 @@ public class User {
         if (lastName.isBlank())
             throw new IllegalArgumentException("lastName cannot be empty");
 
-        this.id = id;
+        // TODO: Query user id, possibly outside of constructor
+        this.id = -1;
         this.employeeId = employeeId;
         this.username = username;
         this.personalEmail = personalEmail;

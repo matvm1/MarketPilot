@@ -14,42 +14,35 @@ class UserTest {
 
     @BeforeEach
     void setUp() {
-        testUser = new User(1, "ab123456", "johnmdoe", "johnmdoe@outlook.com",
+        testUser = new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
                 "johnmdoe@company.com", "John", "M", "Doe");
-    }
-
-    @Test
-    void constructor_throwsForNonPositiveId() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new User(0, "ab123456", "johnmdoe", "johnmdoe@outlook.com",
-                        "johnmdoe@company.com","John", "M", "Doe"));
     }
 
     @Test
     void constructor_throwsForNullEmployeeIdAndNonNullEmployeeEmail() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, null, "johnmdoe", "johnmdoe@outlook.com",
+                new User(null, "johnmdoe", "johnmdoe@outlook.com",
                         "johnmdoe@company.com","John", "M", "Doe"));
     }
 
     @Test
     void constructor_throwsForNonNullEmployeeIdAndNullEmployeeEmail() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, "ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
                         null,"John", "M", "Doe"));
     }
 
     @Test
     void constructor_throwsForBlankEmployeeId() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, "   ", "johnmdoe", "johnmdoe@outlook.com",
+                new User("   ", "johnmdoe", "johnmdoe@outlook.com",
                         "johnmdoe@company.com","John", "M", "Doe"));
     }
 
     @Test
     void constructor_throwsForNullUsername() {
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", null, "johnmdoe@outlook.com",
+                        new User("ab123456", null, "johnmdoe@outlook.com",
                                 "johnmdoe@company.com","John", "M", "Doe"),
                 "Expected constructor to throw for null first name");
     }
@@ -57,7 +50,7 @@ class UserTest {
     @Test
     void constructor_throwsForBlankUsername() {
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "     ", "johnmdoe@outlook.com",
+                        new User("ab123456", "     ", "johnmdoe@outlook.com",
                                 "johnmdoe@company.com","John", "M", "Doe"),
                 "Expected constructor to throw for null first name");
     }
@@ -65,7 +58,7 @@ class UserTest {
     @Test
     void constructor_throwsForNullPersonalAndEmployeeEmails() {
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null,
+                        new User("ab123456", "johnmdoe", null,
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for null personalEmail and null employeeEmail");
     }
@@ -73,7 +66,7 @@ class UserTest {
     @Test
     void constructor_throwsForBlankPersonalEmail() {
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "      ",
+                        new User("ab123456", "johnmdoe", "      ",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for blank personalEmail");
     }
@@ -83,87 +76,87 @@ class UserTest {
     void constructor_throwsForInvalidPersonalEmailPatterns() {
         // Missing @ symbol
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "userexample.com",
+                        new User("ab123456", "johnmdoe", "userexample.com",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email missing @ symbol");
 
         // Multiple @ symbols
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "user@@example.com",
+                        new User("ab123456", "johnmdoe", "user@@example.com",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with multiple @ symbols");
 
         // Empty local part (before @)
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "@example.com",
+                        new User("ab123456", "johnmdoe", "@example.com",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with empty local part");
 
         // Empty domain part (after @)
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "user@",
+                        new User("ab123456", "johnmdoe", "user@",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with empty domain part");
 
         // Consecutive dots in local part
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "user..name@example.com",
+                        new User("ab123456", "johnmdoe", "user..name@example.com",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with consecutive dots in local part");
 
         // Local part starting with dot
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", ".user@example.com",
+                        new User("ab123456", "johnmdoe", ".user@example.com",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with local part starting with dot");
 
         // Local part ending with dot
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "user.@example.com",
+                        new User("ab123456", "johnmdoe", "user.@example.com",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with local part ending with dot");
 
         // Invalid character (space) in local part
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "user name@example.com",
+                        new User("ab123456", "johnmdoe", "user name@example.com",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with space in local part");
 
         // Domain without TLD
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "user@localhost",
+                        new User("ab123456", "johnmdoe", "user@localhost",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with domain missing TLD");
 
         // Domain starting with hyphen
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "user@-example.com",
+                        new User("ab123456", "johnmdoe", "user@-example.com",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with domain starting with hyphen");
 
         // Domain ending with hyphen
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "user@example-.com",
+                        new User("ab123456", "johnmdoe", "user@example-.com",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with domain ending with hyphen");
 
         // Consecutive dots in domain
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "user@example..com",
+                        new User("ab123456", "johnmdoe", "user@example..com",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with consecutive dots in domain");
 
         // Local part too long (over 64 characters)
         String longLocalPart = "a".repeat(65);
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", longLocalPart + "@example.com",
+                        new User("ab123456", "johnmdoe", longLocalPart + "@example.com",
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with local part exceeding 64 characters");
 
         // Domain too long (over 253 characters total)
         String longDomain = "a".repeat(250) + ".com";
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "user@" + longDomain,
+                        new User("ab123456", "johnmdoe", "user@" + longDomain,
                                 null,"John", "M", "Doe"),
                 "Expected constructor to throw for email with domain exceeding 253 characters");
     }
@@ -173,43 +166,43 @@ class UserTest {
     void constructor_acceptsValidPersonalEmailPatterns() {
         // Basic valid email
         assertDoesNotThrow(() ->
-                        new User(1, null, "johnmdoe", "user@example.com",
+                        new User(null, "johnmdoe", "user@example.com",
                                 null,"John", "M", "Doe"),
                 "Valid basic email should not throw exception");
 
         // Email with dots in local part
         assertDoesNotThrow(() ->
-                        new User(1, null, "johnmdoe", "john.doe@company.org",
+                        new User(null, "johnmdoe", "john.doe@company.org",
                                 null,"John", "M", "Doe"),
                 "Valid email with dots in local part should not throw exception");
 
         // Email with underscore and plus
         assertDoesNotThrow(() ->
-                        new User(1, null, "johnmdoe", "test_user+tag@example.com",
+                        new User(null, "johnmdoe", "test_user+tag@example.com",
                                 null,"John", "M", "Doe"),
                 "Valid email with underscore and plus should not throw exception");
 
         // Email with numbers
         assertDoesNotThrow(() ->
-                        new User(1, null, "johnmdoe", "user123@example.com",
+                        new User(null, "johnmdoe", "user123@example.com",
                                 null,"John", "M", "Doe"),
                 "Valid email with numbers should not throw exception");
 
         // Email with subdomain
         assertDoesNotThrow(() ->
-                        new User(1, null, "johnmdoe", "user@mail.example.com",
+                        new User(null, "johnmdoe", "user@mail.example.com",
                                 null,"John", "M", "Doe"),
                 "Valid email with subdomain should not throw exception");
 
         // Email with hyphen in domain
         assertDoesNotThrow(() ->
-                        new User(1, null, "johnmdoe", "user@my-company.com",
+                        new User(null, "johnmdoe", "user@my-company.com",
                                 null,"John", "M", "Doe"),
                 "Valid email with hyphen in domain should not throw exception");
 
         // Short but valid email
         assertDoesNotThrow(() ->
-                        new User(1, null, "johnmdoe", "a@b.co",
+                        new User(null, "johnmdoe", "a@b.co",
                                 null,"John", "M", "Doe"),
                 "Valid short email should not throw exception");
     }
@@ -217,7 +210,7 @@ class UserTest {
     @Test
     void constructor_throwsForBlankEmployeeEmail() {
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null,
+                        new User("ab123456", "johnmdoe", null,
                                 " ","John", "M", "Doe"),
                 "Expected constructor to throw for blank employeeEmail");
     }
@@ -227,87 +220,87 @@ class UserTest {
     void constructor_throwsForInvalidEmployeeEmailPatterns() {
         // Missing @ symbol
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, "userexample.com",
+                        new User("ab123456", "johnmdoe", null, "userexample.com",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email missing @ symbol");
 
         // Multiple @ symbols
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, "user@@example.com",
+                        new User("ab123456", "johnmdoe", null, "user@@example.com",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with multiple @ symbols");
 
         // Empty local part (before @)
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, "@example.com",
+                        new User("ab123456", "johnmdoe", null, "@example.com",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with empty local part");
 
         // Empty domain part (after @)
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, "user@",
+                        new User("ab123456", "johnmdoe", null, "user@",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with empty domain part");
 
         // Consecutive dots in local part
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, "user..name@example.com",
+                        new User("ab123456", "johnmdoe", null, "user..name@example.com",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with consecutive dots in local part");
 
         // Local part starting with dot
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, ".user@example.com",
+                        new User("ab123456", "johnmdoe", null, ".user@example.com",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with local part starting with dot");
 
         // Local part ending with dot
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, "user.@example.com",
+                        new User("ab123456", "johnmdoe", null, "user.@example.com",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with local part ending with dot");
 
         // Invalid character (space) in local part
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, "user name@example.com",
+                        new User("ab123456", "johnmdoe", null, "user name@example.com",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with space in local part");
 
         // Domain without TLD
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, "user@localhost",
+                        new User("ab123456", "johnmdoe", null, "user@localhost",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with domain missing TLD");
 
         // Domain starting with hyphen
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, "user@-example.com",
+                        new User("ab123456", "johnmdoe", null, "user@-example.com",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with domain starting with hyphen");
 
         // Domain ending with hyphen
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, "user@example-.com",
+                        new User("ab123456", "johnmdoe", null, "user@example-.com",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with domain ending with hyphen");
 
         // Consecutive dots in domain
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, "user@example..com",
+                        new User("ab123456", "johnmdoe", null, "user@example..com",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with consecutive dots in domain");
 
         // Local part too long (over 64 characters)
         String longLocalPart = "a".repeat(65);
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, longLocalPart + "@example.com",
+                        new User("ab123456", "johnmdoe", null, longLocalPart + "@example.com",
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with local part exceeding 64 characters");
 
         // Domain too long (over 253 characters total)
         String longDomain = "a".repeat(250) + ".com";
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", null, "user@" + longDomain,
+                        new User("ab123456", "johnmdoe", null, "user@" + longDomain,
                                 "John", "M", "Doe"),
                 "Expected constructor to throw for employee email with domain exceeding 253 characters");
     }
@@ -317,43 +310,43 @@ class UserTest {
     void constructor_acceptsValidEmployeeEmailPatterns() {
         // Valid basic email
         assertDoesNotThrow(() ->
-                        new User(1, "ab123456", "johnmdoe", null, "user@example.com",
+                        new User("ab123456", "johnmdoe", null, "user@example.com",
                                 "John", "M", "Doe"),
                 "Valid employee email with null first email should not throw exception");
 
         // Email with dots in local part
         assertDoesNotThrow(() ->
-                        new User(1, "ab123456", "johnmdoe", null, "john.doe@company.org",
+                        new User("ab123456", "johnmdoe", null, "john.doe@company.org",
                                 "John", "M", "Doe"),
                 "Valid employee email with dots in local part should not throw exception");
 
         // Email with underscore and plus
         assertDoesNotThrow(() ->
-                        new User(1, "ab123456", "johnmdoe", null, "test_user+tag@example.com",
+                        new User("ab123456", "johnmdoe", null, "test_user+tag@example.com",
                                 "John", "M", "Doe"),
                 "Valid employee email with underscore and plus should not throw exception");
 
         // Email with numbers
         assertDoesNotThrow(() ->
-                        new User(1, "ab123456", "johnmdoe", null, "user123@example.com",
+                        new User("ab123456", "johnmdoe", null, "user123@example.com",
                                 "John", "M", "Doe"),
                 "Valid employee email with numbers should not throw exception");
 
         // Email with subdomain
         assertDoesNotThrow(() ->
-                        new User(1, "ab123456", "johnmdoe", null, "user@mail.example.com",
+                        new User("ab123456", "johnmdoe", null, "user@mail.example.com",
                                 "John", "M", "Doe"),
                 "Valid employee email with subdomain should not throw exception");
 
         // Email with hyphen in domain
         assertDoesNotThrow(() ->
-                        new User(1, "ab123456", "johnmdoe", null, "user@my-company.com",
+                        new User("ab123456", "johnmdoe", null, "user@my-company.com",
                                 "John", "M", "Doe"),
                 "Valid employee email with hyphen in domain should not throw exception");
 
         // Short but valid email
         assertDoesNotThrow(() ->
-                        new User(1, "ab123456", "johnmdoe", null, "a@b.co",
+                        new User("ab123456", "johnmdoe", null, "a@b.co",
                                 "John", "M", "Doe"),
                 "Valid short employee email should not throw exception");
     }
@@ -361,7 +354,7 @@ class UserTest {
     @Test
     void constructor_throwsForNullFirstName() {
         assertThrows(IllegalArgumentException.class, () ->
-                        new User(1, "ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                        new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
                                 "johnmdoe@company.com",null, "M", "Doe"),
                 "Expected constructor to throw for null first name");
     }
@@ -369,21 +362,21 @@ class UserTest {
     @Test
     void constructor_throwsForBlankFirstName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, "ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
                         "johnmdoe@company.com","      ", "M", "Doe"));
     }
 
     @Test
     void constructor_throwsForNullLastName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, "ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
                         "johnmdoe@company.com","John", "M", null));
     }
 
     @Test
     void constructor_throwsForBlankLastName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new User(1, "ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
                         "johnmdoe@company.com","John", "M", ""));
     }
 
