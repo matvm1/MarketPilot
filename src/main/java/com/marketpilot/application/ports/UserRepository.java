@@ -5,5 +5,6 @@ import com.marketpilot.domain.entities.auth.User;
 import java.util.Optional;
 
 public interface UserRepository extends BaseRepository<User, Long> {
-    Optional<User> findByEmail(String email);
+    Optional<User> findByPersonalEmail(String personalEmail);
+    Optional<User> findByEmployeeEmail(String employeeEmail);
 }

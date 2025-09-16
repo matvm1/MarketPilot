@@ -13,11 +13,18 @@ public class User {
     private String middleName;
     private String lastName;
 
-    public User(int id, String username, String personalEmail, String employeeEmail, String firstName, String middleName,
+    public User(int id, String employeeId, String username, String personalEmail, String employeeEmail,
+                String firstName, String middleName,
                 String lastName) {
         EmailValidator emailValidator = EmailValidator.getInstance();
         if (id <= 0)
             throw new IllegalArgumentException("id cannot be non-positive");
+        if (employeeId == null && employeeEmail != null)
+            throw new IllegalArgumentException("employeeId cannot be null when employeeEmail is not null");
+        if (employeeId != null && employeeEmail == null)
+            throw new IllegalArgumentException("employeeEmail cannot be null when employeeId is not null");
+        if (employeeId != null && employeeId.isBlank())
+            throw new IllegalArgumentException("employeeId cannot be blank");
         if (username == null)
             throw new IllegalArgumentException("username cannot be null");
         if (username.isBlank())
@@ -31,8 +38,7 @@ public class User {
         if (personalEmail != null && !emailValidator.isValid(personalEmail))
             throw new IllegalArgumentException("personalEmail '" + personalEmail + "' is not in a valid email format");
         if (employeeEmail != null && !emailValidator.isValid(employeeEmail))
-            throw new IllegalArgumentException("employeeEmail '" + employeeEmail + "' is not in a valid email " +
-                    "format");
+            throw new IllegalArgumentException("employeeEmail '" + employeeEmail + "' is not in a valid email format");
         if (firstName == null)
             throw new IllegalArgumentException("firstName cannot be null");
         if (firstName.isBlank())

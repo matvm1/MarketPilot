@@ -26,7 +26,7 @@ public class UserFactoryTest {
 
     @Test
     void createUser_returnsUserWithNonNullAndNonEmptyRoleAssignments() {
-        User user = userFactory.createUser(1, investorAndAnalystRoles, "johnmdoe", "johnmdoe@outlook.com",
+        User user = userFactory.createUser(1, "ab123456", investorAndAnalystRoles, "johnmdoe", "johnmdoe@outlook.com",
                 "johnmdoe@company.com","John", "M", "Doe");
         assertNotEquals(null, user.getUserRoleAssignments());
         assertFalse(user.getUserRoleAssignments().isEmpty());
@@ -34,7 +34,7 @@ public class UserFactoryTest {
 
     @Test
     void createUsr_userRoleAssignmentsReferBackToUser() {
-        User user = userFactory.createUser(1, investorAndAnalystRoles, "johnmdoe", "johnmdoe@outlook.com",
+        User user = userFactory.createUser(1, "ab123456", investorAndAnalystRoles, "johnmdoe", "johnmdoe@outlook.com",
                 "johnmdoe@company.com","John", "M", "Doe");
         for (UserRoleAssignment userRoleAssignment : user.getUserRoleAssignments())
             assertEquals(userRoleAssignment.getUser(), user);
