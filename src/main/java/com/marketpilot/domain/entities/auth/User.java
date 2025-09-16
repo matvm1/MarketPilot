@@ -1,5 +1,7 @@
 package com.marketpilot.domain.entities.auth;
 
+import org.apache.commons.validator.routines.EmailValidator;
+
 import java.util.Set;
 
 public class User {
@@ -11,14 +13,26 @@ public class User {
     private String middleName;
     private String lastName;
 
-    public User(int id, String username, String firstName, String middleName,
+    public User(int id, String username, String personalEmail, String employeeEmail, String firstName, String middleName,
                 String lastName) {
+        EmailValidator emailValidator = EmailValidator.getInstance();
         if (id <= 0)
             throw new IllegalArgumentException("id cannot be non-positive");
         if (username == null)
             throw new IllegalArgumentException("username cannot be null");
         if (username.isBlank())
             throw new IllegalArgumentException("username cannot be blank");
+        if (personalEmail == null && employeeEmail == null)
+            throw new IllegalArgumentException("personalEmail and employeeEmail cannot both be null");
+        if (personalEmail != null && personalEmail.isBlank())
+            throw new IllegalArgumentException("personalEmail cannot be blank");
+        if (employeeEmail != null && employeeEmail.isBlank())
+            throw new IllegalArgumentException("employeeEmail cannot be blank");
+        if (personalEmail != null && !emailValidator.isValid(personalEmail))
+            throw new IllegalArgumentException("personalEmail '" + personalEmail + "' is not in a valid email format");
+        if (employeeEmail != null && !emailValidator.isValid(employeeEmail))
+            throw new IllegalArgumentException("employeeEmail '" + employeeEmail + "' is not in a valid email " +
+                    "format");
         if (firstName == null)
             throw new IllegalArgumentException("firstName cannot be null");
         if (firstName.isBlank())

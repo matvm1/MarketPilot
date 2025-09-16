@@ -12,7 +12,8 @@ public class UserRoleAssignmentTest {
     @BeforeEach
     void setUp() {
         dummyRole = TestRoles.PERSONAL_INVESTOR_ROLE;
-        dummyUserRoleAssignment = new UserRoleAssignment(new User(1, "johnmdoe", "John", "M", "Doe"), dummyRole);
+        dummyUserRoleAssignment = new UserRoleAssignment(new User(1, "johnmdoe", "johnmdoe@outlook.com",
+                "johnmdoe@company.com","John", "M", "Doe"), dummyRole);
     }
 
     @Test
@@ -24,7 +25,8 @@ public class UserRoleAssignmentTest {
     @Test
     void constructor_throwsForNullRole() {
         assertThrows(IllegalArgumentException.class, () ->
-                new UserRoleAssignment(new User(1, "johnmdoe", "John", "M", "Doe"), null));
+                new UserRoleAssignment(new User(1, "johnmdoe", "johnmdoe@outlook.com",
+                        "johnmdoe@company.com","John", "M", "Doe"), null));
     }
 
     @Test
