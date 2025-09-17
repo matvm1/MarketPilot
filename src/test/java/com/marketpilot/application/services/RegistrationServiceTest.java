@@ -2,7 +2,6 @@ package com.marketpilot.application.services;
 
 import com.marketpilot.application.ports.RoleRepository;
 import com.marketpilot.application.ports.UserRepository;
-import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
@@ -13,10 +12,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +42,7 @@ public class RegistrationServiceTest {
 
         registrationService = new RegistrationService(userFactory, userRepository, roleRepository);
 
-        employeeRoleNames = new HashSet<>();
+        employeeRoleNames = new LinkedHashSet<>();
         employeeRoleNames.add(RoleName.Analyst);
     }
 
@@ -85,6 +86,40 @@ public class RegistrationServiceTest {
                         "johnmdoe1", "johnmdoe@company.com", "John", "M", "Doe"));
     }
 
-    //TODO: Test exceptions thrown for roles not found in repository
-    //TODO: Test that employee role names do not include PersonalInvestor
+    @Test
+    void registerPersonalInvestor_throwsIfRoleNameNotFound() {
+        assertThrows(NoSuchElementException.class,
+                () -> registrationService.registerPersonalInvestor("johnmdoe",
+                        "johnmdoe@outlook.com", "John", "M", "Doe"));
+    }
+
+    @Test
+    void registerEmployee_throwsIfRoleNotFound() {
+        assertThrows(NoSuchElementException.class,
+                () -> registrationService.registerEmployee(employeeRoleNames, "ab123456",
+                        "johnmdoe", "johnmdoe@company.com", "John", "M", "Doe"));
+    }
+
+    @Test
+    void registerEmployee_throwsIfPersonalInvestorRoleNameIsPassedIn() {
+        employeeRoleNames.add(RoleName.PersonalInvestor);
+        when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
+        assertThrows(IllegalArgumentException.class,
+                () -> registrationService.registerEmployee(employeeRoleNames, "ab123456",
+                        "johnmdoe", "johnmdoe@company.com", "John", "M", "Doe"));
+    }
+
+    @Test
+    void registerPersonalInvestor_doesNotThrowWhenUserIsNotYetRegisteredAndRoleExists() {
+        when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
+        assertDoesNotThrow(() -> registrationService.registerPersonalInvestor("johnmdoe",
+                        "johnmdoe@outlook.com", "John", "M", "Doe"));
+    }
+
+    @Test
+    void registerEmployee_doesNotThrowWhenUserIsNotYetRegisteredAndRoleExists() {
+        when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
+        assertDoesNotThrow(() -> registrationService.registerEmployee(employeeRoleNames, "ab123456",
+                "johnmdoe", "johnmdoe@company.com", "John", "M", "Doe"));
+        }
 }

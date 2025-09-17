@@ -47,6 +47,9 @@ public class RegistrationService {
 
         Set<Role> roles = new HashSet<>();
         for (Role.RoleName roleName : roleNames) {
+            if (roleName == Role.RoleName.PersonalInvestor)
+                throw new IllegalArgumentException("The employee registration flow cannot register the user under the" +
+                        " Personal Investor role");
             Optional<Role> optionalRole = roleRepository.findByRoleName(roleName);
             Role role = optionalRole.orElseThrow(() -> new NoSuchElementException(roleName + " role not found."));
             roles.add(role);
