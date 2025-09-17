@@ -26,7 +26,7 @@ public class RegistrationService {
         if (userRepository.findByUsername(username).isPresent())
             throw new IllegalArgumentException("username " + username + " is taken");
         if (userRepository.findByPersonalEmail(personalEmail).isPresent())
-            throw new IllegalArgumentException("email " + personalEmail + " is taken");
+            throw new IllegalArgumentException("email " + personalEmail + " is already registered");
 
         Set<Role> roles = new HashSet<>();
         Optional<Role> optionalRole = roleRepository.findByRoleName(Role.RoleName.PersonalInvestor);
@@ -39,11 +39,11 @@ public class RegistrationService {
     public void registerEmployee(Set<Role.RoleName> roleNames, String employeeId, String username, String employeeEmail,
                                  String firstName, String middleName, String lastName) {
         if (userRepository.findByEmployeeId(employeeId).isPresent())
-            throw new IllegalArgumentException("employeeId " + employeeId + " is taken");
+            throw new IllegalArgumentException("employeeId " + employeeId + " is already registered");
         if (userRepository.findByUsername(username).isPresent())
             throw new IllegalArgumentException("username " + username + " is taken");
         if (userRepository.findByEmployeeEmail(employeeEmail).isPresent())
-            throw new IllegalArgumentException("email " + employeeEmail + " is taken");
+            throw new IllegalArgumentException("email " + employeeEmail + " is already registered");
 
         Set<Role> roles = new HashSet<>();
         for (Role.RoleName roleName : roleNames) {
