@@ -2,6 +2,7 @@ package com.marketpilot.domain.entities.auth;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class User {
@@ -105,5 +106,32 @@ public class User {
         if (lastName.isBlank())
             throw new IllegalArgumentException("firstName cannot be empty");
         this.lastName = lastName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+
+        if (!(o instanceof User))
+            return false;
+
+        Set<Role> thisRoles = new HashSet<>();
+        for (UserRoleAssignment userRoleAssignment : userRoleAssignments)
+            thisRoles.add(userRoleAssignment.getRole());
+        Set<Role> oRoles = new HashSet<>();
+        for (UserRoleAssignment userRoleAssignment : ((User) o).userRoleAssignments)
+            oRoles.add(userRoleAssignment.getRole());
+        if (!(thisRoles.equals(oRoles)))
+            return false;
+
+        return this.id == ((User)o).id &&
+                this.username.equals(((User) o).username) &&
+                this.employeeId.equals(((User) o).employeeId) &&
+                this.personalEmail.equals(((User) o).personalEmail) &&
+                this.employeeEmail.equals(((User) o).employeeEmail) &&
+                this.firstName.equals(((User) o).firstName) &&
+                this.middleName.equals(((User)o).middleName) &&
+                this.lastName.equals(((User)o).lastName);
     }
 }

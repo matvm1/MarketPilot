@@ -11,6 +11,7 @@
   <name>MarketPilot</name>
   <url>http://maven.apache.org</url>
 
+  <!-- DO NOT REMOVE - required by Surefire to locate mockito-core JAR -->
   <properties>
     <argLine></argLine>
   </properties>
