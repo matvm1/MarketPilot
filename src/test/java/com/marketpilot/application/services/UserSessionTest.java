@@ -33,23 +33,30 @@ public class UserSessionTest {
 
         investorSessionStart = Instant.parse("2025-01-01T10:00:00Z");
         userInvestorRoleAssignment = new UserRoleAssignment(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE);
-        investorSession = new UserSession(new AuthenticationResult(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), investorSessionStart);
+        investorSession = new UserSession(1, new AuthenticationResult(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), investorSessionStart);
         // TODO: session state management - can't have a personal and employee session running at once
         analystSessionStart = Instant.parse("2025-01-02T10:00:00Z");
         userAnalystRoleAssignment = new UserRoleAssignment(investorAndAnalystUser, TestRoles.ANALYST_ROLE);
-        analystSession = new UserSession(new AuthenticationResult(investorAndAnalystUser, TestRoles.ANALYST_ROLE), analystSessionStart);
+        analystSession = new UserSession(2, new AuthenticationResult(investorAndAnalystUser, TestRoles.ANALYST_ROLE), analystSessionStart);
+    }
+
+    //TODO: consider safer data type for ids (UUID?)
+    @Test
+    void constructor_throwsForNonPositiveId() {
+        assertThrows(IllegalArgumentException.class, () ->
+                new UserSession(0, new AuthenticationResult(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), Instant.now()));
     }
 
     @Test
     void constructor_throwsForNullAuth() {
         assertThrows(IllegalArgumentException.class, () ->
-                new UserSession(null, Instant.now()));
+                new UserSession(1, null, Instant.now()));
     }
 
     @Test
     void constructor_throwsForNullSessionStartInstant() {
         assertThrows(IllegalArgumentException.class, () ->
-                new UserSession(new AuthenticationResult(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), null));
+                new UserSession(1, new AuthenticationResult(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), null));
     }
 
     @Test
