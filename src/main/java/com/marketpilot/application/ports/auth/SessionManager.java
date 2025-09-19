@@ -1,8 +1,7 @@
-package com.marketpilot.application.ports;
+package com.marketpilot.application.ports.auth;
 
 import com.marketpilot.application.dto.AuthenticationResult;
 import com.marketpilot.application.services.UserSession;
-import com.marketpilot.domain.entities.auth.User;
 
 import java.util.Optional;
 

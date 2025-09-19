@@ -1,4 +1,4 @@
-package com.marketpilot.application.ports;
+package com.marketpilot.application.ports.auth;
 
 import com.marketpilot.application.dto.AuthenticationResult;
 import com.marketpilot.application.dto.TwoFactorAuthenticationChallenge;

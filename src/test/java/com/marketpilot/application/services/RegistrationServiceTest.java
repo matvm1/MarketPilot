@@ -1,7 +1,7 @@
 package com.marketpilot.application.services;
 
-import com.marketpilot.application.ports.RoleRepository;
-import com.marketpilot.application.ports.UserRepository;
+import com.marketpilot.application.ports.persistence.RoleRepository;
+import com.marketpilot.application.ports.persistence.UserRepository;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
