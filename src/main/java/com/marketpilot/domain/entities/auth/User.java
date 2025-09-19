@@ -10,6 +10,7 @@ public class User {
     private final String employeeId;
     private Set<UserRoleAssignment> userRoleAssignments;
     private final String username;
+    private String passwordHash;
     private String personalEmail;
     private String employeeEmail;
     private String firstName;
@@ -78,6 +79,10 @@ public class User {
     public String getLastName() { return lastName; }
 
     public String getFullName() { return firstName + " " + middleName + " " + lastName; }
+
+    public void setPasswordHash(String hash) {
+        this.passwordHash = hash;
+    }
 
     public void grantRoles(Set<UserRoleAssignment> userRoleAssignments) {
         if (userRoleAssignments == null)

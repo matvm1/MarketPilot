@@ -381,6 +381,18 @@ class UserTest {
     }
 
     @Test
+    void setPasswordHash_throwsIfHashIsNull() {
+        assertThrows(IllegalArgumentException.class, () ->
+                testUser.setPasswordHash(null));
+    }
+
+    @Test
+    void setPasswordHash_throwsIfHashIsBlank() {
+        assertThrows(IllegalArgumentException.class, () ->
+                testUser.setPasswordHash("       "));
+    }
+
+    @Test
     void grantRoles_throwsForNullUserRolesSet() {
         assertThrows(IllegalArgumentException.class, () ->
                 testUser.grantRoles(null));
