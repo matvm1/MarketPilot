@@ -1,28 +1,29 @@
 package com.marketpilot.application.services;
 
+import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.persistence.RoleRepository;
 import com.marketpilot.application.ports.persistence.UserRepository;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.services.UserFactory;
 
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class RegistrationService {
-    private final UserFactory userFactory;
+    private final PasswordHasher passwordHasher;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final UserFactory userFactory;
 
-    public RegistrationService(UserFactory userFactory, UserRepository userRepository, RoleRepository roleRepository) {
-        this.userFactory = userFactory;
+    public RegistrationService(PasswordHasher passwordHasher, UserRepository userRepository, RoleRepository roleRepository, UserFactory userFactory) {
+        this.passwordHasher = passwordHasher;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.userFactory = userFactory;
     }
 
-    public void registerPersonalInvestor(String username, String personalEmail,
-                                                String firstName, String middleName, String lastName) {
+    //TODO: Allow client registration if already registered as an employee
+    public void registerClient(String username, char[] rawPassword, String personalEmail,
+                               String firstName, String middleName, String lastName) {
         if (userRepository.findByUsername(username).isPresent())
             throw new IllegalArgumentException("username " + username + " is taken");
         if (userRepository.findByPersonalEmail(personalEmail).isPresent())
@@ -32,11 +33,16 @@ public class RegistrationService {
         Optional<Role> optionalRole = roleRepository.findByRoleName(Role.RoleName.PersonalInvestor);
         Role personalInvestorRole = optionalRole.orElseThrow(() -> new NoSuchElementException("Personal investor role not found."));
         roles.add(personalInvestorRole);
-        userRepository.save(userFactory.createUser(null, roles, username, personalEmail,
+        String passwordHash = passwordHasher.hash(rawPassword);
+        Arrays.fill(rawPassword, '\0');
+        rawPassword = null;
+        userRepository.save(userFactory.createUser(null, roles, username, passwordHash, personalEmail,
                 null, firstName, middleName, lastName));
     }
 
-    public void registerEmployee(Set<Role.RoleName> roleNames, String employeeId, String username, String employeeEmail,
+    //TODO: Allow employee registration if already registered as a client (personal investor)
+    public void registerEmployee(String employeeId, String username, char[] rawPassword, Set<Role.RoleName> roleNames,
+                                 String employeeEmail,
                                  String firstName, String middleName, String lastName) {
         if (userRepository.findByEmployeeId(employeeId).isPresent())
             throw new IllegalArgumentException("employeeId " + employeeId + " is already registered");
@@ -54,7 +60,10 @@ public class RegistrationService {
             Role role = optionalRole.orElseThrow(() -> new NoSuchElementException(roleName + " role not found."));
             roles.add(role);
         }
-        userRepository.save(userFactory.createUser(employeeId, roles, username, null,
+        String passwordHash = passwordHasher.hash(rawPassword);
+        Arrays.fill(rawPassword, '\0');
+        rawPassword = null;
+        userRepository.save(userFactory.createUser(employeeId, roles, username, passwordHash, null,
                 employeeEmail, firstName, middleName, lastName));
     }
 }
