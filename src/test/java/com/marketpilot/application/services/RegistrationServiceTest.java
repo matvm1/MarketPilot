@@ -36,10 +36,6 @@ public class RegistrationServiceTest {
     void setUp() {
         johnMDoe = new User("ab123456", "johnmdoe", "johnmdoe@outlook.com", "johnmdoe@company.com", "John", "M", "Doe");
         userFactory = new UserFactory();
-
-        //when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
-        //when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
-
         registrationService = new RegistrationService(userFactory, userRepository, roleRepository);
 
         employeeRoleNames = new LinkedHashSet<>();
