@@ -18,6 +18,8 @@ public class UserSession {
     private int id;
 
     public UserSession(int sessionID, AuthenticationResult auth, Instant sessionStart) {
+        if (sessionID <= 0)
+            throw new IllegalArgumentException("sessionId must be a positive integer");
         if (auth == null)
             throw new IllegalArgumentException("auth cannot be null");
         if (sessionStart == null)
