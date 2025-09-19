@@ -80,8 +80,12 @@ public class User {
 
     public String getFullName() { return firstName + " " + middleName + " " + lastName; }
 
-    public void setPasswordHash(String hash) {
-        this.passwordHash = hash;
+    public void setPasswordHash(String passwordHash) {
+        if (passwordHash == null)
+            throw new IllegalArgumentException("passwordHash cannot be null");
+        if (passwordHash.isBlank())
+            throw new IllegalArgumentException("passwordHash cannot be blank");
+        this.passwordHash = passwordHash;
     }
 
     public void grantRoles(Set<UserRoleAssignment> userRoleAssignments) {
