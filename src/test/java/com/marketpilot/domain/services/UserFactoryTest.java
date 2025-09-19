@@ -16,6 +16,8 @@ public class UserFactoryTest {
     private UserFactory userFactory;
     private Set<Role> investorAndAnalystRoles;
 
+    private static final String BCRYPT_STRONG_PASSWORD = "$2a$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW";
+
     @BeforeEach
     void setUp() {
         userFactory = new UserFactory();
@@ -26,7 +28,7 @@ public class UserFactoryTest {
 
     @Test
     void createUser_returnsUserWithNonNullAndNonEmptyRoleAssignments() {
-        User user = userFactory.createUser("ab123456", investorAndAnalystRoles, "johnmdoe", "johnmdoe@outlook.com",
+        User user = userFactory.createUser("ab123456", investorAndAnalystRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD, "johnmdoe@outlook.com",
                 "johnmdoe@company.com","John", "M", "Doe");
         assertNotEquals(null, user.getUserRoleAssignments());
         assertFalse(user.getUserRoleAssignments().isEmpty());
@@ -34,7 +36,7 @@ public class UserFactoryTest {
 
     @Test
     void createUsr_userRoleAssignmentsReferBackToUser() {
-        User user = userFactory.createUser("ab123456", investorAndAnalystRoles, "johnmdoe", "johnmdoe@outlook.com",
+        User user = userFactory.createUser("ab123456", investorAndAnalystRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD, "johnmdoe@outlook.com",
                 "johnmdoe@company.com","John", "M", "Doe");
         for (UserRoleAssignment userRoleAssignment : user.getUserRoleAssignments())
             assertEquals(userRoleAssignment.getUser(), user);
