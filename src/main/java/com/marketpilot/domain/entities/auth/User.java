@@ -64,13 +64,16 @@ public class User {
 
     public String getEmployeeId() { return employeeId; }
 
+    public String getUsername() { return username; }
+
+    public String getPasswordHash() { return passwordHash; }
+
     public Set<UserRoleAssignment> getUserRoleAssignments() { return userRoleAssignments; }
 
     public String getPersonalEmail() { return personalEmail; }
 
     public String getEmployeeEmail() { return employeeEmail; }
 
-    public String getUsername() { return username; }
 
     public String getFirstName() { return firstName; }
 
