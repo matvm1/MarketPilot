@@ -22,6 +22,7 @@ public class RegistrationService {
     }
 
     //TODO: Allow client registration if already registered as an employee
+    //TODO: 2FA
     public void registerClient(String username, char[] rawPassword, String personalEmail,
                                String firstName, String middleName, String lastName) {
         if (userRepository.findByUsername(username).isPresent())
@@ -41,6 +42,7 @@ public class RegistrationService {
     }
 
     //TODO: Allow employee registration if already registered as a client (personal investor)
+    //TODO: 2FA
     public void registerEmployee(String employeeId, String username, char[] rawPassword, Set<Role.RoleName> roleNames,
                                  String employeeEmail,
                                  String firstName, String middleName, String lastName) {
