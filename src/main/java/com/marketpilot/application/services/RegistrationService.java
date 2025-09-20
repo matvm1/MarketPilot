@@ -38,8 +38,8 @@ public class RegistrationService {
         Optional<Role> optionalRole = roleRepository.findByRoleName(Role.RoleName.PersonalInvestor);
         Role personalInvestorRole = optionalRole.orElseThrow(() -> new NoSuchElementException("Personal investor role not found."));
         roles.add(personalInvestorRole);
-        userRepository.save(userFactory.createUser(null, roles, username, passwordHash, personalEmail,
-                null, firstName, middleName, lastName));
+        userRepository.save(userFactory.createClientUser(roles, username, passwordHash, personalEmail,
+                firstName, middleName, lastName));
     }
 
     //TODO: Allow employee registration if already registered as a client (personal investor)
@@ -50,7 +50,7 @@ public class RegistrationService {
         String passwordHash = passwordHasher.hash(rawPassword);
         Arrays.fill(rawPassword, '\0');
         rawPassword = null;
-        
+
         if (userRepository.findByEmployeeId(employeeId).isPresent())
             throw new IllegalArgumentException("employeeId " + employeeId + " is already registered");
         if (userRepository.findByUsername(username).isPresent())
@@ -67,7 +67,7 @@ public class RegistrationService {
             Role role = optionalRole.orElseThrow(() -> new NoSuchElementException(roleName + " role not found."));
             roles.add(role);
         }
-        userRepository.save(userFactory.createUser(employeeId, roles, username, passwordHash, null,
+        userRepository.save(userFactory.createEmployeeUser(employeeId, roles, username, passwordHash,
                 employeeEmail, firstName, middleName, lastName));
     }
 }

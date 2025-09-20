@@ -30,8 +30,8 @@ public class UserSessionTest {
         Set<Role> investorAndAnalystRoles = new HashSet<>();
         investorAndAnalystRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
         investorAndAnalystRoles.add(TestRoles.ANALYST_ROLE);
-        investorAndAnalystUser = userFactory.createUser("ab123456", investorAndAnalystRoles, "johnmdoe",
-                 BCRYPT_STRONG_PASSWORD,"johnmdoe@outlook.com", "johnmdoe@company.com","John", "M", "Doe");
+        investorAndAnalystUser = userFactory.createEmployeeUser("ab123456", investorAndAnalystRoles, "johnmdoe",
+                 BCRYPT_STRONG_PASSWORD,"johnmdoe@company.com","John", "M", "Doe");
 
         investorSessionStart = Instant.parse("2025-01-01T10:00:00Z");
         userInvestorRoleAssignment = new UserRoleAssignment(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE);
