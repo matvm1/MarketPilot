@@ -381,6 +381,18 @@ class UserTest {
     }
 
     @Test
+    void setEmployeeId_throwsIfEmployeeIdIsNull() {
+        assertThrows(IllegalArgumentException.class, () ->
+                testUser.setEmployeeId(null));
+    }
+
+    @Test
+    void setEmployeeId_throwsIfEmployeeIdIsBlank() {
+        assertThrows(IllegalArgumentException.class, () ->
+                testUser.setEmployeeId("        "));
+    }
+
+    @Test
     void setClientPasswordHash_throwsIfHashIsNull() {
         assertThrows(IllegalArgumentException.class, () ->
                 testUser.setClientPasswordHash(null));
@@ -408,6 +420,30 @@ class UserTest {
     void grantRole_throwsForNullUserRolesSet() {
         assertThrows(IllegalArgumentException.class, () ->
                 testUser.grantRole(null));
+    }
+
+    @Test
+    void setPersonalEmail_throwsIfPersonalEmailIsNull() {
+        assertThrows(IllegalArgumentException.class, () ->
+                testUser.setPersonalEmail(null));
+    }
+
+    @Test
+    void setPersonalEmail_throwsIfPersonalEmailIsBlank() {
+        assertThrows(IllegalArgumentException.class, () ->
+                testUser.setPersonalEmail("        "));
+    }
+
+    @Test
+    void setEmployeeEmail_throwsIfEmployeeEmailIsNull() {
+        assertThrows(IllegalArgumentException.class, () ->
+                testUser.setEmployeeEmail(null));
+    }
+
+    @Test
+    void setEmployeeEmail_throwsIfEmployeeEmailIsBlank() {
+        assertThrows(IllegalArgumentException.class, () ->
+                testUser.setEmployeeEmail("        "));
     }
 
     @Test

@@ -33,6 +33,8 @@ public class Role {
         this.roleType = roleType;
     }
 
+    public RoleName getRoleName() { return roleName; }
+
     public Set<Permission> getPermissions() {
         return permissions;
     }

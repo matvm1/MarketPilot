@@ -7,7 +7,7 @@ import java.util.Set;
 
 public class User {
     private final int id;
-    private final String employeeId;
+    private String employeeId;
     private Set<UserRoleAssignment> userRoleAssignments;
     private final String username;
     private String clientPasswordHash;
@@ -78,7 +78,6 @@ public class User {
 
     public String getEmployeeEmail() { return employeeEmail; }
 
-
     public String getFirstName() { return firstName; }
 
     public String getMiddleName() { return middleName; }
@@ -86,6 +85,15 @@ public class User {
     public String getLastName() { return lastName; }
 
     public String getFullName() { return firstName + " " + middleName + " " + lastName; }
+
+    public void setEmployeeId(String employeeId) {
+        if (employeeId == null)
+            throw new IllegalArgumentException("employeeId cannot be null");
+        if (employeeId.isBlank())
+            throw new IllegalArgumentException("employeeId cannot be blank");
+
+        this.employeeId = employeeId;
+    }
 
     public void setClientPasswordHash(String clientPasswordHash) {
         if (clientPasswordHash == null)
@@ -108,6 +116,22 @@ public class User {
             throw new IllegalArgumentException("role cannot be null");
 
         this.userRoleAssignments.add(new UserRoleAssignment(this, role));
+    }
+
+    public void setPersonalEmail(String personalEmail) {
+        if (personalEmail == null)
+            throw new IllegalArgumentException("personalEmail cannot be null");
+        if (personalEmail.isBlank())
+            throw new IllegalArgumentException("personalEmail cannot be blank");
+        this.personalEmail = personalEmail;
+    }
+
+    public void setEmployeeEmail(String employeeEmail) {
+        if (employeeEmail == null)
+            throw new IllegalArgumentException("employeeEmail cannot be null");
+        if (employeeEmail.isBlank())
+            throw new IllegalArgumentException("employeeEmail cannot be blank");
+        this.employeeEmail = employeeEmail;
     }
 
     public void setFirstName(String firstName) {

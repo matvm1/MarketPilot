@@ -17,31 +17,33 @@ public class UserFactoryTest {
     private Set<Role> clientRoles;
     private Set<Role> employeeRoles;
     private Set<Role> investorAndAnalystRoles;
+    private User clientUser;
+    private User employeeUser;
 
-    private static final String BCRYPT_STRONG_PASSWORD = "$2a$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW";
+    private static final String BCRYPT_STRONG_PASSWORD_CLIENT = "$2a$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW";
+    private static final String BCRYPT_STRONG_PASSWORD_EMPLOYEE = "$2a$12$vKx8mN2pQ7wE5rL9sA3bfOzT6yH4jC1nM8pR5sK2wE7qL9vX3mN8p";
 
     @BeforeEach
     void setUp() {
         userFactory = new UserFactory();
-        investorAndAnalystRoles = new HashSet<>();
+
         clientRoles = new HashSet<>();
-        employeeRoles = new HashSet<>();
         clientRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
+        employeeRoles = new HashSet<>();
         employeeRoles.add(TestRoles.ANALYST_ROLE);
+        investorAndAnalystRoles = new HashSet<>();
         investorAndAnalystRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
         investorAndAnalystRoles.add(TestRoles.ANALYST_ROLE);
-    }
 
-    @Test
-    void createClientUser_throwsIfRoleHasNonClientType() {
-        assertThrows(IllegalArgumentException.class, () ->
-                userFactory.createClientUser(employeeRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD,
-                        "johnmdoe@outlook.com", "John", "M", "Doe"));
+        clientUser = userFactory.createClientUser(clientRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_CLIENT,
+                "johnmdoe@outlook.com", "John", "M", "Doe");
+        employeeUser = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe",
+                BCRYPT_STRONG_PASSWORD_EMPLOYEE, "johnmdoe@company.com", "John", "M", "Doe");
     }
 
     @Test
     void createClientUser_returnsUserWithNonNullAndNonEmptyRoleAssignments() {
-        User user = userFactory.createClientUser(clientRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD,
+        User user = userFactory.createClientUser(clientRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_CLIENT,
                 "johnmdoe@outlook.com","John", "M", "Doe");
         assertNotEquals(null, user.getUserRoleAssignments());
         assertFalse(user.getUserRoleAssignments().isEmpty());
@@ -49,22 +51,15 @@ public class UserFactoryTest {
 
     @Test
     void createClientUser_userRoleAssignmentsReferBackToUser() {
-        User user = userFactory.createClientUser(clientRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD,
+        User user = userFactory.createClientUser(clientRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_CLIENT,
                 "johnmdoe@outlook.com","John", "M", "Doe");
         for (UserRoleAssignment userRoleAssignment : user.getUserRoleAssignments())
             assertEquals(userRoleAssignment.getUser(), user);
     }
 
     @Test
-    void createEmployeeUser_throwsIfRoleHasNonEmployeeType() {
-        assertThrows(IllegalArgumentException.class, () ->
-                userFactory.createEmployeeUser("ab123456", clientRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD,
-                        "johnmdoe@company.com", "John", "M", "Doe"));
-    }
-
-    @Test
     void createEmployeeUser_returnsUserWithNonNullAndNonEmptyRoleAssignments() {
-        User user = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD,
+        User user = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_EMPLOYEE,
                 "johnmdoe@company.com","John", "M", "Doe");
         assertNotEquals(null, user.getUserRoleAssignments());
         assertFalse(user.getUserRoleAssignments().isEmpty());
@@ -72,9 +67,72 @@ public class UserFactoryTest {
 
     @Test
     void createEmployeeUser_userRoleAssignmentsReferBackToUser() {
-        User user = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD,
+        User user = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_EMPLOYEE,
                 "johnmdoe@company.com","John", "M", "Doe");
         for (UserRoleAssignment userRoleAssignment : user.getUserRoleAssignments())
             assertEquals(userRoleAssignment.getUser(), user);
+    }
+
+    @Test
+    void assignEmployeeAttributes_throwsIfExistingClientIsNull() {
+        assertThrows(IllegalArgumentException.class, () ->
+                userFactory.assignEmployeeAttributes(null, "ab123456", employeeRoles,
+                        BCRYPT_STRONG_PASSWORD_EMPLOYEE, "johnmdoe@cmopany.com"));
+    }
+
+    @Test
+    void assignEmployeeAttributes_throwsIfEmployeeRolesIsNull() {
+        assertThrows(IllegalArgumentException.class, () ->
+                userFactory.assignEmployeeAttributes(clientUser, "ab123456", null,
+                        BCRYPT_STRONG_PASSWORD_EMPLOYEE, "johnmdoe@company.com"));
+    }
+
+    @Test
+    void assignEmployeeAttributes_throwsIfEmployeeRolesIsEmpty() {
+        assertThrows(IllegalArgumentException.class, () ->
+                userFactory.assignEmployeeAttributes(clientUser, "ab123456", new HashSet<>(),
+                        BCRYPT_STRONG_PASSWORD_EMPLOYEE, "johnmdoe@company.com"));
+    }
+
+    @Test
+    void assignClientAttributes_throwsIfExistingEmployeeIsNull() {
+        assertThrows(IllegalArgumentException.class, () ->
+                userFactory.assignClientAttributes(null, clientRoles,
+                        BCRYPT_STRONG_PASSWORD_CLIENT, "johnmdoe@cmopany.com"));
+    }
+
+    @Test
+    void assignClientAttributes_throwsIfClientRolesIsNull() {
+        assertThrows(IllegalArgumentException.class, () ->
+                userFactory.assignClientAttributes(employeeUser, null,
+                        BCRYPT_STRONG_PASSWORD_CLIENT, "johnmdoe@company.com"));
+    }
+
+    @Test
+    void assignClientAttributes_throwsIfClientRolesIsEmpty() {
+        assertThrows(IllegalArgumentException.class, () ->
+                userFactory.assignClientAttributes(employeeUser, new HashSet<>(),
+                        BCRYPT_STRONG_PASSWORD_CLIENT, "johnmdoe@company.com"));
+    }
+
+    @Test
+    void validateRolesAndGrant_throwsIfRoleHasNonExpectedRoleType() {
+        assertThrows(IllegalArgumentException.class, () ->
+                userFactory.validateRolesAndGrant(clientUser, employeeRoles, Role.RoleType.CLIENT));
+    }
+
+    @Test
+    void validateRolesAndGrant_grantsRolesToUserIfValidationSuccessful() {
+        assertDoesNotThrow(() ->
+                userFactory.validateRolesAndGrant(clientUser, employeeRoles, Role.RoleType.EMPLOYEE));
+
+        Set<Role> clientUserRoles = new HashSet<>();
+        for (UserRoleAssignment userRoleAssignment : clientUser.getUserRoleAssignments())
+            clientUserRoles.add(userRoleAssignment.getRole());
+
+        Set<Role> expectedRoles = new HashSet<>(clientRoles);
+        expectedRoles.addAll(employeeRoles);
+
+        assertEquals(expectedRoles, clientUserRoles);
     }
 }
