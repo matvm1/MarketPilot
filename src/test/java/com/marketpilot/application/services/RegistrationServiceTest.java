@@ -12,11 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import com.marketpilot.application.services.RegistrationService.RegistrationResult;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,42 +48,42 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void registerClient_throwsIfUsernameIsTaken() {
+    void registerClient_returnsAlreadyRegisteredIfUsernameIsTaken() {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(johnMDoe));
-        assertThrows(IllegalArgumentException.class,
-                () -> registrationService.registerClient("johnmdoe",
+        assertEquals(RegistrationResult.ALREADY_REGISTERED,
+                registrationService.registerClient("johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
-    void registerPersonalInvestor_throwsIfPersonalEmailIsRegistered() {
+    void registerPersonalInvestor_returnsAlreadyRegisteredIfPersonalEmailIsRegistered() {
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(johnMDoe));
-        assertThrows(IllegalArgumentException.class,
-                () -> registrationService.registerClient("johnmdoe1",
+        assertEquals(RegistrationResult.ALREADY_REGISTERED,
+                registrationService.registerClient("johnmdoe1",
                        dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
-    void registerEmployee_throwsIfEmployeeIdIsTaken() {
+    void registerEmployee_returnsAlreadyRegisteredIfEmployeeIdIsTaken() {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(johnMDoe));
-        assertThrows(IllegalArgumentException.class,
-                () -> registrationService.registerEmployee("ab123456", "johnmdoe1", dummyPassword,
+        assertEquals(RegistrationResult.ALREADY_REGISTERED,
+                registrationService.registerEmployee("ab123456", "johnmdoe1", dummyPassword,
                         employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
     }
 
     @Test
-    void registerEmployee_throwsIfUsernameIsTaken() {
+    void registerEmployee_returnsAlreadyRegisteredIfUsernameIsTaken() {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(johnMDoe));
-        assertThrows(IllegalArgumentException.class,
-                () -> registrationService.registerEmployee("ab987654", "johnmdoe",
+        assertEquals(RegistrationResult.ALREADY_REGISTERED,
+                registrationService.registerEmployee("ab987654", "johnmdoe",
                         dummyPassword, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
     }
 
     @Test
-    void registerEmployee_throwsIfEmployeeEmailIsTaken() {
+    void registerEmployee_returnsAlreadyRegisteredIfEmployeeEmailIsTaken() {
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(johnMDoe));
-        assertThrows(IllegalArgumentException.class,
-                () -> registrationService.registerEmployee("ab987654", "johnmdoe1",
+        assertEquals(RegistrationResult.ALREADY_REGISTERED,
+                registrationService.registerEmployee("ab987654", "johnmdoe1",
                         dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
     }
 
@@ -107,6 +107,9 @@ public class RegistrationServiceTest {
         when(passwordHasher.hash(dummyPassword)).thenReturn(dummyPasswordHash);
         assertDoesNotThrow(() -> registrationService.registerClient("johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
+        assertEquals(RegistrationResult.SUCCESS,
+                registrationService.registerClient("johnmdoe",
+                        dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
@@ -115,5 +118,8 @@ public class RegistrationServiceTest {
         when(passwordHasher.hash(dummyPassword)).thenReturn(dummyPasswordHash);
         assertDoesNotThrow(() -> registrationService.registerEmployee("ab123456", "johnmdoe",
                  dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
+        assertEquals(RegistrationResult.SUCCESS,
+                assertDoesNotThrow(() -> registrationService.registerEmployee("ab123456", "johnmdoe",
+                        dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe")));
         }
 }
