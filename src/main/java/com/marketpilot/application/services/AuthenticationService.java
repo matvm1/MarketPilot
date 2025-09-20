@@ -46,7 +46,7 @@ public class AuthenticationService {
                 .or(() -> userRepository.findByPersonalEmail(usernameOrClientEmail));
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            if (passwordHasher.matches(passwordHash, user.getPasswordHash())) {
+            if (passwordHasher.matches(passwordHash, user.getClientPasswordHash())) {
                 twoFactorService.sendChallenge(user);
                 return AuthenticationStatus.CHALLENGE_SENT;
             }
@@ -69,7 +69,7 @@ public class AuthenticationService {
         Optional<User> optionalUser = userRepository.findByEmployeeId(employeeId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            if (passwordHasher.matches(passwordHash, user.getPasswordHash())) {
+            if (passwordHasher.matches(passwordHash, user.getEmployeePasswordHash())) {
                 twoFactorService.sendChallenge(user);
                 return AuthenticationStatus.CHALLENGE_SENT;
             }

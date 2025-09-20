@@ -10,7 +10,8 @@ public class User {
     private final String employeeId;
     private Set<UserRoleAssignment> userRoleAssignments;
     private final String username;
-    private String passwordHash;
+    private String clientPasswordHash;
+    private String employeePasswordHash;
     private String personalEmail;
     private String employeeEmail;
     private String firstName;
@@ -66,7 +67,9 @@ public class User {
 
     public String getUsername() { return username; }
 
-    public String getPasswordHash() { return passwordHash; }
+    public String getClientPasswordHash() { return clientPasswordHash; }
+
+    public String getEmployeePasswordHash() { return employeePasswordHash; }
 
     public Set<UserRoleAssignment> getUserRoleAssignments() { return userRoleAssignments; }
 
@@ -83,12 +86,20 @@ public class User {
 
     public String getFullName() { return firstName + " " + middleName + " " + lastName; }
 
-    public void setPasswordHash(String passwordHash) {
-        if (passwordHash == null)
-            throw new IllegalArgumentException("passwordHash cannot be null");
-        if (passwordHash.isBlank())
-            throw new IllegalArgumentException("passwordHash cannot be blank");
-        this.passwordHash = passwordHash;
+    public void setClientPasswordHash(String clientPasswordHash) {
+        if (clientPasswordHash == null)
+            throw new IllegalArgumentException("clientPasswordHash cannot be null");
+        if (clientPasswordHash.isBlank())
+            throw new IllegalArgumentException("clientPasswordHash cannot be blank");
+        this.clientPasswordHash = clientPasswordHash;
+    }
+
+    public void setEmployeePasswordHash(String employeePasswordHash) {
+        if (employeePasswordHash == null)
+            throw new IllegalArgumentException("employeePasswordHash cannot be null");
+        if (employeePasswordHash.isBlank())
+            throw new IllegalArgumentException("employeePasswordHash cannot be blank");
+        this.employeePasswordHash = employeePasswordHash;
     }
 
     public void grantRoles(Set<UserRoleAssignment> userRoleAssignments) {

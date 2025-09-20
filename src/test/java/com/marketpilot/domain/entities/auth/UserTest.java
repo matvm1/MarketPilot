@@ -381,15 +381,27 @@ class UserTest {
     }
 
     @Test
-    void setPasswordHash_throwsIfHashIsNull() {
+    void setClientPasswordHash_throwsIfHashIsNull() {
         assertThrows(IllegalArgumentException.class, () ->
-                testUser.setPasswordHash(null));
+                testUser.setClientPasswordHash(null));
     }
 
     @Test
-    void setPasswordHash_throwsIfHashIsBlank() {
+    void setClientPasswordHash_throwsIfHashIsBlank() {
         assertThrows(IllegalArgumentException.class, () ->
-                testUser.setPasswordHash("       "));
+                testUser.setClientPasswordHash("       "));
+    }
+
+    @Test
+    void setEmployeePasswordHash_throwsIfHashIsNull() {
+        assertThrows(IllegalArgumentException.class, () ->
+                testUser.setEmployeePasswordHash(null));
+    }
+
+    @Test
+    void setEmployeePasswordHash_throwsIfHashIsBlank() {
+        assertThrows(IllegalArgumentException.class, () ->
+                testUser.setEmployeePasswordHash("       "));
     }
 
     @Test

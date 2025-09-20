@@ -8,14 +8,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class UserFactory {
-    public User createUser(String employeeId, Set<Role> rolesToAssign, String username, String passwordHash,
+    //TODO: Separate client and employee user creation
+    //TODO: Integrate employee registration with an existing client and vice-versa
+    public User createUser(String employeeId, Set<Role> rolesToAssign, String username, String passwordClientHash,
                            String personalEmail, String employeeEmail, String firstName, String middleName, String lastName) {
         User newUser = new User(employeeId, username, personalEmail, employeeEmail, firstName, middleName, lastName);
         Set<UserRoleAssignment> userRoleAssignments = new HashSet<>();
         for (Role role : rolesToAssign)
             userRoleAssignments.add(new UserRoleAssignment(newUser, role));
         newUser.grantRoles(userRoleAssignments);
-        newUser.setPasswordHash(passwordHash);
+        newUser.setClientPasswordHash(passwordClientHash);
         return newUser;
     }
 }
