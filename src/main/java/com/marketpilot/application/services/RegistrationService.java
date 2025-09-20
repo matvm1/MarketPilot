@@ -23,7 +23,8 @@ public class RegistrationService {
 
     //TODO: Allow client registration if already registered as an employee
     //TODO: 2FA
-    public void registerClient(String username, char[] rawPassword, String personalEmail,
+    public void registerClient(String username, char[] rawPassword,
+                               Set<Role.RoleName> clientRoleNames, String personalEmail,
                                String firstName, String middleName, String lastName) {
         String passwordHash = passwordHasher.hash(rawPassword);
         Arrays.fill(rawPassword, '\0');
@@ -35,17 +36,19 @@ public class RegistrationService {
             throw new IllegalArgumentException("email " + personalEmail + " is already registered");
 
         Set<Role> roles = new HashSet<>();
-        Optional<Role> optionalRole = roleRepository.findByRoleName(Role.RoleName.PersonalInvestor);
-        Role personalInvestorRole = optionalRole.orElseThrow(() -> new NoSuchElementException("Personal investor role not found."));
-        roles.add(personalInvestorRole);
+        for (Role.RoleName roleName : clientRoleNames) {
+            Optional<Role> optionalRole = roleRepository.findByRoleName(roleName);
+            Role role = optionalRole.orElseThrow(() -> new NoSuchElementException(roleName + " role not found."));
+            roles.add(role);
+        }
         userRepository.save(userFactory.createClientUser(roles, username, passwordHash, personalEmail,
                 firstName, middleName, lastName));
     }
 
     //TODO: Allow employee registration if already registered as a client (personal investor)
     //TODO: 2FA
-    public void registerEmployee(String employeeId, String username, char[] rawPassword, Set<Role.RoleName> roleNames,
-                                 String employeeEmail,
+    public void registerEmployee(String employeeId, String username, char[] rawPassword,
+                                 Set<Role.RoleName> employeeRoleNames, String employeeEmail,
                                  String firstName, String middleName, String lastName) {
         String passwordHash = passwordHasher.hash(rawPassword);
         Arrays.fill(rawPassword, '\0');
@@ -59,10 +62,7 @@ public class RegistrationService {
             throw new IllegalArgumentException("email " + employeeEmail + " is already registered");
 
         Set<Role> roles = new HashSet<>();
-        for (Role.RoleName roleName : roleNames) {
-            if (roleName == Role.RoleName.PersonalInvestor)
-                throw new IllegalArgumentException("The employee registration flow cannot register the user under the" +
-                        " Personal Investor role");
+        for (Role.RoleName roleName : employeeRoleNames) {
             Optional<Role> optionalRole = roleRepository.findByRoleName(roleName);
             Role role = optionalRole.orElseThrow(() -> new NoSuchElementException(roleName + " role not found."));
             roles.add(role);

@@ -13,10 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.LinkedHashSet;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,6 +31,7 @@ public class RegistrationServiceTest {
     private User johnMDoe;
     private char[] dummyPassword;
     private static final String dummyPasswordHash = "$2a$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW";
+    private Set<RoleName> clientRoleNames;
     private Set<RoleName> employeeRoleNames;
 
     @BeforeEach
@@ -43,6 +41,8 @@ public class RegistrationServiceTest {
         userFactory = new UserFactory();
         registrationService = new RegistrationService(passwordHasher, userRepository, roleRepository, userFactory);
 
+        clientRoleNames = new HashSet<>();
+        clientRoleNames.add(RoleName.PersonalInvestor);
         employeeRoleNames = new LinkedHashSet<>();
         employeeRoleNames.add(RoleName.Analyst);
     }
@@ -52,7 +52,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(johnMDoe));
         assertThrows(IllegalArgumentException.class,
                 () -> registrationService.registerClient("johnmdoe",
-                        dummyPassword, "johnmdoe1@outlook.com", "John", "M", "Doe"));
+                        dummyPassword, clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
@@ -60,7 +60,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(johnMDoe));
         assertThrows(IllegalArgumentException.class,
                 () -> registrationService.registerClient("johnmdoe1",
-                       dummyPassword, "johnmdoe@outlook.com", "John", "M", "Doe"));
+                       dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
@@ -91,7 +91,7 @@ public class RegistrationServiceTest {
     void registerClient_throwsIfRoleNameNotFound() {
         assertThrows(NoSuchElementException.class,
                 () -> registrationService.registerClient("johnmdoe",
-                        dummyPassword, "johnmdoe@outlook.com", "John", "M", "Doe"));
+                        dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
@@ -102,20 +102,11 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void registerEmployee_throwsIfPersonalInvestorRoleNameIsPassedIn() {
-        employeeRoleNames.add(RoleName.PersonalInvestor);
-        when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
-        assertThrows(IllegalArgumentException.class,
-                () -> registrationService.registerEmployee("ab123456", "johnmdoe",
-                        dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
-    }
-
-    @Test
     void registerClient_doesNotThrowWhenUserIsNotYetRegisteredAndRoleExists() {
         when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
         when(passwordHasher.hash(dummyPassword)).thenReturn(dummyPasswordHash);
         assertDoesNotThrow(() -> registrationService.registerClient("johnmdoe",
-                        dummyPassword, "johnmdoe@outlook.com", "John", "M", "Doe"));
+                        dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test

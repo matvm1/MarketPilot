@@ -33,6 +33,13 @@ public class UserFactoryTest {
     }
 
     @Test
+    void createClientUser_throwsIfRoleHasNonClientType() {
+        assertThrows(IllegalArgumentException.class, () ->
+                userFactory.createClientUser(employeeRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD,
+                        "johnmdoe@outlook.com", "John", "M", "Doe"));
+    }
+
+    @Test
     void createClientUser_returnsUserWithNonNullAndNonEmptyRoleAssignments() {
         User user = userFactory.createClientUser(clientRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD,
                 "johnmdoe@outlook.com","John", "M", "Doe");
@@ -46,6 +53,13 @@ public class UserFactoryTest {
                 "johnmdoe@outlook.com","John", "M", "Doe");
         for (UserRoleAssignment userRoleAssignment : user.getUserRoleAssignments())
             assertEquals(userRoleAssignment.getUser(), user);
+    }
+
+    @Test
+    void createEmployeeUser_throwsIfRoleHasNonEmployeeType() {
+        assertThrows(IllegalArgumentException.class, () ->
+                userFactory.createEmployeeUser("ab123456", clientRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD,
+                        "johnmdoe@company.com", "John", "M", "Doe"));
     }
 
     @Test

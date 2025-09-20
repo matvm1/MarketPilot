@@ -54,6 +54,7 @@ public class User {
         this.id = -1;
         this.employeeId = employeeId;
         this.username = username;
+        this.userRoleAssignments = new HashSet<>();
         this.personalEmail = personalEmail;
         this.employeeEmail = employeeEmail;
         this.firstName = firstName;
@@ -102,13 +103,11 @@ public class User {
         this.employeePasswordHash = employeePasswordHash;
     }
 
-    public void grantRoles(Set<UserRoleAssignment> userRoleAssignments) {
-        if (userRoleAssignments == null)
-            throw new IllegalArgumentException("userRoleAssignments cannot be null");
-        if (userRoleAssignments.isEmpty())
-            throw new IllegalArgumentException("userRoleAssignment cannot be empty");
+    public void grantRole(Role role) {
+        if (role == null)
+            throw new IllegalArgumentException("role cannot be null");
 
-        this.userRoleAssignments = userRoleAssignments;
+        this.userRoleAssignments.add(new UserRoleAssignment(this, role));
     }
 
     public void setFirstName(String firstName) {

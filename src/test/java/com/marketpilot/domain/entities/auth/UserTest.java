@@ -405,15 +405,9 @@ class UserTest {
     }
 
     @Test
-    void grantRoles_throwsForNullUserRolesSet() {
+    void grantRole_throwsForNullUserRolesSet() {
         assertThrows(IllegalArgumentException.class, () ->
-                testUser.grantRoles(null));
-    }
-
-    @Test
-    void grantRoles_throwsForEmptyUserRolesSet() {
-        assertThrows(IllegalArgumentException.class, () ->
-                testUser.grantRoles(new HashSet<>()));
+                testUser.grantRole(null));
     }
 
     @Test
