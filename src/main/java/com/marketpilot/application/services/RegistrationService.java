@@ -35,14 +35,9 @@ public class RegistrationService {
         if (userRepository.findByPersonalEmail(personalEmail).isPresent())
             throw new IllegalArgumentException("email " + personalEmail + " is already registered");
 
-        Set<Role> roles = new HashSet<>();
-        for (Role.RoleName roleName : clientRoleNames) {
-            Optional<Role> optionalRole = roleRepository.findByRoleName(roleName);
-            Role role = optionalRole.orElseThrow(() -> new NoSuchElementException(roleName + " role not found."));
-            roles.add(role);
-        }
-        userRepository.save(userFactory.createClientUser(roles, username, passwordHash, personalEmail,
-                firstName, middleName, lastName));
+
+        userRepository.save(userFactory.createClientUser(getRolesFromRoleNames(clientRoleNames), username,
+                passwordHash, personalEmail, firstName, middleName, lastName));
     }
 
     //TODO: Allow employee registration if already registered as a client (personal investor)
@@ -61,13 +56,18 @@ public class RegistrationService {
         if (userRepository.findByEmployeeEmail(employeeEmail).isPresent())
             throw new IllegalArgumentException("email " + employeeEmail + " is already registered");
 
+        userRepository.save(userFactory.createEmployeeUser(employeeId, getRolesFromRoleNames(employeeRoleNames),
+                username, passwordHash, employeeEmail, firstName, middleName, lastName));
+    }
+
+    private Set<Role> getRolesFromRoleNames(Set<Role.RoleName> roleNames) {
         Set<Role> roles = new HashSet<>();
-        for (Role.RoleName roleName : employeeRoleNames) {
+        for (Role.RoleName roleName : roleNames) {
             Optional<Role> optionalRole = roleRepository.findByRoleName(roleName);
             Role role = optionalRole.orElseThrow(() -> new NoSuchElementException(roleName + " role not found."));
             roles.add(role);
         }
-        userRepository.save(userFactory.createEmployeeUser(employeeId, roles, username, passwordHash,
-                employeeEmail, firstName, middleName, lastName));
+
+        return roles;
     }
 }

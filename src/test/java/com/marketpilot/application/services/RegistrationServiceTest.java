@@ -88,7 +88,7 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void registerClient_throwsIfRoleNameNotFound() {
+    void registerClient_throwsIfRoleNotFound() {
         assertThrows(NoSuchElementException.class,
                 () -> registrationService.registerClient("johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
