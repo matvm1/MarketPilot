@@ -4,8 +4,10 @@ import com.marketpilot.application.dto.AuthenticationResult;
 import com.marketpilot.application.dto.TwoFactorAuthenticationChallenge;
 import com.marketpilot.domain.entities.auth.User;
 
-public interface AuthenticationService {
+import java.util.Optional;
+
+public interface TwoFactorService {
     // Needs to generate a challengeToken that matches the challengeToken expected by the receiving TwoFactorAuthenticationChallenge
     TwoFactorAuthenticationChallenge sendChallenge(User user);
-    AuthenticationResult verifyTwoFactorCode(User user, String twoFactorCode);
+    Optional<AuthenticationResult> verify(User user, String challenge);
 }
