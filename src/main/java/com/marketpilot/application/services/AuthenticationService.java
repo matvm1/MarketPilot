@@ -5,9 +5,9 @@ import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.SessionManager;
 import com.marketpilot.application.ports.auth.TwoFactorService;
 import com.marketpilot.application.ports.persistence.UserRepository;
-import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 // TODO: Unit tests
@@ -31,7 +31,12 @@ public class AuthenticationService {
         this.sessionManager = sessionManager;
     }
 
+    //TODO: Hash client-side
     public AuthenticationStatus initiateClientAuthentication(String usernameOrClientEmail, char[] rawPassword) {
+        String passwordHash = passwordHasher.hash(rawPassword);
+        Arrays.fill(rawPassword, '\0');
+        rawPassword = null;
+
         if (usernameOrClientEmail == null)
             throw new IllegalArgumentException("usernameOrClientEmail cannot be null");
         if (usernameOrClientEmail.isBlank())
@@ -41,7 +46,7 @@ public class AuthenticationService {
                 .or(() -> userRepository.findByPersonalEmail(usernameOrClientEmail));
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            if (passwordHasher.matches(rawPassword, user.getPasswordHash())) {
+            if (passwordHasher.matches(passwordHash, user.getPasswordHash())) {
                 twoFactorService.sendChallenge(user);
                 return AuthenticationStatus.CHALLENGE_SENT;
             }
@@ -50,7 +55,12 @@ public class AuthenticationService {
         return AuthenticationStatus.FAILURE;
     }
 
+    //TODO: Hash client-side
     public AuthenticationStatus initiateEmployeeAuthentication(String employeeId, char[] rawPassword) {
+        String passwordHash = passwordHasher.hash(rawPassword);
+        Arrays.fill(rawPassword, '\0');
+        rawPassword = null;
+
         if (employeeId == null)
             throw new IllegalArgumentException("employeeId cannot be null");
         if (employeeId.isBlank())
@@ -59,7 +69,7 @@ public class AuthenticationService {
         Optional<User> optionalUser = userRepository.findByEmployeeId(employeeId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            if (passwordHasher.matches(rawPassword, user.getPasswordHash())) {
+            if (passwordHasher.matches(passwordHash, user.getPasswordHash())) {
                 twoFactorService.sendChallenge(user);
                 return AuthenticationStatus.CHALLENGE_SENT;
             }

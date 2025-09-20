@@ -25,6 +25,10 @@ public class RegistrationService {
     //TODO: 2FA
     public void registerClient(String username, char[] rawPassword, String personalEmail,
                                String firstName, String middleName, String lastName) {
+        String passwordHash = passwordHasher.hash(rawPassword);
+        Arrays.fill(rawPassword, '\0');
+        rawPassword = null;
+
         if (userRepository.findByUsername(username).isPresent())
             throw new IllegalArgumentException("username " + username + " is taken");
         if (userRepository.findByPersonalEmail(personalEmail).isPresent())
@@ -34,9 +38,6 @@ public class RegistrationService {
         Optional<Role> optionalRole = roleRepository.findByRoleName(Role.RoleName.PersonalInvestor);
         Role personalInvestorRole = optionalRole.orElseThrow(() -> new NoSuchElementException("Personal investor role not found."));
         roles.add(personalInvestorRole);
-        String passwordHash = passwordHasher.hash(rawPassword);
-        Arrays.fill(rawPassword, '\0');
-        rawPassword = null;
         userRepository.save(userFactory.createUser(null, roles, username, passwordHash, personalEmail,
                 null, firstName, middleName, lastName));
     }
@@ -46,6 +47,10 @@ public class RegistrationService {
     public void registerEmployee(String employeeId, String username, char[] rawPassword, Set<Role.RoleName> roleNames,
                                  String employeeEmail,
                                  String firstName, String middleName, String lastName) {
+        String passwordHash = passwordHasher.hash(rawPassword);
+        Arrays.fill(rawPassword, '\0');
+        rawPassword = null;
+        
         if (userRepository.findByEmployeeId(employeeId).isPresent())
             throw new IllegalArgumentException("employeeId " + employeeId + " is already registered");
         if (userRepository.findByUsername(username).isPresent())
@@ -62,9 +67,6 @@ public class RegistrationService {
             Role role = optionalRole.orElseThrow(() -> new NoSuchElementException(roleName + " role not found."));
             roles.add(role);
         }
-        String passwordHash = passwordHasher.hash(rawPassword);
-        Arrays.fill(rawPassword, '\0');
-        rawPassword = null;
         userRepository.save(userFactory.createUser(employeeId, roles, username, passwordHash, null,
                 employeeEmail, firstName, middleName, lastName));
     }
