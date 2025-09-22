@@ -1,9 +1,8 @@
 package com.marketpilot.application.services;
 
-import com.marketpilot.application.dto.AuthenticationResult;
+import com.marketpilot.application.dto.EmailMessage;
 import com.marketpilot.application.ports.auth.PasswordHasher;
-import com.marketpilot.application.ports.auth.SessionManager;
-import com.marketpilot.application.ports.auth.TwoFactorService;
+import com.marketpilot.application.ports.EmailEngine;
 import com.marketpilot.application.ports.persistence.PendingVerificationUserRepository;
 import com.marketpilot.application.ports.persistence.RoleRepository;
 import com.marketpilot.application.ports.persistence.UserRepository;
@@ -24,18 +23,19 @@ public class RegistrationService {
     private final UserRepository userRepository;
     private final PendingVerificationUserRepository pendingVerificationUserRepository;
     private final RoleRepository roleRepository;
-    private final TwoFactorService twoFactorService;
+    private final EmailEngine emailEngine;
     private final PasswordHasher passwordHasher;
     private final UserFactory userFactory;
+    private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email.html";
 
     public RegistrationService(UserRepository userRepository,
                                PendingVerificationUserRepository pendingVerificationUserRepository,
                                RoleRepository roleRepository,
-                               TwoFactorService twoFactorService, PasswordHasher passwordHasher, UserFactory userFactory) {
+                               EmailEngine emailEngine, PasswordHasher passwordHasher, UserFactory userFactory) {
         this.userRepository = userRepository;
         this.pendingVerificationUserRepository = pendingVerificationUserRepository;
         this.roleRepository = roleRepository;
-        this.twoFactorService = twoFactorService;
+        this.emailEngine = emailEngine;
         this.passwordHasher = passwordHasher;
         this.userFactory = userFactory;
     }
@@ -52,8 +52,18 @@ public class RegistrationService {
                 .or(() -> userRepository.findByPersonalEmail(personalEmail)).isPresent())
             return RegistrationResult.ALREADY_REGISTERED;
 
-        pendingVerificationUserRepository.save(userFactory.createClientUser(getRolesFromRoleNames(clientRoleNames), username,
-                passwordHash, personalEmail, firstName, middleName, lastName));
+        User newUser = userFactory.createClientUser(getRolesFromRoleNames(clientRoleNames), username,
+                passwordHash, personalEmail, firstName, middleName, lastName);
+        try {
+            if (emailEngine.sendTemplatedEmail(new EmailMessage(personalEmail,
+                    "Verify your MarketPilot account", null, null), VERIFICATION_EMAIL_TEMPLATE))
+                pendingVerificationUserRepository.save(newUser);
+            else
+                return RegistrationResult.FAILURE;
+        }
+        catch (Exception e) {
+            return RegistrationResult.FAILURE;
+        }
 
         return RegistrationResult.PENDING_VERIFICATION;
     }
@@ -71,19 +81,42 @@ public class RegistrationService {
                 .or(() -> userRepository.findByEmployeeEmail(employeeEmail)).isPresent())
             return RegistrationResult.ALREADY_REGISTERED;
 
-        pendingVerificationUserRepository.save(userFactory.createEmployeeUser(employeeId, getRolesFromRoleNames(employeeRoleNames),
-                username, passwordHash, employeeEmail, firstName, middleName, lastName));
+        User newUser = userFactory.createEmployeeUser(employeeId, getRolesFromRoleNames(employeeRoleNames),
+                username, passwordHash, employeeEmail, firstName, middleName, lastName);
+
+        try {
+            if (emailEngine.sendTemplatedEmail(new EmailMessage(employeeEmail,
+                    "Verify your MarketPilot employee account", null, null), VERIFICATION_EMAIL_TEMPLATE))
+                pendingVerificationUserRepository.save(newUser);
+            else
+                return  RegistrationResult.FAILURE;
+        }
+        catch (Exception e) {
+            return RegistrationResult.FAILURE;
+        }
 
         return RegistrationResult.PENDING_VERIFICATION;
     }
 
-    //TODO: Move the user from pendingVerification repo to User repo
     //TODO: Service that runs in the background and removes users from the pending repo if verification period has
     // expired
-    public RegistrationResult completeRegistration(User user, String challenge) {
-        Optional<AuthenticationResult> authenticationResult = twoFactorService.verify(user, challenge);
-        if (authenticationResult.isPresent())
+    //TODO: unit tests
+    //TODO: Separate client and employee verification codes
+    public RegistrationResult completeRegistration(User user, String verificationCodeAttempt) {
+        String username = user.getUsername();
+        Optional<String> verificationCode = pendingVerificationUserRepository.getVerificationCode(username);
+        if (verificationCode.isPresent() && verificationCode.get().equals(verificationCodeAttempt)) {
+            try {
+                if (pendingVerificationUserRepository.deleteByUsername(username))
+                    userRepository.save(user);
+                else
+                    return RegistrationResult.FAILURE;
+            }
+            catch (Exception e) {
+                return RegistrationResult.FAILURE;
+            }
             return RegistrationResult.SUCCESS;
+        }
         else
             return RegistrationResult.FAILURE;
     }

@@ -1,5 +1,7 @@
 package com.marketpilot.application.services;
 
+import com.marketpilot.application.dto.EmailMessage;
+import com.marketpilot.application.ports.EmailEngine;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.TwoFactorService;
 import com.marketpilot.application.ports.persistence.PendingVerificationUserRepository;
@@ -19,6 +21,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,7 +30,7 @@ public class RegistrationServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private PendingVerificationUserRepository pendingVerificationUserRepository;
     @Mock private RoleRepository roleRepository;
-    @Mock private TwoFactorService twoFactorService;
+    @Mock private EmailEngine emailEngine;
     @Mock private PasswordHasher passwordHasher;
 
     private RegistrationService registrationService;
@@ -37,6 +40,7 @@ public class RegistrationServiceTest {
     private static final String dummyPasswordHash = "$2a$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW";
     private Set<RoleName> clientRoleNames;
     private Set<RoleName> employeeRoleNames;
+    private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email.html";
 
     @BeforeEach
     void setUp() {
@@ -44,7 +48,7 @@ public class RegistrationServiceTest {
         dummyPassword = new char[] {'p', 'a', 's', 's', 'w', 'o', 'r', 'd'};
         userFactory = new UserFactory();
         registrationService = new RegistrationService(userRepository, pendingVerificationUserRepository,
-                roleRepository, twoFactorService, passwordHasher, userFactory);
+                roleRepository, emailEngine, passwordHasher, userFactory);
 
         clientRoleNames = new HashSet<>();
         clientRoleNames.add(RoleName.PersonalInvestor);
@@ -110,6 +114,10 @@ public class RegistrationServiceTest {
     void initiateClientRegistration_doesNotThrowWhenUserIsNotYetRegisteredAndRoleExists() {
         when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
         when(passwordHasher.hash(dummyPassword)).thenReturn(dummyPasswordHash);
+        when(emailEngine.sendTemplatedEmail(
+                argThat(email -> email.recipient().equals("johnmdoe@outlook.com")),
+                eq(VERIFICATION_EMAIL_TEMPLATE)))
+                .thenReturn(true);
         assertDoesNotThrow(() -> registrationService.initiateClientRegistration("johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
         assertEquals(RegistrationResult.PENDING_VERIFICATION,
@@ -121,10 +129,14 @@ public class RegistrationServiceTest {
     void initiateEmployeeRegistration_doesNotThrowWhenUserIsNotYetRegisteredAndRoleExists() {
         when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
         when(passwordHasher.hash(dummyPassword)).thenReturn(dummyPasswordHash);
+        when(emailEngine.sendTemplatedEmail(
+                argThat(email -> email.recipient().equals("johnmdoe@company.com")),
+                eq(VERIFICATION_EMAIL_TEMPLATE)))
+                .thenReturn(true);
         assertDoesNotThrow(() -> registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
                  dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
         assertEquals(RegistrationResult.PENDING_VERIFICATION,
                 assertDoesNotThrow(() -> registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
                         dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe")));
-        }
+    }
 }
