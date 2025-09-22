@@ -1,6 +1,8 @@
 package com.marketpilot.application.services;
 
 import com.marketpilot.application.ports.auth.PasswordHasher;
+import com.marketpilot.application.ports.auth.TwoFactorService;
+import com.marketpilot.application.ports.persistence.PendingVerificationUserRepository;
 import com.marketpilot.application.ports.persistence.RoleRepository;
 import com.marketpilot.application.ports.persistence.UserRepository;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
@@ -22,9 +24,11 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class RegistrationServiceTest {
     UserFactory userFactory;
-    @Mock private PasswordHasher passwordHasher;
     @Mock private UserRepository userRepository;
+    @Mock private PendingVerificationUserRepository pendingVerificationUserRepository;
     @Mock private RoleRepository roleRepository;
+    @Mock private TwoFactorService twoFactorService;
+    @Mock private PasswordHasher passwordHasher;
 
     private RegistrationService registrationService;
 
@@ -39,7 +43,8 @@ public class RegistrationServiceTest {
         johnMDoe = new User("ab123456", "johnmdoe", "johnmdoe@outlook.com", "johnmdoe@company.com", "John", "M", "Doe");
         dummyPassword = new char[] {'p', 'a', 's', 's', 'w', 'o', 'r', 'd'};
         userFactory = new UserFactory();
-        registrationService = new RegistrationService(passwordHasher, userRepository, roleRepository, userFactory);
+        registrationService = new RegistrationService(userRepository, pendingVerificationUserRepository,
+                roleRepository, twoFactorService, passwordHasher, userFactory);
 
         clientRoleNames = new HashSet<>();
         clientRoleNames.add(RoleName.PersonalInvestor);
@@ -48,78 +53,78 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void registerClient_returnsAlreadyRegisteredIfUsernameIsTaken() {
+    void initiateClientRegistration_returnsAlreadyRegisteredIfUsernameIsTaken() {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(johnMDoe));
         assertEquals(RegistrationResult.ALREADY_REGISTERED,
-                registrationService.registerClient("johnmdoe",
+                registrationService.initiateClientRegistration("johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
-    void registerPersonalInvestor_returnsAlreadyRegisteredIfPersonalEmailIsRegistered() {
+    void initiateClientRegistration_returnsAlreadyRegisteredIfPersonalEmailIsRegistered() {
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(johnMDoe));
         assertEquals(RegistrationResult.ALREADY_REGISTERED,
-                registrationService.registerClient("johnmdoe1",
+                registrationService.initiateClientRegistration("johnmdoe1",
                        dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
-    void registerEmployee_returnsAlreadyRegisteredIfEmployeeIdIsTaken() {
+    void initiateEmployeeRegistration_returnsAlreadyRegisteredIfEmployeeIdIsTaken() {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(johnMDoe));
         assertEquals(RegistrationResult.ALREADY_REGISTERED,
-                registrationService.registerEmployee("ab123456", "johnmdoe1", dummyPassword,
+                registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe1", dummyPassword,
                         employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
     }
 
     @Test
-    void registerEmployee_returnsAlreadyRegisteredIfUsernameIsTaken() {
+    void initiateEmployeeRegistration_returnsAlreadyRegisteredIfUsernameIsTaken() {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(johnMDoe));
         assertEquals(RegistrationResult.ALREADY_REGISTERED,
-                registrationService.registerEmployee("ab987654", "johnmdoe",
+                registrationService.initiateEmployeeRegistration("ab987654", "johnmdoe",
                         dummyPassword, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
     }
 
     @Test
-    void registerEmployee_returnsAlreadyRegisteredIfEmployeeEmailIsTaken() {
+    void initiateEmployeeRegistration_returnsAlreadyRegisteredIfEmployeeEmailIsTaken() {
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(johnMDoe));
         assertEquals(RegistrationResult.ALREADY_REGISTERED,
-                registrationService.registerEmployee("ab987654", "johnmdoe1",
+                registrationService.initiateEmployeeRegistration("ab987654", "johnmdoe1",
                         dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
     }
 
     @Test
-    void registerClient_throwsIfRoleNotFound() {
+    void initiateClientRegistration_throwsIfRoleNotFound() {
         assertThrows(NoSuchElementException.class,
-                () -> registrationService.registerClient("johnmdoe",
+                () -> registrationService.initiateClientRegistration("johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
-    void registerEmployee_throwsIfRoleNotFound() {
+    void initiateEmployeeRegistration_throwsIfRoleNotFound() {
         assertThrows(NoSuchElementException.class,
-                () -> registrationService.registerEmployee("ab123456", "johnmdoe",
+                () -> registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
                         dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
     }
 
     @Test
-    void registerClient_doesNotThrowWhenUserIsNotYetRegisteredAndRoleExists() {
+    void initiateClientRegistration_doesNotThrowWhenUserIsNotYetRegisteredAndRoleExists() {
         when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
         when(passwordHasher.hash(dummyPassword)).thenReturn(dummyPasswordHash);
-        assertDoesNotThrow(() -> registrationService.registerClient("johnmdoe",
+        assertDoesNotThrow(() -> registrationService.initiateClientRegistration("johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
-        assertEquals(RegistrationResult.SUCCESS,
-                registrationService.registerClient("johnmdoe",
-                        dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
+        assertEquals(RegistrationResult.PENDING_VERIFICATION,
+                registrationService.initiateClientRegistration("johnmdoe", dummyPassword, clientRoleNames, "johnmdoe@outlook.com",
+                        "John", "M", "Doe"));
     }
 
     @Test
-    void registerEmployee_doesNotThrowWhenUserIsNotYetRegisteredAndRoleExists() {
+    void initiateEmployeeRegistration_doesNotThrowWhenUserIsNotYetRegisteredAndRoleExists() {
         when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
         when(passwordHasher.hash(dummyPassword)).thenReturn(dummyPasswordHash);
-        assertDoesNotThrow(() -> registrationService.registerEmployee("ab123456", "johnmdoe",
+        assertDoesNotThrow(() -> registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
                  dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
-        assertEquals(RegistrationResult.SUCCESS,
-                assertDoesNotThrow(() -> registrationService.registerEmployee("ab123456", "johnmdoe",
+        assertEquals(RegistrationResult.PENDING_VERIFICATION,
+                assertDoesNotThrow(() -> registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
                         dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe")));
         }
 }
