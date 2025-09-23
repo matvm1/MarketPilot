@@ -11,26 +11,23 @@ public class Role {
         Public
     }
 
-    public enum RoleType {
-        CLIENT,
-        EMPLOYEE
-    }
-
     private final RoleName roleName;
     private final Set<Permission> permissions;
-    private final RoleType roleType;
+    private final UserType userType;
 
-    public Role(RoleName roleName, Set<Permission> permissions, RoleType roleType) {
+    public Role(RoleName roleName, Set<Permission> permissions, UserType userType) {
         if (roleName == null)
             throw new IllegalArgumentException("roleName cannot be null");
         if (permissions == null)
             throw new IllegalArgumentException("permissions cannot be null");
         if (permissions.isEmpty())
             throw new IllegalArgumentException("permissions cannot be empty");
+        if (userType == null)
+            throw new IllegalArgumentException("userType cannot be null");
 
         this.roleName = roleName;
         this.permissions = new HashSet<>(permissions);
-        this.roleType = roleType;
+        this.userType = userType;
     }
 
     public RoleName getRoleName() { return roleName; }
@@ -39,7 +36,7 @@ public class Role {
         return permissions;
     }
 
-    public RoleType getRoleType() { return roleType; }
+    public UserType getUserType() { return userType; }
 
     public boolean hasPermission(Permission permission) {
         if (permission == null)

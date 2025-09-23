@@ -1,9 +1,6 @@
 package com.marketpilot.domain.services;
 
-import com.marketpilot.domain.entities.auth.Role;
-import com.marketpilot.domain.entities.auth.TestRoles;
-import com.marketpilot.domain.entities.auth.User;
-import com.marketpilot.domain.entities.auth.UserRoleAssignment;
+import com.marketpilot.domain.entities.auth.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -116,15 +113,15 @@ public class UserFactoryTest {
     }
 
     @Test
-    void validateRolesAndGrant_throwsIfRoleHasNonExpectedRoleType() {
+    void validateRolesAndGrant_throwsIfRoleHasUnexpectedUserType() {
         assertThrows(IllegalArgumentException.class, () ->
-                userFactory.validateRolesAndGrant(clientUser, employeeRoles, Role.RoleType.CLIENT));
+                userFactory.validateRolesAndGrant(clientUser, employeeRoles, UserType.CLIENT));
     }
 
     @Test
     void validateRolesAndGrant_grantsRolesToUserIfValidationSuccessful() {
         assertDoesNotThrow(() ->
-                userFactory.validateRolesAndGrant(clientUser, employeeRoles, Role.RoleType.EMPLOYEE));
+                userFactory.validateRolesAndGrant(clientUser, employeeRoles, UserType.EMPLOYEE));
 
         Set<Role> clientUserRoles = new HashSet<>();
         for (UserRoleAssignment userRoleAssignment : clientUser.getUserRoleAssignments())

@@ -17,25 +17,31 @@ public class RoleTest {
         dummyPermissions = new HashSet<>();
         dummyPermissions.add(Permission.CREATE_USER);
         dummyPermissions.add(Permission.DELETE_USER);
-        dummyRole = new Role(Role.RoleName.PersonalInvestor, dummyPermissions, Role.RoleType.CLIENT);
+        dummyRole = new Role(Role.RoleName.PersonalInvestor, dummyPermissions, UserType.CLIENT);
     }
 
     @Test
     void constructorThrowsForNullRoleName() {
         assertThrows(IllegalArgumentException.class, () ->
-                new Role(null, dummyPermissions, Role.RoleType.CLIENT));
+                new Role(null, dummyPermissions, UserType.CLIENT));
     }
 
     @Test
     void constructorThrowsForNullPermissions() {
         assertThrows(IllegalArgumentException.class, () ->
-                new Role(Role.RoleName.Public, null, Role.RoleType.CLIENT));
+                new Role(Role.RoleName.Public, null, UserType.CLIENT));
     }
 
     @Test
     void constructorThrowsForEmptyPermissions() {
         assertThrows(IllegalArgumentException.class, () ->
-                new Role(Role.RoleName.Public, new HashSet<>(), Role.RoleType.CLIENT));
+                new Role(Role.RoleName.Public, new HashSet<>(), UserType.CLIENT));
+    }
+
+    @Test
+    void constructor_throwsForNullUserType() {
+        assertThrows(IllegalArgumentException.class, () ->
+                new Role(Role.RoleName.Public, dummyPermissions, null));
     }
 
     @Test
@@ -63,12 +69,12 @@ public class RoleTest {
         Set<Permission> perms1 = new HashSet<>();
         perms1.add(Permission.CREATE_USER);
         perms1.add(Permission.DELETE_USER);
-        Role r1 = new Role(Role.RoleName.Admin, perms1, Role.RoleType.EMPLOYEE);
+        Role r1 = new Role(Role.RoleName.Admin, perms1, UserType.EMPLOYEE);
 
         Set<Permission> perms2 = new HashSet<>();
         perms2.add(Permission.CREATE_USER);
         perms2.add(Permission.DELETE_USER);
-        Role r2 = new Role(Role.RoleName.Admin, perms2, Role.RoleType.EMPLOYEE);
+        Role r2 = new Role(Role.RoleName.Admin, perms2, UserType.EMPLOYEE);
 
         assertEquals(r1, r2);
     }
@@ -78,12 +84,12 @@ public class RoleTest {
         Set<Permission> perms1 = new HashSet<>();
         perms1.add(Permission.CREATE_WATCHLIST);
         perms1.add(Permission.PUBLISH_ARTICLE);
-        Role r1 = new Role(Role.RoleName.Analyst, perms1, Role.RoleType.EMPLOYEE);
+        Role r1 = new Role(Role.RoleName.Analyst, perms1, UserType.EMPLOYEE);
 
         Set<Permission> perms2 = new HashSet<>();
         perms2.add(Permission.CREATE_USER);
         perms2.add(Permission.DELETE_USER);
-        Role r2 = new Role(Role.RoleName.Admin, perms2, Role.RoleType.EMPLOYEE);
+        Role r2 = new Role(Role.RoleName.Admin, perms2, UserType.EMPLOYEE);
 
         assertNotEquals(r1, r2);
     }
