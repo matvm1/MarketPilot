@@ -49,6 +49,7 @@ public class RegistrationService {
         Arrays.fill(rawPassword, '\0');
         rawPassword = null;
 
+        //TODO: Return ALREADY_REGISTERED if password hash matches, FAILURE otherwise
         if (userRepository.findByUsername(username)
                 .or(() -> userRepository.findByPersonalEmail(personalEmail)).isPresent())
             return RegistrationResult.ALREADY_REGISTERED;
@@ -69,6 +70,31 @@ public class RegistrationService {
         return RegistrationResult.PENDING_VERIFICATION;
     }
 
+    public RegistrationResult initiateClientRegistrationForExistingEmployee(String username, char[] rawPassword,
+                                                                            Set<Role.RoleName> clientRoleNames,
+                                                                            String personalEmail) {
+        String passwordHash = passwordHasher.hash(rawPassword);
+        Arrays.fill(rawPassword, '\0');
+        rawPassword = null;
+
+        Optional<User> existingEmployeeOptional = userRepository.findByUsername(username);
+        if (existingEmployeeOptional.isPresent()) {
+            User existingEmployee = existingEmployeeOptional.get();
+            //TODO: Clean user types with flags
+            if (existingEmployee.getPersonalEmail() == null) {
+                existingEmployee = userFactory.assignClientAttributes(existingEmployee,
+                        getRolesFromRoleNames(clientRoleNames), passwordHash, personalEmail);
+                if (pendingVerificationUserRepository.save(existingEmployee))
+                    return RegistrationResult.SUCCESS;
+            }
+            else
+                //TODO: Return ALREADY_REGISTERED if password hash matches, FAILURE otherwise
+                return RegistrationResult.ALREADY_REGISTERED;
+        }
+
+        return RegistrationResult.FAILURE;
+    }
+
     //TODO: Allow employee registration if already registered as a client (personal investor)
     public RegistrationResult initiateEmployeeRegistration(String employeeId, String username, char[] rawPassword,
                                  Set<Role.RoleName> employeeRoleNames, String employeeEmail,
@@ -77,6 +103,7 @@ public class RegistrationService {
         Arrays.fill(rawPassword, '\0');
         rawPassword = null;
 
+        //TODO: Return ALREADY_REGISTERED if password hash matches, FAILURE otherwise
         if (userRepository.findByUsername(username)
                 .or(() -> userRepository.findByEmployeeId(employeeId))
                 .or(() -> userRepository.findByEmployeeEmail(employeeEmail)).isPresent())
@@ -97,6 +124,32 @@ public class RegistrationService {
         }
 
         return RegistrationResult.PENDING_VERIFICATION;
+    }
+
+    public RegistrationResult initiateEmployeeRegistrationForExistingClient(String employeeId, String username,
+                                                                            char[] rawPassword,
+                                                                            Set<Role.RoleName> employeeRoleNames,
+                                                                            String employeeEmail) {
+        String passwordHash = passwordHasher.hash(rawPassword);
+        Arrays.fill(rawPassword, '\0');
+        rawPassword = null;
+
+        Optional<User> existingClientOptional = userRepository.findByUsername(username);
+        if (existingClientOptional.isPresent()) {
+            User existingClient = existingClientOptional.get();
+            //TODO: Clean user types with flags
+            if (existingClient.getEmployeeEmail() == null) {
+                existingClient = userFactory.assignEmployeeAttributes(existingClient, employeeId,
+                        getRolesFromRoleNames(employeeRoleNames), passwordHash, employeeEmail);
+                if (pendingVerificationUserRepository.save(existingClient))
+                    return RegistrationResult.SUCCESS;
+            }
+            else
+                //TODO: Return ALREADY_REGISTERED if password hash matches, FAILURE otherwise
+                return RegistrationResult.ALREADY_REGISTERED;
+        }
+
+        return RegistrationResult.FAILURE;
     }
 
     //TODO: Service that runs in the background and removes users from the pending repo if verification period has 

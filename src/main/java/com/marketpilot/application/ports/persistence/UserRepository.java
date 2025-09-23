@@ -10,5 +10,6 @@ public interface UserRepository extends BaseRepository<User, Long> {
     Optional<User> findByEmployeeId(String employeeId);
     Optional<User> findByPersonalEmail(String personalEmail);
     Optional<User> findByEmployeeEmail(String employeeEmail);
+    boolean update(User user);
     boolean deleteByUUID(UUID uuid);
 }
