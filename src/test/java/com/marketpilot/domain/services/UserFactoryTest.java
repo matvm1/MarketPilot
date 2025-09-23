@@ -55,6 +55,14 @@ public class UserFactoryTest {
     }
 
     @Test
+    void createClientUser_returnsUserWithUUID() {
+        User user = userFactory.createClientUser(clientRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_CLIENT,
+                "johnmdoe@outlook.com","John", "M", "Doe");
+        assertDoesNotThrow(user::getUUID);
+        assertNotEquals(null, user.getUUID());
+    }
+
+    @Test
     void createEmployeeUser_returnsUserWithNonNullAndNonEmptyRoleAssignments() {
         User user = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_EMPLOYEE,
                 "johnmdoe@company.com","John", "M", "Doe");
@@ -68,6 +76,14 @@ public class UserFactoryTest {
                 "johnmdoe@company.com","John", "M", "Doe");
         for (UserRoleAssignment userRoleAssignment : user.getUserRoleAssignments())
             assertEquals(userRoleAssignment.getUser(), user);
+    }
+
+    @Test
+    void createEmployeeUser_returnsUserWithUUID() {
+        User user = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_EMPLOYEE,
+                "johnmdoe@company.com","John", "M", "Doe");
+        assertDoesNotThrow(user::getUUID);
+        assertNotEquals(null, user.getUUID());
     }
 
     @Test

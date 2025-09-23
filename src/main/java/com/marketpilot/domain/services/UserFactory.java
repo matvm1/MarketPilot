@@ -5,6 +5,7 @@ import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 
 import java.util.Set;
+import java.util.UUID;
 
 public class UserFactory {
     public User createClientUser(Set<Role> clientRoles, String username, String clientPasswordHash,
@@ -12,6 +13,7 @@ public class UserFactory {
         User newUser = new User(null, username, personalEmail, null, firstName, middleName, lastName);
         validateRolesAndGrant(newUser, clientRoles, UserType.CLIENT);
         newUser.setClientPasswordHash(clientPasswordHash);
+        newUser.setUUID(UUID.randomUUID());
 
         return newUser;
     }
@@ -21,6 +23,7 @@ public class UserFactory {
         User newUser = new User(employeeId, username, null, employeeEmail, firstName, middleName, lastName);
         validateRolesAndGrant(newUser, employeeRoles, UserType.EMPLOYEE);
         newUser.setEmployeePasswordHash(employeePasswordHash);
+        newUser.setUUID(UUID.randomUUID());
 
         return newUser;
     }

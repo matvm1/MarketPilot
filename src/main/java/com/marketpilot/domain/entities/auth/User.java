@@ -4,9 +4,10 @@ import org.apache.commons.validator.routines.EmailValidator;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class User {
-    private final int id;
+    private UUID uuid;
     private String employeeId;
     private Set<UserRoleAssignment> userRoleAssignments;
     private final String username;
@@ -50,8 +51,6 @@ public class User {
         if (lastName.isBlank())
             throw new IllegalArgumentException("lastName cannot be empty");
 
-        // TODO: Query user id, possibly outside of constructor
-        this.id = -1;
         this.employeeId = employeeId;
         this.username = username;
         this.userRoleAssignments = new HashSet<>();
@@ -62,7 +61,12 @@ public class User {
         this.lastName = lastName;
     }
 
-    public int getId() { return id; }
+    public UUID getUUID() {
+        if (this.uuid == null)
+            throw new IllegalStateException("uuid is null. UserFactory User creation methods should set the UUID of User objects to valid UUIDs");
+
+        return uuid;
+    }
 
     public String getEmployeeId() { return employeeId; }
 
@@ -85,6 +89,16 @@ public class User {
     public String getLastName() { return lastName; }
 
     public String getFullName() { return firstName + " " + middleName + " " + lastName; }
+
+    public void setUUID(UUID uuid) {
+        final int RANDOM_UUID_GENERATION_VERSION_NUMBER = 4;
+        if (uuid == null)
+            throw new IllegalArgumentException("uuid cannot be null");
+        if (uuid.version() != RANDOM_UUID_GENERATION_VERSION_NUMBER)
+            throw new IllegalArgumentException("uuid version must be " + RANDOM_UUID_GENERATION_VERSION_NUMBER);
+
+        this.uuid = uuid;
+    }
 
     public void setEmployeeId(String employeeId) {
         if (employeeId == null)
@@ -171,8 +185,7 @@ public class User {
         if (!(thisRoles.equals(oRoles)))
             return false;
 
-        return this.id == ((User)o).id &&
-                this.username.equals(((User) o).username) &&
+        return this.username.equals(((User) o).username) &&
                 this.employeeId.equals(((User) o).employeeId) &&
                 this.personalEmail.equals(((User) o).personalEmail) &&
                 this.employeeEmail.equals(((User) o).employeeEmail) &&

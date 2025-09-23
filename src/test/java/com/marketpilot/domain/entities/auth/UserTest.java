@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -378,6 +379,36 @@ class UserTest {
         assertThrows(IllegalArgumentException.class, () ->
                 new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
                         "johnmdoe@company.com","John", "M", ""));
+    }
+
+    @Test
+    void getUUID_throwsIfUUIDIsNull() {
+        assertThrows(IllegalStateException.class, () ->
+                testUser.getUUID());
+    }
+
+    @Test
+    void getUUID_doesNotThrowIfUUIDIsNotNull() {
+        testUser.setUUID(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
+        assertDoesNotThrow(() -> testUser.getUUID());
+    }
+
+    @Test
+    void setUUID_throwsForNullUUID() {
+        assertThrows(IllegalArgumentException.class, () ->
+                testUser.setUUID(null));
+    }
+
+    @Test
+    void setUUID_throwsIfVersionIsNot4() {
+        System.out.println(UUID.fromString("f81d4fae-7dec-21d0-a765-00a0c91e6bf6").version());
+        assertThrows(IllegalArgumentException.class, () ->
+                testUser.setUUID(UUID.fromString("f81d4fae-7dec-21d0-a765-00a0c91e6bf6")));
+    }
+
+    @Test
+    void setUUID_doesNotThrowForValidUUID() {
+        assertDoesNotThrow(() -> testUser.setUUID(UUID.fromString("550e8400-e29b-41d4-a716-446655440000")));
     }
 
     @Test
