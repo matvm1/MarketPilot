@@ -41,7 +41,6 @@ public class RegistrationService {
         this.userFactory = userFactory;
     }
 
-    //TODO: Allow client registration if already registered as an employee
     public RegistrationResult initiateClientRegistration(String username, char[] rawPassword,
                                Set<Role.RoleName> clientRoleNames, String personalEmail,
                                String firstName, String middleName, String lastName) {
@@ -49,10 +48,14 @@ public class RegistrationService {
         Arrays.fill(rawPassword, '\0');
         rawPassword = null;
 
-        //TODO: Return ALREADY_REGISTERED if password hash matches, FAILURE otherwise
-        if (userRepository.findByUsername(username)
-                .or(() -> userRepository.findByPersonalEmail(personalEmail)).isPresent())
-            return RegistrationResult.ALREADY_REGISTERED;
+        Optional<User> userOptional = userRepository.findByUsername(username)
+                .or(() -> userRepository.findByPersonalEmail(personalEmail));
+        if (userOptional.isPresent()) {
+            if (passwordHash.equals(userOptional.get().getClientPasswordHash()))
+                return RegistrationResult.ALREADY_REGISTERED;
+            else
+                return RegistrationResult.FAILURE;
+        }
 
         User newUser = userFactory.createClientUser(getRolesFromRoleNames(clientRoleNames), username,
                 passwordHash, personalEmail, firstName, middleName, lastName);
@@ -77,7 +80,8 @@ public class RegistrationService {
         Arrays.fill(rawPassword, '\0');
         rawPassword = null;
 
-        Optional<User> existingEmployeeOptional = userRepository.findByUsername(username);
+        Optional<User> existingEmployeeOptional = userRepository.findByUsername(username)
+                .or(() -> userRepository.findByPersonalEmail(personalEmail));
         if (existingEmployeeOptional.isPresent()) {
             User existingEmployee = existingEmployeeOptional.get();
             //TODO: Clean user types with flags
@@ -87,15 +91,17 @@ public class RegistrationService {
                 if (pendingVerificationUserRepository.save(existingEmployee))
                     return RegistrationResult.SUCCESS;
             }
-            else
-                //TODO: Return ALREADY_REGISTERED if password hash matches, FAILURE otherwise
-                return RegistrationResult.ALREADY_REGISTERED;
+            else {
+                if (passwordHash.equals(existingEmployee.getClientPasswordHash()))
+                    return RegistrationResult.ALREADY_REGISTERED;
+                else
+                    return RegistrationResult.FAILURE;
+            }
         }
 
         return RegistrationResult.FAILURE;
     }
 
-    //TODO: Allow employee registration if already registered as a client (personal investor)
     public RegistrationResult initiateEmployeeRegistration(String employeeId, String username, char[] rawPassword,
                                  Set<Role.RoleName> employeeRoleNames, String employeeEmail,
                                  String firstName, String middleName, String lastName) {
@@ -103,11 +109,15 @@ public class RegistrationService {
         Arrays.fill(rawPassword, '\0');
         rawPassword = null;
 
-        //TODO: Return ALREADY_REGISTERED if password hash matches, FAILURE otherwise
-        if (userRepository.findByUsername(username)
-                .or(() -> userRepository.findByEmployeeId(employeeId))
-                .or(() -> userRepository.findByEmployeeEmail(employeeEmail)).isPresent())
-            return RegistrationResult.ALREADY_REGISTERED;
+        Optional<User> userOptional = userRepository.findByEmployeeId(employeeId)
+                .or(() -> userRepository.findByUsername(username))
+                .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
+        if (userOptional.isPresent()) {
+            if (passwordHash.equals(userOptional.get().getEmployeePasswordHash()))
+                return RegistrationResult.ALREADY_REGISTERED;
+            else
+                return RegistrationResult.FAILURE;
+        }
 
         User newUser = userFactory.createEmployeeUser(employeeId, getRolesFromRoleNames(employeeRoleNames),
                 username, passwordHash, employeeEmail, firstName, middleName, lastName);
@@ -134,7 +144,9 @@ public class RegistrationService {
         Arrays.fill(rawPassword, '\0');
         rawPassword = null;
 
-        Optional<User> existingClientOptional = userRepository.findByUsername(username);
+        Optional<User> existingClientOptional = userRepository.findByEmployeeId(employeeId)
+                .or(() -> userRepository.findByUsername(username))
+                .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
         if (existingClientOptional.isPresent()) {
             User existingClient = existingClientOptional.get();
             //TODO: Clean user types with flags
@@ -144,9 +156,12 @@ public class RegistrationService {
                 if (pendingVerificationUserRepository.save(existingClient))
                     return RegistrationResult.SUCCESS;
             }
-            else
-                //TODO: Return ALREADY_REGISTERED if password hash matches, FAILURE otherwise
-                return RegistrationResult.ALREADY_REGISTERED;
+            else {
+                if (passwordHash.equals(existingClient.getEmployeePasswordHash()))
+                    return RegistrationResult.ALREADY_REGISTERED;
+                else
+                    return RegistrationResult.FAILURE;
+            }
         }
 
         return RegistrationResult.FAILURE;
