@@ -394,6 +394,42 @@ class UserTest {
     }
 
     @Test
+    void isClient_throwsIfUserIsNotAClientAndIsNotAnEmployee() {
+        assertThrows(IllegalStateException.class, () ->
+                testUser.isClient());
+    }
+
+    @Test
+    void isClient_doesNotThrowIfUserIsAClient() {
+        testUser.setClient(true);
+        assertDoesNotThrow(() -> testUser.isClient());
+    }
+
+    @Test
+    void isClient_doesNotThrowIfUserIsAnEmployee() {
+        testUser.setEmployee(true);
+        assertDoesNotThrow(() -> testUser.isClient());
+    }
+
+    @Test
+    void isEmployee_throwsIfUserIsNotAClientAndIsNotAnEmployee() {
+        assertThrows(IllegalStateException.class, () ->
+                testUser.isEmployee());
+    }
+
+    @Test
+    void isEmployee_doesNotThrowIfUserIsAnEmployee() {
+        testUser.setEmployee(true);
+        assertDoesNotThrow(() -> testUser.isEmployee());
+    }
+
+    @Test
+    void isEmployee_doesNotThrowIfUserIsAClient() {
+        testUser.setClient(true);
+        assertDoesNotThrow(() -> testUser.isEmployee());
+    }
+
+    @Test
     void setUUID_throwsForNullUUID() {
         assertThrows(IllegalArgumentException.class, () ->
                 testUser.setUUID(null));

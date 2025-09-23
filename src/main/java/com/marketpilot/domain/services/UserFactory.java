@@ -14,6 +14,7 @@ public class UserFactory {
         validateRolesAndGrant(newUser, clientRoles, UserType.CLIENT);
         newUser.setClientPasswordHash(clientPasswordHash);
         newUser.setUUID(UUID.randomUUID());
+        newUser.setClient(true);
 
         return newUser;
     }
@@ -24,6 +25,7 @@ public class UserFactory {
         validateRolesAndGrant(newUser, employeeRoles, UserType.EMPLOYEE);
         newUser.setEmployeePasswordHash(employeePasswordHash);
         newUser.setUUID(UUID.randomUUID());
+        newUser.setEmployee(true);
 
         return newUser;
     }
@@ -41,6 +43,7 @@ public class UserFactory {
         validateRolesAndGrant(existingClient, employeeRoles, UserType.EMPLOYEE);
         existingClient.setEmployeePasswordHash(employeePasswordHash);
         existingClient.setEmployeeEmail(employeeEmail);
+        existingClient.setEmployee(true);
 
         return existingClient;
     }
@@ -57,6 +60,7 @@ public class UserFactory {
         validateRolesAndGrant(existingEmployee, clientRoles, UserType.CLIENT);
         existingEmployee.setClientPasswordHash(clientPasswordHash);
         existingEmployee.setPersonalEmail(personalEmail);
+        existingEmployee.setClient(true);
 
         return existingEmployee;
     }

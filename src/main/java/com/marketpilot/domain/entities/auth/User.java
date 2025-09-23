@@ -19,6 +19,9 @@ public class User {
     private String middleName;
     private String lastName;
 
+    private boolean isClient;
+    private boolean isEmployee;
+
     public User(String employeeId, String username, String personalEmail, String employeeEmail,
                 String firstName, String middleName, String lastName) {
         EmailValidator emailValidator = EmailValidator.getInstance();
@@ -59,6 +62,9 @@ public class User {
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
+
+        this.isClient = false;
+        this.isEmployee = false;
     }
 
     public UUID getUUID() {
@@ -89,6 +95,18 @@ public class User {
     public String getLastName() { return lastName; }
 
     public String getFullName() { return firstName + " " + middleName + " " + lastName; }
+
+    public boolean isClient() {
+        if (!isClient && !isEmployee)
+            throw new IllegalStateException("user must be a client and/or employee prior to accessing isClient()");
+        return isClient;
+    }
+
+    public boolean isEmployee() {
+        if (!isClient && !isEmployee)
+            throw new IllegalStateException("user must be a client and/or employee prior to accessing isEmployee()");
+        return isEmployee;
+    }
 
     public void setUUID(UUID uuid) {
         final int RANDOM_UUID_GENERATION_VERSION_NUMBER = 4;
@@ -167,6 +185,10 @@ public class User {
             throw new IllegalArgumentException("firstName cannot be empty");
         this.lastName = lastName;
     }
+
+    public void setClient(boolean isClient) { this.isClient = isClient; }
+
+    public void setEmployee(boolean isEmployee) { this.isEmployee = isEmployee; }
 
     @Override
     public boolean equals(Object o) {

@@ -84,8 +84,7 @@ public class RegistrationService {
                 .or(() -> userRepository.findByPersonalEmail(personalEmail));
         if (existingEmployeeOptional.isPresent()) {
             User existingEmployee = existingEmployeeOptional.get();
-            //TODO: Clean user types with flags
-            if (existingEmployee.getPersonalEmail() == null) {
+            if (!existingEmployee.isClient()) {
                 existingEmployee = userFactory.assignClientAttributes(existingEmployee,
                         getRolesFromRoleNames(clientRoleNames), passwordHash, personalEmail);
                 if (pendingVerificationUserRepository.save(existingEmployee))
@@ -149,8 +148,7 @@ public class RegistrationService {
                 .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
         if (existingClientOptional.isPresent()) {
             User existingClient = existingClientOptional.get();
-            //TODO: Clean user types with flags
-            if (existingClient.getEmployeeEmail() == null) {
+            if (!existingClient.isEmployee()) {
                 existingClient = userFactory.assignEmployeeAttributes(existingClient, employeeId,
                         getRolesFromRoleNames(employeeRoleNames), passwordHash, employeeEmail);
                 if (pendingVerificationUserRepository.save(existingClient))
