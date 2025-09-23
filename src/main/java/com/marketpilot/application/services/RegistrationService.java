@@ -8,6 +8,7 @@ import com.marketpilot.application.ports.persistence.RoleRepository;
 import com.marketpilot.application.ports.persistence.UserRepository;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
+import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.services.UserFactory;
 
 import java.util.*;
@@ -98,16 +99,20 @@ public class RegistrationService {
         return RegistrationResult.PENDING_VERIFICATION;
     }
 
-    //TODO: Service that runs in the background and removes users from the pending repo if verification period has
+    //TODO: Service that runs in the background and removes users from the pending repo if verification period has 
     // expired
     //TODO: unit tests
-    //TODO: Separate client and employee verification codes
-    public RegistrationResult completeRegistration(User user, String verificationCodeAttempt) {
-        String username = user.getUsername();
-        Optional<String> verificationCode = pendingVerificationUserRepository.getVerificationCode(username);
+    public RegistrationResult completeRegistration(User user,
+                                                   UserType registrationUserType, String verificationCodeAttempt) {
+        UUID uuid = user.getUUID();
+        Optional<String> verificationCode = switch (registrationUserType) {
+            case CLIENT -> pendingVerificationUserRepository.getClientRegistrationVerificationCode(uuid);
+            case EMPLOYEE -> pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(uuid);
+            default -> Optional.empty();
+        };
         if (verificationCode.isPresent() && verificationCode.get().equals(verificationCodeAttempt)) {
             try {
-                if (pendingVerificationUserRepository.deleteByUsername(username))
+                if (pendingVerificationUserRepository.deleteByUUID(uuid))
                     userRepository.save(user);
                 else
                     return RegistrationResult.FAILURE;
