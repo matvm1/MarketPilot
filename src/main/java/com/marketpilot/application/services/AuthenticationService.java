@@ -45,8 +45,8 @@ public class AuthenticationService {
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             if (passwordHasher.matches(passwordHash, user.getClientPasswordHash())) {
-                twoFactorService.sendChallenge(user);
-                return AuthenticationStatus.CHALLENGE_SENT;
+                if (twoFactorService.sendChallenge(user).isPresent())
+                    return AuthenticationStatus.CHALLENGE_SENT;
             }
         }
 
@@ -60,22 +60,23 @@ public class AuthenticationService {
         rawPassword = null;
 
         if (employeeId == null)
-            throw new IllegalArgumentException("employeeId cannot be null");
+            return AuthenticationStatus.FAILURE;
         if (employeeId.isBlank())
-            throw new IllegalArgumentException("employeeId cannot be blank");
+            return AuthenticationStatus.FAILURE;
 
         Optional<User> optionalUser = userRepository.findByEmployeeId(employeeId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             if (passwordHasher.matches(passwordHash, user.getEmployeePasswordHash())) {
-                twoFactorService.sendChallenge(user);
-                return AuthenticationStatus.CHALLENGE_SENT;
+                if (twoFactorService.sendChallenge(user).isPresent())
+                    return AuthenticationStatus.CHALLENGE_SENT;
             }
         }
 
         return AuthenticationStatus.FAILURE;
     }
 
+    //TODO: code review and unit tests
     public Optional<AuthenticationResult> completeAuthentication(User user, String challenge) {
         Optional<AuthenticationResult> authenticationResult = twoFactorService.verify(user, challenge);
         authenticationResult.ifPresent(result -> sessionManager.createSession(result));
