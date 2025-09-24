@@ -11,7 +11,6 @@ import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
-import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.services.UserFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +23,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
@@ -40,8 +38,7 @@ public class AuthenticationServiceTest {
 
     private User existingClient;
     private User existingEmployee;
-    private char[] dummyPassword = new char[] {'p', 'a', 's', 's', 'w', 'o', 'r', 'd'};
-    private static final String dummyPasswordHash = "$2a$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW";
+    private final String dummyPasswordHash = "password";
     private Set<RoleName> clientRoleNames;
     private Set<RoleName> employeeRoleNames;
     private Set<Role> clientRoles;
@@ -64,14 +61,12 @@ public class AuthenticationServiceTest {
                 "johnmdoe@outlook.com", "John", "M", "Doe");
         existingEmployee = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", dummyPasswordHash,
                 "johnmdoe@company.com", "John", "M", "Doe");
-
-        lenient().when(passwordHasher.hash(dummyPassword)).thenReturn(dummyPasswordHash);
     }
 
     @Test
     void initiateClientAuthentication_returnsFailureIfUsernameClientEmailIsNull() {
         assertEquals(AuthenticationStatus.FAILURE,
-                authenticationService.initiateClientAuthentication(null, dummyPassword, RoleName.PersonalInvestor));
+                authenticationService.initiateClientAuthentication(null, dummyPasswordHash, RoleName.PersonalInvestor));
     }
 
     @Test
@@ -81,9 +76,9 @@ public class AuthenticationServiceTest {
         when(userRepository.findByUsername("johnmdoe@outlook.com")
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe@outlook.com"))).thenReturn(Optional.empty());
         assertEquals(AuthenticationStatus.FAILURE,
-                authenticationService.initiateClientAuthentication("johnmdoe", dummyPassword, RoleName.PersonalInvestor));
+                authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordHash, RoleName.PersonalInvestor));
         assertEquals(AuthenticationStatus.FAILURE,
-                authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPassword, RoleName.PersonalInvestor));
+                authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPasswordHash, RoleName.PersonalInvestor));
     }
 
     @Test
@@ -93,14 +88,14 @@ public class AuthenticationServiceTest {
         when(userRepository.findByUsername("johnmdoe@outlook.com")
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe@outlook.com"))).thenReturn(Optional.of(existingClient));
         assertEquals(AuthenticationStatus.FAILURE,
-                authenticationService.initiateClientAuthentication("johnmdoe", dummyPassword, RoleName.Admin));
+                authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordHash, RoleName.Admin));
         assertEquals(AuthenticationStatus.FAILURE,
-                authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPassword, RoleName.Admin));
+                authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPasswordHash, RoleName.Admin));
     }
 
     @Test
     void initiateClientAuthentication_returnsFailureIfPasswordDoesNotMatch(){
-        char[] wrongPassword = {'1', '2', '3'};
+        String wrongPassword = "12345678";
         when(userRepository.findByUsername("johnmdoe")
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe"))).thenReturn(Optional.of(existingClient));
         when(userRepository.findByUsername("johnmdoe@outlook.com")
@@ -122,34 +117,34 @@ public class AuthenticationServiceTest {
         when(twoFactorService.sendChallenge(existingClient.getUsername(), RoleName.PersonalInvestor))
                 .thenReturn(Optional.of(new TwoFactorAuthenticationChallenge(existingClient.getUsername(), "123456")));
         assertEquals(AuthenticationStatus.CHALLENGE_SENT,
-                authenticationService.initiateClientAuthentication("johnmdoe", dummyPassword, RoleName.PersonalInvestor));
+                authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordHash, RoleName.PersonalInvestor));
         assertEquals(AuthenticationStatus.CHALLENGE_SENT,
-                authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPassword, RoleName.PersonalInvestor));
+                authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPasswordHash, RoleName.PersonalInvestor));
     }
 
     @Test
     void initiateEmployeeAuthentication_returnsFailureIfEmployeeIdIsNull() {
         assertEquals(AuthenticationStatus.FAILURE,
-                authenticationService.initiateEmployeeAuthentication(null, dummyPassword, RoleName.Analyst));
+                authenticationService.initiateEmployeeAuthentication(null, dummyPasswordHash, RoleName.Analyst));
     }
 
     @Test
     void initiateEmployeeAuthentication_returnsFailureIfEmployeeIdNotFound(){
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.empty());
         assertEquals(AuthenticationStatus.FAILURE,
-                authenticationService.initiateEmployeeAuthentication("ab123456", dummyPassword, RoleName.Analyst));
+                authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordHash, RoleName.Analyst));
     }
 
     @Test
     void initiateEmployeeAuthentication_returnsFailureIfUserDoesNotHaveRole(){
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         assertEquals(AuthenticationStatus.FAILURE,
-                authenticationService.initiateEmployeeAuthentication("ab123456", dummyPassword, RoleName.Admin));
+                authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordHash, RoleName.Admin));
     }
 
     @Test
     void initiateEmployeeAuthentication_returnsFailureIfPasswordDoesNotMatch() {
-        char[] wrongPassword = {'1', '2', '3'};
+        String wrongPassword = "12345678";
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         assertEquals(AuthenticationStatus.FAILURE,
                 authenticationService.initiateEmployeeAuthentication("ab123456", wrongPassword, RoleName.Analyst));
@@ -163,8 +158,8 @@ public class AuthenticationServiceTest {
         when(twoFactorService.sendChallenge(existingEmployee.getUsername(), RoleName.Analyst))
                 .thenReturn(Optional.of(new TwoFactorAuthenticationChallenge(existingEmployee.getUsername(), "123456")));
         assertEquals(AuthenticationStatus.CHALLENGE_SENT,
-                authenticationService.initiateEmployeeAuthentication("ab123456", dummyPassword, RoleName.Analyst));
+                authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordHash, RoleName.Analyst));
         assertEquals(AuthenticationStatus.CHALLENGE_SENT,
-                authenticationService.initiateEmployeeAuthentication("ab123456", dummyPassword, RoleName.Analyst));
+                authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordHash, RoleName.Analyst));
     }
 }

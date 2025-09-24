@@ -41,12 +41,7 @@ public class AuthenticationService {
         this.userFactory = userFactory;
     }
 
-    //TODO: Hash client-side
-    public AuthenticationStatus initiateClientAuthentication(String usernameOrClientEmail, char[] rawPassword, RoleName roleName) {
-        String passwordHash = passwordHasher.hash(rawPassword);
-        Arrays.fill(rawPassword, '\0');
-        rawPassword = null;
-
+    public AuthenticationStatus initiateClientAuthentication(String usernameOrClientEmail, String passwordHash, RoleName roleName) {
         if (usernameOrClientEmail == null)
             return AuthenticationStatus.FAILURE;
 
@@ -61,12 +56,7 @@ public class AuthenticationService {
         return AuthenticationStatus.FAILURE;
     }
 
-    //TODO: Hash client-side
-    public AuthenticationStatus initiateEmployeeAuthentication(String employeeId, char[] rawPassword, RoleName roleName) {
-        String passwordHash = passwordHasher.hash(rawPassword);
-        Arrays.fill(rawPassword, '\0');
-        rawPassword = null;
-
+    public AuthenticationStatus initiateEmployeeAuthentication(String employeeId, String passwordHash, RoleName roleName) {
         if (employeeId == null)
             return AuthenticationStatus.FAILURE;
         if (employeeId.isBlank())
