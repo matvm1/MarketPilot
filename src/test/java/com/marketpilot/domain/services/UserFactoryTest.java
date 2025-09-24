@@ -42,16 +42,8 @@ public class UserFactoryTest {
     void createClientUser_returnsUserWithNonNullAndNonEmptyRoleAssignments() {
         User user = userFactory.createClientUser(clientRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_CLIENT,
                 "johnmdoe@outlook.com","John", "M", "Doe");
-        assertNotEquals(null, user.getUserRoleAssignments());
-        assertFalse(user.getUserRoleAssignments().isEmpty());
-    }
-
-    @Test
-    void createClientUser_userRoleAssignmentsReferBackToUser() {
-        User user = userFactory.createClientUser(clientRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_CLIENT,
-                "johnmdoe@outlook.com","John", "M", "Doe");
-        for (UserRoleAssignment userRoleAssignment : user.getUserRoleAssignments())
-            assertEquals(userRoleAssignment.user(), user);
+        assertNotEquals(null, user.getRoles());
+        assertFalse(user.getRoles().isEmpty());
     }
 
     @Test
@@ -66,16 +58,8 @@ public class UserFactoryTest {
     void createEmployeeUser_returnsUserWithNonNullAndNonEmptyRoleAssignments() {
         User user = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_EMPLOYEE,
                 "johnmdoe@company.com","John", "M", "Doe");
-        assertNotEquals(null, user.getUserRoleAssignments());
-        assertFalse(user.getUserRoleAssignments().isEmpty());
-    }
-
-    @Test
-    void createEmployeeUser_userRoleAssignmentsReferBackToUser() {
-        User user = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_EMPLOYEE,
-                "johnmdoe@company.com","John", "M", "Doe");
-        for (UserRoleAssignment userRoleAssignment : user.getUserRoleAssignments())
-            assertEquals(userRoleAssignment.user(), user);
+        assertNotEquals(null, user.getRoles());
+        assertFalse(user.getRoles().isEmpty());
     }
 
     @Test
@@ -139,13 +123,9 @@ public class UserFactoryTest {
         assertDoesNotThrow(() ->
                 userFactory.validateRolesAndGrant(clientUser, employeeRoles, UserType.EMPLOYEE));
 
-        Set<Role> clientUserRoles = new HashSet<>();
-        for (UserRoleAssignment userRoleAssignment : clientUser.getUserRoleAssignments())
-            clientUserRoles.add(userRoleAssignment.role());
-
         Set<Role> expectedRoles = new HashSet<>(clientRoles);
         expectedRoles.addAll(employeeRoles);
 
-        assertEquals(expectedRoles, clientUserRoles);
+        assertEquals(expectedRoles, clientUser.getRoles());
     }
 }

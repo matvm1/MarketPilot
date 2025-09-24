@@ -9,7 +9,7 @@ import java.util.UUID;
 public class User {
     private UUID uuid;
     private String employeeId;
-    private Set<UserRoleAssignment> userRoleAssignments;
+    private Set<Role> roles;
     private final String username;
     private String clientPasswordHash;
     private String employeePasswordHash;
@@ -56,7 +56,7 @@ public class User {
 
         this.employeeId = employeeId;
         this.username = username;
-        this.userRoleAssignments = new HashSet<>();
+        this.roles = new HashSet<>();
         this.personalEmail = personalEmail;
         this.employeeEmail = employeeEmail;
         this.firstName = firstName;
@@ -82,11 +82,11 @@ public class User {
 
     public String getEmployeePasswordHash() { return employeePasswordHash; }
 
-    public Set<UserRoleAssignment> getUserRoleAssignments() { return userRoleAssignments; }
+    public Set<Role> getRoles() { return roles; }
 
     public boolean hasRole(Role.RoleName roleName) {
-        for (UserRoleAssignment userRoleAssignment : userRoleAssignments)
-            if (userRoleAssignment.role().getRoleName().equals(roleName))
+        for (Role role : roles)
+            if (role.getRoleName().equals(roleName))
                 return true;
 
         return false;
@@ -155,7 +155,7 @@ public class User {
         if (role == null)
             throw new IllegalArgumentException("role cannot be null");
 
-        this.userRoleAssignments.add(new UserRoleAssignment(this, role));
+        this.roles.add(role);
     }
 
     public void setPersonalEmail(String personalEmail) {
@@ -206,15 +206,10 @@ public class User {
         if (!(o instanceof User))
             return false;
 
-        Set<Role> thisRoles = new HashSet<>();
-        for (UserRoleAssignment userRoleAssignment : userRoleAssignments)
-            thisRoles.add(userRoleAssignment.role());
-        Set<Role> oRoles = new HashSet<>();
-        for (UserRoleAssignment userRoleAssignment : ((User) o).userRoleAssignments)
-            oRoles.add(userRoleAssignment.role());
-        if (!(thisRoles.equals(oRoles)))
+        if (!(this.getRoles().equals(((User) o).getRoles())))
             return false;
 
+        //TODO: UUID
         return this.username.equals(((User) o).username) &&
                 this.employeeId.equals(((User) o).employeeId) &&
                 this.personalEmail.equals(((User) o).personalEmail) &&
