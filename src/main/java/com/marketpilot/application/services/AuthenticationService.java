@@ -50,15 +50,12 @@ public class AuthenticationService {
         if (usernameOrClientEmail == null)
             return AuthenticationStatus.FAILURE;
 
-        Optional<User> optionalUser = userRepository.findByUsername(usernameOrClientEmail)
+        Optional<User> userOptional = userRepository.findByUsername(usernameOrClientEmail)
                 .or(() -> userRepository.findByPersonalEmail(usernameOrClientEmail));
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            if (user.hasRole(roleName))
-                if (passwordHasher.matches(passwordHash, user.getClientPasswordHash())) {
-                    if (twoFactorService.sendChallenge(user.getUsername(), roleName).isPresent())
-                        return AuthenticationStatus.CHALLENGE_SENT;
-            }
+        if (userOptional.isPresent() && userOptional.get().hasRole(roleName))
+            if (passwordHasher.matches(passwordHash, userOptional.get().getClientPasswordHash())) {
+                if (twoFactorService.sendChallenge(userOptional.get().getUsername(), roleName).isPresent())
+                    return AuthenticationStatus.CHALLENGE_SENT;
         }
 
         return AuthenticationStatus.FAILURE;
@@ -75,14 +72,11 @@ public class AuthenticationService {
         if (employeeId.isBlank())
             return AuthenticationStatus.FAILURE;
 
-        Optional<User> optionalUser = userRepository.findByEmployeeId(employeeId);
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            if (user.hasRole(roleName))
-                if (passwordHasher.matches(passwordHash, user.getEmployeePasswordHash())) {
-                    if (twoFactorService.sendChallenge(user.getUsername(), roleName).isPresent())
-                        return AuthenticationStatus.CHALLENGE_SENT;
-            }
+        Optional<User> userOptional = userRepository.findByEmployeeId(employeeId);
+        if (userOptional.isPresent() && userOptional.get().hasRole(roleName))
+            if (passwordHasher.matches(passwordHash, userOptional.get().getEmployeePasswordHash())) {
+                if (twoFactorService.sendChallenge(userOptional.get().getUsername(), roleName).isPresent())
+                    return AuthenticationStatus.CHALLENGE_SENT;
         }
 
         return AuthenticationStatus.FAILURE;
@@ -92,12 +86,9 @@ public class AuthenticationService {
         AuthenticationStatus authenticationStatus = twoFactorService.verify(username, roleName, challenge);
         if (authenticationStatus == AuthenticationStatus.SUCCESS) {
             Optional<User> userOptional = userRepository.findByUsername(username);
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                if (user.hasRole(roleName))
-                    if (sessionManager.createSession(new AuthenticationResult(user, getRole(roleName))).isPresent())
+            if (userOptional.isPresent() && userOptional.get().hasRole(roleName))
+                    if (sessionManager.createSession(new AuthenticationResult(userOptional.get(), getRole(roleName))).isPresent())
                         return AuthenticationStatus.SUCCESS;
-            }
         }
 
         return AuthenticationStatus.FAILURE;
