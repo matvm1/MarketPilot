@@ -2,6 +2,7 @@ package com.marketpilot.application.services;
 
 import com.marketpilot.application.ports.EmailEngine;
 import com.marketpilot.application.ports.auth.PasswordHasher;
+import com.marketpilot.application.ports.persistence.EmployeeRepository;
 import com.marketpilot.application.ports.persistence.PendingVerificationUserRepository;
 import com.marketpilot.application.ports.persistence.RoleRepository;
 import com.marketpilot.application.ports.persistence.UserRepository;
@@ -32,6 +33,7 @@ public class RegistrationServiceTest {
     UserFactory userFactory;
     @Mock private UserRepository userRepository;
     @Mock private PendingVerificationUserRepository pendingVerificationUserRepository;
+    @Mock private EmployeeRepository employeeRepository;
     @Mock private RoleRepository roleRepository;
     @Mock private EmailEngine emailEngine;
     @Mock private PasswordHasher passwordHasher;
@@ -52,7 +54,7 @@ public class RegistrationServiceTest {
     void setUp() {
         userFactory = new UserFactory();
         registrationService = new RegistrationService(userRepository, pendingVerificationUserRepository,
-                roleRepository, emailEngine, passwordHasher, userFactory);
+                employeeRepository, roleRepository, emailEngine, passwordHasher, userFactory);
 
         clientRoleNames = new HashSet<>();
         clientRoleNames.add(RoleName.PersonalInvestor);
@@ -69,6 +71,7 @@ public class RegistrationServiceTest {
         existingEmployee = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", dummyPasswordHash,
                 "johnmdoe@company.com", "John", "M", "Doe");
 
+        lenient().when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         lenient().when(passwordHasher.hash(dummyPassword)).thenReturn(dummyPasswordHash);
     }
 
@@ -183,6 +186,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_returnsAlreadyRegisteredIfUsernameIsTaken() {
+        when(employeeRepository.employeeIdExists("ab987654")).thenReturn(true);
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationResult.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab987654", "johnmdoe",
@@ -191,6 +195,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_returnsAlreadyRegisteredIfEmployeeEmailIsTaken() {
+        when(employeeRepository.employeeIdExists("ab987654")).thenReturn(true);
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationResult.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab987654", "johnmdoe1",
@@ -200,6 +205,7 @@ public class RegistrationServiceTest {
     @Test
     void initiateEmployeeRegistration_returnsFailureIfUserNameOrEmployeeIdOrEmployeeEmailIsTakenAndPasswordDoesNotMatch() {
         char[] nonRegisteredPassword = {'1', '2', '3'};
+        when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
         when(passwordHasher.hash(nonRegisteredPassword)).thenReturn("hash123");
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
@@ -220,6 +226,14 @@ public class RegistrationServiceTest {
         assertThrows(NoSuchElementException.class,
                 () -> registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
                         dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
+    }
+
+    @Test
+    void initiateEmployeeRegistration_returnsFailureIfEmployeeIdNotFound() {
+        when(employeeRepository.employeeIdExists("ab123456")).thenReturn(false);
+        assertEquals(RegistrationResult.FAILURE, registrationService.initiateEmployeeRegistration("ab123456",
+                "johnmdoe", dummyPassword, employeeRoleNames, "johnmdoe@company.com",
+                "John", "M", "Doe"));
     }
 
     @Test
@@ -258,6 +272,7 @@ public class RegistrationServiceTest {
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsFailureIfUserNameOrEmployeeIdOrEmployeeEmailIsTakenAndPasswordDoesNotMatch() {
         char[] nonRegisteredPassword = {'1', '2', '3'};
+        when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
         when(passwordHasher.hash(nonRegisteredPassword)).thenReturn("hash123");
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
@@ -271,6 +286,13 @@ public class RegistrationServiceTest {
         assertEquals(RegistrationResult.FAILURE,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123457", "johnmdoe1",
                         nonRegisteredPassword, employeeRoleNames, "johnmdoe@company.com"));
+    }
+
+    @Test
+    void initiateEmployeeRegistrationForExistingClient_returnsFailureIfEmployeeIdNotFound() {
+        when(employeeRepository.employeeIdExists("ab123456")).thenReturn(false);
+        assertEquals(RegistrationResult.FAILURE, registrationService.initiateEmployeeRegistrationForExistingClient("ab123456",
+                "johnmdoe", dummyPassword, employeeRoleNames, "johnmdoe@company.com"));
     }
 
     @Test

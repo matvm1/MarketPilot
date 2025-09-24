@@ -3,6 +3,7 @@ package com.marketpilot.application.services;
 import com.marketpilot.application.dto.EmailMessage;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.EmailEngine;
+import com.marketpilot.application.ports.persistence.EmployeeRepository;
 import com.marketpilot.application.ports.persistence.PendingVerificationUserRepository;
 import com.marketpilot.application.ports.persistence.RoleRepository;
 import com.marketpilot.application.ports.persistence.UserRepository;
@@ -23,6 +24,7 @@ public class RegistrationService {
 
     private final UserRepository userRepository;
     private final PendingVerificationUserRepository pendingVerificationUserRepository;
+    private final EmployeeRepository employeeRepository;
     private final RoleRepository roleRepository;
     private final EmailEngine emailEngine;
     private final PasswordHasher passwordHasher;
@@ -31,10 +33,12 @@ public class RegistrationService {
 
     public RegistrationService(UserRepository userRepository,
                                PendingVerificationUserRepository pendingVerificationUserRepository,
+                               EmployeeRepository employeeRepository,
                                RoleRepository roleRepository,
                                EmailEngine emailEngine, PasswordHasher passwordHasher, UserFactory userFactory) {
         this.userRepository = userRepository;
         this.pendingVerificationUserRepository = pendingVerificationUserRepository;
+        this.employeeRepository = employeeRepository;
         this.roleRepository = roleRepository;
         this.emailEngine = emailEngine;
         this.passwordHasher = passwordHasher;
@@ -105,6 +109,9 @@ public class RegistrationService {
         Arrays.fill(rawPassword, '\0');
         rawPassword = null;
 
+        if (!employeeRepository.employeeIdExists(employeeId))
+            return RegistrationResult.FAILURE;
+
         Optional<User> userOptional = userRepository.findByEmployeeId(employeeId)
                 .or(() -> userRepository.findByUsername(username))
                 .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
@@ -138,6 +145,9 @@ public class RegistrationService {
         String passwordHash = passwordHasher.hash(rawPassword);
         Arrays.fill(rawPassword, '\0');
         rawPassword = null;
+
+        if (!employeeRepository.employeeIdExists(employeeId))
+            return RegistrationResult.FAILURE;
 
         Optional<User> existingClientOptional = userRepository.findByEmployeeId(employeeId)
                 .or(() -> userRepository.findByUsername(username))
