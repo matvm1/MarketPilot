@@ -430,6 +430,18 @@ class UserTest {
     }
 
     @Test
+    void hasRole_returnsFalseIfUserDoesNotHaveRole() {
+        testUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        assertFalse(testUser.hasRole(Role.RoleName.Analyst));
+    }
+
+    @Test
+    void hasRole_returnsTrueIfUserHasRole() {
+        testUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        assertTrue(testUser.hasRole(Role.RoleName.PersonalInvestor));
+    }
+
+    @Test
     void setUUID_throwsForNullUUID() {
         assertThrows(IllegalArgumentException.class, () ->
                 testUser.setUUID(null));

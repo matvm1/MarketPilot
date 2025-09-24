@@ -84,6 +84,14 @@ public class User {
 
     public Set<UserRoleAssignment> getUserRoleAssignments() { return userRoleAssignments; }
 
+    public boolean hasRole(Role.RoleName roleName) {
+        for (UserRoleAssignment userRoleAssignment : userRoleAssignments)
+            if (userRoleAssignment.getRole().getRoleName().equals(roleName))
+                return true;
+
+        return false;
+    }
+
     public String getPersonalEmail() { return personalEmail; }
 
     public String getEmployeeEmail() { return employeeEmail; }
