@@ -38,9 +38,7 @@ public class AuthenticationService {
         rawPassword = null;
 
         if (usernameOrClientEmail == null)
-            throw new IllegalArgumentException("usernameOrClientEmail cannot be null");
-        if (usernameOrClientEmail.isBlank())
-            throw new IllegalArgumentException("usernameOrClientEmail cannot be blank");
+            return AuthenticationStatus.FAILURE;
 
         Optional<User> optionalUser = userRepository.findByUsername(usernameOrClientEmail)
                 .or(() -> userRepository.findByPersonalEmail(usernameOrClientEmail));
