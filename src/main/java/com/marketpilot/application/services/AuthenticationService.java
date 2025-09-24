@@ -1,7 +1,6 @@
 package com.marketpilot.application.services;
 
 import com.marketpilot.application.dto.AuthenticationResult;
-import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.SessionManager;
 import com.marketpilot.application.ports.auth.TwoFactorService;
 import com.marketpilot.application.ports.persistence.RoleRepository;
@@ -24,15 +23,13 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final TwoFactorService twoFactorService;
-    private final PasswordHasher passwordHasher;
     private final SessionManager sessionManager;
 
     public AuthenticationService(UserRepository userRepository, RoleRepository roleRepository, TwoFactorService twoFactorService,
-                                 PasswordHasher passwordHasher, SessionManager sessionManager) {
+                                 SessionManager sessionManager) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.twoFactorService = twoFactorService;
-        this.passwordHasher = passwordHasher;
         this.sessionManager = sessionManager;
     }
 
@@ -58,11 +55,25 @@ public class AuthenticationService {
     private AuthenticationStatus authenticate(String identifier, String passwordHash, RoleName roleName,
                                               Function<String, Optional<User>> userFinder, Function<User, String> passwordHashGetter) {
         Optional<User> userOptional = userFinder.apply(identifier);
-        if (userOptional.isPresent() && userOptional.get().hasRole(roleName))
-            if (passwordHasher.matches(passwordHash, passwordHashGetter.apply(userOptional.get())))
-                if (twoFactorService.sendChallenge(userOptional.get().getUsername(), roleName).isPresent())
-                    return AuthenticationStatus.CHALLENGE_SENT;
 
+        String storedHash = userOptional.map(passwordHashGetter)
+                .orElse("$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+
+        // check all conditions at once to prevent timing attacks
+        boolean userExists = userOptional.isPresent();
+        boolean hasRole = userExists && userOptional.get().hasRole(roleName);
+        boolean passwordMatches = passwordHash.equals(storedHash);
+
+        if (userExists && hasRole && passwordMatches) {
+            User user = userOptional.get();
+            return twoFactorService.sendChallenge(user.getUsername(), roleName).isPresent()
+                    ? AuthenticationStatus.CHALLENGE_SENT
+                    : AuthenticationStatus.FAILURE;
+        }
+
+        // dummy operation to match timing of a successful authentication
+        User user = userOptional.orElse(null);
+        //TODO: A dummy challenge should also be sent
         return AuthenticationStatus.FAILURE;
     }
 

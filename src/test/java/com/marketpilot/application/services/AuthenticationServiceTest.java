@@ -30,7 +30,6 @@ public class AuthenticationServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private RoleRepository roleRepository;
     @Mock private TwoFactorService twoFactorService;
-    @Mock private PasswordHasher passwordHasher;
     @Mock private SessionManager sessionManager;
 
     private AuthenticationService authenticationService;
@@ -48,7 +47,7 @@ public class AuthenticationServiceTest {
     @BeforeEach
     void setUp() {
         userFactory = new UserFactory();
-        authenticationService = new AuthenticationService(userRepository, roleRepository, twoFactorService, passwordHasher,
+        authenticationService = new AuthenticationService(userRepository, roleRepository, twoFactorService,
                 sessionManager);
 
         clientRoles = new HashSet<>();
@@ -111,8 +110,6 @@ public class AuthenticationServiceTest {
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe"))).thenReturn(Optional.of(existingClient));
         when(userRepository.findByUsername("johnmdoe@outlook.com")
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe@outlook.com"))).thenReturn(Optional.of(existingClient));
-        when(passwordHasher.matches(dummyPasswordHash, existingClient.getClientPasswordHash()))
-                .thenReturn(true);
         when(twoFactorService.sendChallenge(existingClient.getUsername(), RoleName.PersonalInvestor))
                 .thenReturn(Optional.of(new TwoFactorAuthenticationChallenge(existingClient.getUsername(), "123456")));
         assertEquals(AuthenticationStatus.CHALLENGE_SENT,
@@ -152,8 +149,7 @@ public class AuthenticationServiceTest {
     @Test
     void initiateEmployeeAuthentication_returnsChallengeSentIfEmployeeIdAndPasswordExist() {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
-        when(passwordHasher.matches(dummyPasswordHash, existingEmployee.getEmployeePasswordHash()))
-                .thenReturn(true);
+
         when(twoFactorService.sendChallenge(existingEmployee.getUsername(), RoleName.Analyst))
                 .thenReturn(Optional.of(new TwoFactorAuthenticationChallenge(existingEmployee.getUsername(), "123456")));
         assertEquals(AuthenticationStatus.CHALLENGE_SENT,
