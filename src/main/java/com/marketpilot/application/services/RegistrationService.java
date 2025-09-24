@@ -86,8 +86,10 @@ public class RegistrationService {
             if (!existingEmployee.isClient()) {
                 existingEmployee = userFactory.assignClientAttributes(existingEmployee,
                         getRolesFromRoleNames(clientRoleNames), passwordHash, personalEmail);
-                if (pendingVerificationUserRepository.save(existingEmployee))
-                    return RegistrationResult.PENDING_VERIFICATION;
+                if (emailEngine.sendTemplatedEmail(new EmailMessage(personalEmail,
+                        "Verify your MarketPilot account", null, null), VERIFICATION_EMAIL_TEMPLATE))
+                    if (pendingVerificationUserRepository.save(existingEmployee))
+                        return RegistrationResult.PENDING_VERIFICATION;
             }
             else if (passwordHash.equals(existingEmployee.getClientPasswordHash()))
                     return RegistrationResult.ALREADY_REGISTERED;
@@ -145,8 +147,10 @@ public class RegistrationService {
             if (!existingClient.isEmployee()) {
                 existingClient = userFactory.assignEmployeeAttributes(existingClient, employeeId,
                         getRolesFromRoleNames(employeeRoleNames), passwordHash, employeeEmail);
-                if (pendingVerificationUserRepository.save(existingClient))
-                    return RegistrationResult.SUCCESS;
+                if (emailEngine.sendTemplatedEmail(new EmailMessage(employeeEmail,
+                        "Verify your MarketPilot account", null, null), VERIFICATION_EMAIL_TEMPLATE))
+                    if (pendingVerificationUserRepository.save(existingClient))
+                        return RegistrationResult.PENDING_VERIFICATION;
             }
             else {
                 if (passwordHash.equals(existingClient.getEmployeePasswordHash()))

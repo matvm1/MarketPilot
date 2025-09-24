@@ -154,6 +154,23 @@ public class RegistrationServiceTest {
     }
 
     @Test
+    void initiateClientRegistrationForExistingEmployee_returnsPendingVerificationWhenUserIsRegisteredAsClientAndRoleExists() {
+        when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
+        when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
+        when(passwordHasher.hash(dummyPassword)).thenReturn(dummyPasswordHash);
+        when(pendingVerificationUserRepository.save(argThat(pendingUser ->
+                pendingUser.getUsername().equals("johnmdoe"))))
+                .thenReturn(true);
+        when(emailEngine.sendTemplatedEmail(
+                argThat(email -> email.recipient().equals("johnmdoe@outlook.com")),
+                eq(VERIFICATION_EMAIL_TEMPLATE)))
+                .thenReturn(true);
+        assertEquals(RegistrationResult.PENDING_VERIFICATION,
+                registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
+                        dummyPassword, clientRoleNames, "johnmdoe@outlook.com"));
+    }
+
+    @Test
     void initiateEmployeeRegistration_returnsAlreadyRegisteredIfEmployeeIdIsTaken() {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationResult.ALREADY_REGISTERED,
@@ -251,5 +268,22 @@ public class RegistrationServiceTest {
         assertEquals(RegistrationResult.FAILURE,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123457", "johnmdoe1",
                         nonRegisteredPassword, employeeRoleNames, "johnmdoe@company.com"));
+    }
+
+    @Test
+    void initiateEmployeeRegistrationForExistingClient_returnsPendingVerificationIfUserIsRegisteredAsEmployeeAndRoleExists() {
+        when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
+        when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(passwordHasher.hash(dummyPassword)).thenReturn(dummyPasswordHash);
+        when(emailEngine.sendTemplatedEmail(
+                argThat(email -> email.recipient().equals("johnmdoe@company.com")),
+                eq(VERIFICATION_EMAIL_TEMPLATE)))
+                .thenReturn(true);
+        when(pendingVerificationUserRepository.save(argThat(pendingUser ->
+                pendingUser.getUsername().equals("johnmdoe"))))
+                .thenReturn(true);
+        assertEquals(RegistrationResult.PENDING_VERIFICATION,
+                registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe",
+                        dummyPassword, employeeRoleNames, "johnmdoe@company.com"));
     }
 }
