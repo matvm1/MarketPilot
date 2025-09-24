@@ -62,15 +62,14 @@ public class RegistrationService {
         try {
             if (emailEngine.sendTemplatedEmail(new EmailMessage(personalEmail,
                     "Verify your MarketPilot account", null, null), VERIFICATION_EMAIL_TEMPLATE))
-                pendingVerificationUserRepository.save(newUser);
-            else
-                return RegistrationResult.FAILURE;
+                if (pendingVerificationUserRepository.save(newUser))
+                    return RegistrationResult.PENDING_VERIFICATION;
         }
         catch (Exception e) {
             return RegistrationResult.FAILURE;
         }
 
-        return RegistrationResult.PENDING_VERIFICATION;
+        return RegistrationResult.FAILURE;
     }
 
     public RegistrationResult initiateClientRegistrationForExistingEmployee(String username, char[] rawPassword,
@@ -88,14 +87,10 @@ public class RegistrationService {
                 existingEmployee = userFactory.assignClientAttributes(existingEmployee,
                         getRolesFromRoleNames(clientRoleNames), passwordHash, personalEmail);
                 if (pendingVerificationUserRepository.save(existingEmployee))
-                    return RegistrationResult.SUCCESS;
+                    return RegistrationResult.PENDING_VERIFICATION;
             }
-            else {
-                if (passwordHash.equals(existingEmployee.getClientPasswordHash()))
+            else if (passwordHash.equals(existingEmployee.getClientPasswordHash()))
                     return RegistrationResult.ALREADY_REGISTERED;
-                else
-                    return RegistrationResult.FAILURE;
-            }
         }
 
         return RegistrationResult.FAILURE;
@@ -124,15 +119,14 @@ public class RegistrationService {
         try {
             if (emailEngine.sendTemplatedEmail(new EmailMessage(employeeEmail,
                     "Verify your MarketPilot employee account", null, null), VERIFICATION_EMAIL_TEMPLATE))
-                pendingVerificationUserRepository.save(newUser);
-            else
-                return  RegistrationResult.FAILURE;
+                if (pendingVerificationUserRepository.save(newUser))
+                    return RegistrationResult.PENDING_VERIFICATION;
         }
         catch (Exception e) {
             return RegistrationResult.FAILURE;
         }
 
-        return RegistrationResult.PENDING_VERIFICATION;
+        return RegistrationResult.FAILURE;
     }
 
     public RegistrationResult initiateEmployeeRegistrationForExistingClient(String employeeId, String username,
@@ -179,17 +173,15 @@ public class RegistrationService {
         if (verificationCode.isPresent() && verificationCode.get().equals(verificationCodeAttempt)) {
             try {
                 if (pendingVerificationUserRepository.deleteByUUID(uuid))
-                    userRepository.save(user);
-                else
-                    return RegistrationResult.FAILURE;
+                    if (userRepository.save(user))
+                        return RegistrationResult.SUCCESS;
             }
             catch (Exception e) {
                 return RegistrationResult.FAILURE;
             }
-            return RegistrationResult.SUCCESS;
         }
-        else
-            return RegistrationResult.FAILURE;
+
+        return RegistrationResult.FAILURE;
     }
 
     private Set<Role> getRolesFromRoleNames(Set<Role.RoleName> roleNames) {
