@@ -9,14 +9,18 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("User Name Validation Tests")
 class UserTest {
     private User testUser;
+    private UUID testUUID;
 
     @BeforeEach
     void setUp() {
         testUser = new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
                 "johnmdoe@company.com", "John", "M", "Doe");
+
+        testUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        testUUID = UUID.randomUUID();
+        testUser.setUUID(testUUID);
     }
 
     @Test
@@ -383,6 +387,7 @@ class UserTest {
 
     @Test
     void getUUID_throwsIfUUIDIsNull() {
+        testUser = new User("ab123456", "johnmdoe", "johnmdoe@outlook.com", "johnmdoe@company.com", "John", "M", "Doe");
         assertThrows(IllegalStateException.class, () ->
                 testUser.getUUID());
     }
@@ -543,5 +548,133 @@ class UserTest {
     @Test
     void setLastName_throwsForBlankString() {
         assertThrows(IllegalArgumentException.class, () -> testUser.setLastName("\n"));
+    }
+
+    // equals() tests
+    @Test
+    void equals_returnsFalseIfObjectIsNull() {
+        assertFalse(testUser.equals(null));
+    }
+
+    @Test
+    void equals_returnsFalseIfObjectIsNotUserInstance() {
+        String notAUser = "not a user";
+        assertFalse(testUser.equals(notAUser));
+    }
+
+    @Test
+    void equals_returnsFalseIfRolesAreDifferent() {
+        User otherUser = new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                "johnmdoe@company.com", "John", "M", "Doe");
+
+        otherUser.grantRole(TestRoles.ANALYST_ROLE);
+        otherUser.setUUID(testUUID);
+
+        assertNotEquals(testUser, otherUser);
+    }
+
+    @Test
+    void equals_returnsFalseIfUuidIsDifferent() {
+        User otherUser = new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                "johnmdoe@company.com", "John", "M", "Doe");
+
+        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.setUUID(UUID.randomUUID());
+
+        assertNotEquals(testUser, otherUser);
+    }
+
+    @Test
+    void equals_returnsFalseIfUsernameIsDifferent() {
+        User otherUser = new User("ab123456", "janedoe", "johnmdoe@outlook.com",
+                "johnmdoe@company.com", "John", "M", "Doe");
+
+        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.setUUID(testUUID);
+
+        assertNotEquals(testUser, otherUser);
+    }
+
+    @Test
+    void equals_returnsFalseIfEmployeeIdIsDifferent() {
+        User otherUser = new User("cd789012", "johnmdoe", "johnmdoe@outlook.com",
+                "johnmdoe@company.com", "John", "M", "Doe");
+
+        // Grant same role and UUID to isolate employeeId difference
+        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.setUUID(testUUID);
+
+        assertNotEquals(testUser, otherUser);
+    }
+
+    @Test
+    void equals_returnsFalseIfPersonalEmailIsDifferent() {
+        User otherUser = new User("ab123456", "johnmdoe", "john.doe@gmail.com",
+                "johnmdoe@company.com", "John", "M", "Doe");
+
+        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.setUUID(testUUID);
+
+        assertNotEquals(testUser, otherUser);
+    }
+
+    @Test
+    void equals_returnsFalseIfEmployeeEmailIsDifferent() {
+        User otherUser = new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                "john.doe@company.com", "John", "M", "Doe");
+
+        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.setUUID(testUUID);
+
+        assertNotEquals(testUser, otherUser);
+    }
+
+    @Test
+    void equals_returnsFalseIfFirstNameIsDifferent() {
+        User otherUser = new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                "johnmdoe@company.com", "Jane", "M", "Doe");
+
+        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.setUUID(testUUID);
+
+        assertNotEquals(testUser, otherUser);
+    }
+
+    @Test
+    void equals_returnsFalseIfMiddleNameIsDifferent() {
+        User otherUser = new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                "johnmdoe@company.com", "John", "L", "Doe");
+
+        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.setUUID(testUUID);
+
+        assertNotEquals(testUser, otherUser);
+    }
+
+    @Test
+    void equals_returnsFalseIfLastNameIsDifferent() {
+        User otherUser = new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                "johnmdoe@company.com", "John", "M", "Smith");
+
+        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.setUUID(testUUID);
+
+        assertNotEquals(testUser, otherUser);
+    }
+
+    @Test
+    void equals_returnsTrueIfSameObjectReference() {
+        assertEquals(testUser, testUser);
+    }
+
+    @Test
+    void equals_returnsTrueIfAllFieldsAreEqual() {
+        User identicalUser = new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                "johnmdoe@company.com", "John", "M", "Doe");
+
+        identicalUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        identicalUser.setUUID(testUUID);
+
+        assertEquals(testUser, identicalUser);
     }
 }

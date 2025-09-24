@@ -209,8 +209,8 @@ public class User {
         if (!(this.getRoles().equals(((User) o).getRoles())))
             return false;
 
-        //TODO: UUID
-        return this.username.equals(((User) o).username) &&
+        return this.uuid.equals(((User) o).uuid) &&
+                this.username.equals(((User) o).username) &&
                 this.employeeId.equals(((User) o).employeeId) &&
                 this.personalEmail.equals(((User) o).personalEmail) &&
                 this.employeeEmail.equals(((User) o).employeeEmail) &&
