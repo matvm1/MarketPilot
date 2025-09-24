@@ -51,7 +51,7 @@ public class UserFactoryTest {
         User user = userFactory.createClientUser(clientRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_CLIENT,
                 "johnmdoe@outlook.com","John", "M", "Doe");
         for (UserRoleAssignment userRoleAssignment : user.getUserRoleAssignments())
-            assertEquals(userRoleAssignment.getUser(), user);
+            assertEquals(userRoleAssignment.user(), user);
     }
 
     @Test
@@ -75,7 +75,7 @@ public class UserFactoryTest {
         User user = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", BCRYPT_STRONG_PASSWORD_EMPLOYEE,
                 "johnmdoe@company.com","John", "M", "Doe");
         for (UserRoleAssignment userRoleAssignment : user.getUserRoleAssignments())
-            assertEquals(userRoleAssignment.getUser(), user);
+            assertEquals(userRoleAssignment.user(), user);
     }
 
     @Test
@@ -141,7 +141,7 @@ public class UserFactoryTest {
 
         Set<Role> clientUserRoles = new HashSet<>();
         for (UserRoleAssignment userRoleAssignment : clientUser.getUserRoleAssignments())
-            clientUserRoles.add(userRoleAssignment.getRole());
+            clientUserRoles.add(userRoleAssignment.role());
 
         Set<Role> expectedRoles = new HashSet<>(clientRoles);
         expectedRoles.addAll(employeeRoles);

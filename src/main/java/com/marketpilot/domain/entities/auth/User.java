@@ -86,7 +86,7 @@ public class User {
 
     public boolean hasRole(Role.RoleName roleName) {
         for (UserRoleAssignment userRoleAssignment : userRoleAssignments)
-            if (userRoleAssignment.getRole().getRoleName().equals(roleName))
+            if (userRoleAssignment.role().getRoleName().equals(roleName))
                 return true;
 
         return false;
@@ -208,10 +208,10 @@ public class User {
 
         Set<Role> thisRoles = new HashSet<>();
         for (UserRoleAssignment userRoleAssignment : userRoleAssignments)
-            thisRoles.add(userRoleAssignment.getRole());
+            thisRoles.add(userRoleAssignment.role());
         Set<Role> oRoles = new HashSet<>();
         for (UserRoleAssignment userRoleAssignment : ((User) o).userRoleAssignments)
-            oRoles.add(userRoleAssignment.getRole());
+            oRoles.add(userRoleAssignment.role());
         if (!(thisRoles.equals(oRoles)))
             return false;
 
