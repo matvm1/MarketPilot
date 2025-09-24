@@ -9,12 +9,9 @@ import com.marketpilot.application.ports.persistence.UserRepository;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.User;
-import com.marketpilot.domain.entities.auth.UserType;
-import com.marketpilot.domain.services.UserFactory;
 
-import javax.swing.text.html.Option;
-import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Function;
 
 // TODO: Integration tests
 public class AuthenticationService {
@@ -29,31 +26,24 @@ public class AuthenticationService {
     private final TwoFactorService twoFactorService;
     private final PasswordHasher passwordHasher;
     private final SessionManager sessionManager;
-    private final UserFactory userFactory;
 
     public AuthenticationService(UserRepository userRepository, RoleRepository roleRepository, TwoFactorService twoFactorService,
-                                 PasswordHasher passwordHasher, SessionManager sessionManager, UserFactory userFactory) {
+                                 PasswordHasher passwordHasher, SessionManager sessionManager) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.twoFactorService = twoFactorService;
         this.passwordHasher = passwordHasher;
         this.sessionManager = sessionManager;
-        this.userFactory = userFactory;
     }
 
-    public AuthenticationStatus initiateClientAuthentication(String usernameOrClientEmail, String passwordHash, RoleName roleName) {
-        if (usernameOrClientEmail == null)
+    public AuthenticationStatus initiateClientAuthentication(String usernameOrEmail, String passwordHash, RoleName roleName) {
+        if (usernameOrEmail == null)
             return AuthenticationStatus.FAILURE;
 
-        Optional<User> userOptional = userRepository.findByUsername(usernameOrClientEmail)
-                .or(() -> userRepository.findByPersonalEmail(usernameOrClientEmail));
-        if (userOptional.isPresent() && userOptional.get().hasRole(roleName))
-            if (passwordHasher.matches(passwordHash, userOptional.get().getClientPasswordHash())) {
-                if (twoFactorService.sendChallenge(userOptional.get().getUsername(), roleName).isPresent())
-                    return AuthenticationStatus.CHALLENGE_SENT;
-        }
+        Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(identifier)
+                .or(() -> userRepository.findByPersonalEmail(identifier));
 
-        return AuthenticationStatus.FAILURE;
+        return authenticate(usernameOrEmail, passwordHash, roleName, userFinder, User::getClientPasswordHash);
     }
 
     public AuthenticationStatus initiateEmployeeAuthentication(String employeeId, String passwordHash, RoleName roleName) {
@@ -62,12 +52,16 @@ public class AuthenticationService {
         if (employeeId.isBlank())
             return AuthenticationStatus.FAILURE;
 
-        Optional<User> userOptional = userRepository.findByEmployeeId(employeeId);
+        return authenticate(employeeId, passwordHash, roleName, userRepository::findByEmployeeId, User::getEmployeePasswordHash);
+    }
+
+    private AuthenticationStatus authenticate(String identifier, String passwordHash, RoleName roleName,
+                                              Function<String, Optional<User>> userFinder, Function<User, String> passwordHashGetter) {
+        Optional<User> userOptional = userFinder.apply(identifier);
         if (userOptional.isPresent() && userOptional.get().hasRole(roleName))
-            if (passwordHasher.matches(passwordHash, userOptional.get().getEmployeePasswordHash())) {
+            if (passwordHasher.matches(passwordHash, passwordHashGetter.apply(userOptional.get())))
                 if (twoFactorService.sendChallenge(userOptional.get().getUsername(), roleName).isPresent())
                     return AuthenticationStatus.CHALLENGE_SENT;
-        }
 
         return AuthenticationStatus.FAILURE;
     }

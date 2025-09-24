@@ -23,7 +23,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,7 +49,7 @@ public class AuthenticationServiceTest {
     void setUp() {
         userFactory = new UserFactory();
         authenticationService = new AuthenticationService(userRepository, roleRepository, twoFactorService, passwordHasher,
-                sessionManager, userFactory);
+                sessionManager);
 
         clientRoles = new HashSet<>();
         clientRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
