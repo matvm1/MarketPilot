@@ -17,9 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.marketpilot.application.services.RegistrationService.RegistrationResult;
+import com.marketpilot.application.services.RegistrationService.RegistrationStatus;
 
-import javax.swing.text.html.Option;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -78,7 +77,7 @@ public class RegistrationServiceTest {
     @Test
     void initiateClientRegistration_returnsAlreadyRegisteredIfUsernameIsTaken() {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
-        assertEquals(RegistrationResult.ALREADY_REGISTERED,
+        assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistration("johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
     }
@@ -86,7 +85,7 @@ public class RegistrationServiceTest {
     @Test
     void initiateClientRegistration_returnsAlreadyRegisteredIfPersonalEmailIsRegistered() {
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
-        assertEquals(RegistrationResult.ALREADY_REGISTERED,
+        assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistration("johnmdoe1",
                        dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
@@ -97,10 +96,10 @@ public class RegistrationServiceTest {
         when(passwordHasher.hash(nonRegisteredPassword)).thenReturn("hash123");
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
-        assertEquals(RegistrationResult.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistration("johnmdoe",
                        nonRegisteredPassword, clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
-        assertEquals(RegistrationResult.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistration("johnmdoe1",
                         nonRegisteredPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
@@ -125,7 +124,7 @@ public class RegistrationServiceTest {
                 .thenReturn(true);
         assertDoesNotThrow(() -> registrationService.initiateClientRegistration("johnmdoe",
                 dummyPassword, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
-        assertEquals(RegistrationResult.PENDING_VERIFICATION,
+        assertEquals(RegistrationStatus.PENDING_VERIFICATION,
                 registrationService.initiateClientRegistration("johnmdoe", dummyPassword, clientRoleNames, "johnmdoe@outlook.com",
                         "John", "M", "Doe"));
     }
@@ -133,14 +132,14 @@ public class RegistrationServiceTest {
     @Test
     void initiateClientRegistrationForExistingEmployee_returnsAlreadyRegisteredIfPersonalEmailIsRegistered() {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
-        assertEquals(RegistrationResult.ALREADY_REGISTERED,
+        assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe@outlook.com"));
     }
 
     @Test
     void initiateClientRegistrationForExistingEmployee_returnsFailureIfUsernameIsNotFound() {
-        assertEquals(RegistrationResult.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe@outlook.com"));
     }
@@ -151,10 +150,10 @@ public class RegistrationServiceTest {
         when(passwordHasher.hash(nonRegisteredPassword)).thenReturn("hash123");
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
-        assertEquals(RegistrationResult.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
                         nonRegisteredPassword, clientRoleNames, "johnmdoe1@outlook.com"));
-        assertEquals(RegistrationResult.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe1",
                         nonRegisteredPassword, clientRoleNames, "johnmdoe@outlook.com"));
     }
@@ -171,7 +170,7 @@ public class RegistrationServiceTest {
                 argThat(email -> email.recipient().equals("johnmdoe@outlook.com")),
                 eq(VERIFICATION_EMAIL_TEMPLATE)))
                 .thenReturn(true);
-        assertEquals(RegistrationResult.PENDING_VERIFICATION,
+        assertEquals(RegistrationStatus.PENDING_VERIFICATION,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe@outlook.com"));
     }
@@ -179,7 +178,7 @@ public class RegistrationServiceTest {
     @Test
     void initiateEmployeeRegistration_returnsAlreadyRegisteredIfEmployeeIdIsTaken() {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
-        assertEquals(RegistrationResult.ALREADY_REGISTERED,
+        assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe1", dummyPassword,
                         employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
     }
@@ -188,7 +187,7 @@ public class RegistrationServiceTest {
     void initiateEmployeeRegistration_returnsAlreadyRegisteredIfUsernameIsTaken() {
         when(employeeRepository.employeeIdExists("ab987654")).thenReturn(true);
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
-        assertEquals(RegistrationResult.ALREADY_REGISTERED,
+        assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab987654", "johnmdoe",
                         dummyPassword, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
     }
@@ -197,7 +196,7 @@ public class RegistrationServiceTest {
     void initiateEmployeeRegistration_returnsAlreadyRegisteredIfEmployeeEmailIsTaken() {
         when(employeeRepository.employeeIdExists("ab987654")).thenReturn(true);
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
-        assertEquals(RegistrationResult.ALREADY_REGISTERED,
+        assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab987654", "johnmdoe1",
                         dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
     }
@@ -210,13 +209,13 @@ public class RegistrationServiceTest {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
-        assertEquals(RegistrationResult.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe1",
                         nonRegisteredPassword, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
-        assertEquals(RegistrationResult.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistration("ab123457", "johnmdoe",
                         nonRegisteredPassword, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
-        assertEquals(RegistrationResult.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistration("ab123457", "johnmdoe1",
                         nonRegisteredPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
     }
@@ -231,7 +230,7 @@ public class RegistrationServiceTest {
     @Test
     void initiateEmployeeRegistration_returnsFailureIfEmployeeIdNotFound() {
         when(employeeRepository.employeeIdExists("ab123456")).thenReturn(false);
-        assertEquals(RegistrationResult.FAILURE, registrationService.initiateEmployeeRegistration("ab123456",
+        assertEquals(RegistrationStatus.FAILURE, registrationService.initiateEmployeeRegistration("ab123456",
                 "johnmdoe", dummyPassword, employeeRoleNames, "johnmdoe@company.com",
                 "John", "M", "Doe"));
     }
@@ -249,7 +248,7 @@ public class RegistrationServiceTest {
                 .thenReturn(true);
         assertDoesNotThrow(() -> registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
                 dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
-        assertEquals(RegistrationResult.PENDING_VERIFICATION,
+        assertEquals(RegistrationStatus.PENDING_VERIFICATION,
                 registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
                         dummyPassword, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
     }
@@ -257,14 +256,14 @@ public class RegistrationServiceTest {
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsAlreadyRegisteredIfEmployeeEmailIsRegistered() {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
-        assertEquals(RegistrationResult.ALREADY_REGISTERED,
+        assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe@outlook.com"));
     }
 
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsFailureIfUsernameIsNotFound() {
-        assertEquals(RegistrationResult.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe",
                         dummyPassword, clientRoleNames, "johnmdoe@outlook.com"));
     }
@@ -277,13 +276,13 @@ public class RegistrationServiceTest {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
-        assertEquals(RegistrationResult.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe1",
                         nonRegisteredPassword, employeeRoleNames, "johnmdoe1@company.com"));
-        assertEquals(RegistrationResult.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123457", "johnmdoe",
                         nonRegisteredPassword, employeeRoleNames, "johnmdoe1@company.com"));
-        assertEquals(RegistrationResult.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123457", "johnmdoe1",
                         nonRegisteredPassword, employeeRoleNames, "johnmdoe@company.com"));
     }
@@ -291,7 +290,7 @@ public class RegistrationServiceTest {
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsFailureIfEmployeeIdNotFound() {
         when(employeeRepository.employeeIdExists("ab123456")).thenReturn(false);
-        assertEquals(RegistrationResult.FAILURE, registrationService.initiateEmployeeRegistrationForExistingClient("ab123456",
+        assertEquals(RegistrationStatus.FAILURE, registrationService.initiateEmployeeRegistrationForExistingClient("ab123456",
                 "johnmdoe", dummyPassword, employeeRoleNames, "johnmdoe@company.com"));
     }
 
@@ -307,20 +306,20 @@ public class RegistrationServiceTest {
         when(pendingVerificationUserRepository.save(argThat(pendingUser ->
                 pendingUser.getUsername().equals("johnmdoe"))))
                 .thenReturn(true);
-        assertEquals(RegistrationResult.PENDING_VERIFICATION,
+        assertEquals(RegistrationStatus.PENDING_VERIFICATION,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe",
                         dummyPassword, employeeRoleNames, "johnmdoe@company.com"));
     }
 
     @Test
     void completeRegistration_returnsFailureIfUserTypeIsNull() {
-        assertEquals(RegistrationResult.FAILURE, registrationService.completeRegistration("johnmdoe",
+        assertEquals(RegistrationStatus.FAILURE, registrationService.completeRegistration("johnmdoe",
                 null, "123456"));
     }
 
     @Test
     void completeRegistration_returnsFailureIfUserIsNotPendingVerification(){
-        assertEquals(RegistrationResult.FAILURE, registrationService.completeRegistration("johnmdoe",
+        assertEquals(RegistrationStatus.FAILURE, registrationService.completeRegistration("johnmdoe",
                 UserType.CLIENT, "123456"));
     }
 
@@ -329,7 +328,7 @@ public class RegistrationServiceTest {
         when(pendingVerificationUserRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         when(pendingVerificationUserRepository.getClientRegistrationVerificationCode(any(UUID.class)))
                 .thenReturn(Optional.of("123456"));
-        assertEquals(RegistrationResult.FAILURE, registrationService.completeRegistration("johnmdoe",
+        assertEquals(RegistrationStatus.FAILURE, registrationService.completeRegistration("johnmdoe",
                 UserType.CLIENT, "123457"));
     }
 
@@ -338,7 +337,7 @@ public class RegistrationServiceTest {
         when(pendingVerificationUserRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
         when(pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(any(UUID.class)))
                 .thenReturn(Optional.of("123456"));
-        assertEquals(RegistrationResult.FAILURE, registrationService.completeRegistration("johnmdoe",
+        assertEquals(RegistrationStatus.FAILURE, registrationService.completeRegistration("johnmdoe",
                 UserType.EMPLOYEE, "123457"));
     }
 
@@ -349,7 +348,7 @@ public class RegistrationServiceTest {
                 .thenReturn(Optional.of("123456"));
         when(pendingVerificationUserRepository.deleteByUUID(any(UUID.class))).thenReturn(true);
         when(userRepository.save(existingClient)).thenReturn(true);
-        assertEquals(RegistrationResult.SUCCESS, registrationService.completeRegistration("johnmdoe",
+        assertEquals(RegistrationStatus.SUCCESS, registrationService.completeRegistration("johnmdoe",
                 UserType.CLIENT, "123456"));
     }
 
@@ -360,7 +359,7 @@ public class RegistrationServiceTest {
                 .thenReturn(Optional.of("123456"));
         when(pendingVerificationUserRepository.deleteByUUID(any(UUID.class))).thenReturn(true);
         when(userRepository.save(existingClient)).thenReturn(true);
-        assertEquals(RegistrationResult.SUCCESS, registrationService.completeRegistration("johnmdoe",
+        assertEquals(RegistrationStatus.SUCCESS, registrationService.completeRegistration("johnmdoe",
                 UserType.EMPLOYEE, "123456"));
     }
 }
