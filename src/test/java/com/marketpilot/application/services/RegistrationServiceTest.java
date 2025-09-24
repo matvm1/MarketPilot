@@ -9,6 +9,7 @@ import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
+import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.services.UserFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.marketpilot.application.services.RegistrationService.RegistrationResult;
+
+import javax.swing.text.html.Option;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -285,5 +288,57 @@ public class RegistrationServiceTest {
         assertEquals(RegistrationResult.PENDING_VERIFICATION,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe",
                         dummyPassword, employeeRoleNames, "johnmdoe@company.com"));
+    }
+
+    @Test
+    void completeRegistration_returnsFailureIfUserTypeIsNull() {
+        assertEquals(RegistrationResult.FAILURE, registrationService.completeRegistration("johnmdoe",
+                null, "123456"));
+    }
+
+    @Test
+    void completeRegistration_returnsFailureIfUserIsNotPendingVerification(){
+        assertEquals(RegistrationResult.FAILURE, registrationService.completeRegistration("johnmdoe",
+                UserType.CLIENT, "123456"));
+    }
+
+    @Test
+    void completeRegistration_returnsFailureIfClientVerificationCodeDoesNotMatch() {
+        when(pendingVerificationUserRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(pendingVerificationUserRepository.getClientRegistrationVerificationCode(any(UUID.class)))
+                .thenReturn(Optional.of("123456"));
+        assertEquals(RegistrationResult.FAILURE, registrationService.completeRegistration("johnmdoe",
+                UserType.CLIENT, "123457"));
+    }
+
+    @Test
+    void completeRegistration_returnsFailureIfEmployeeVerificationCodeDoesNotMatch() {
+        when(pendingVerificationUserRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
+        when(pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(any(UUID.class)))
+                .thenReturn(Optional.of("123456"));
+        assertEquals(RegistrationResult.FAILURE, registrationService.completeRegistration("johnmdoe",
+                UserType.EMPLOYEE, "123457"));
+    }
+
+    @Test
+    void completeRegistration_returnsSuccessIfClientVerificationCodeMatches() {
+        when(pendingVerificationUserRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(pendingVerificationUserRepository.getClientRegistrationVerificationCode(any(UUID.class)))
+                .thenReturn(Optional.of("123456"));
+        when(pendingVerificationUserRepository.deleteByUUID(any(UUID.class))).thenReturn(true);
+        when(userRepository.save(existingClient)).thenReturn(true);
+        assertEquals(RegistrationResult.SUCCESS, registrationService.completeRegistration("johnmdoe",
+                UserType.CLIENT, "123456"));
+    }
+
+    @Test
+    void completeRegistration_returnsSuccessIfEmployeeVerificationCodeMatches() {
+        when(pendingVerificationUserRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(any(UUID.class)))
+                .thenReturn(Optional.of("123456"));
+        when(pendingVerificationUserRepository.deleteByUUID(any(UUID.class))).thenReturn(true);
+        when(userRepository.save(existingClient)).thenReturn(true);
+        assertEquals(RegistrationResult.SUCCESS, registrationService.completeRegistration("johnmdoe",
+                UserType.EMPLOYEE, "123456"));
     }
 }

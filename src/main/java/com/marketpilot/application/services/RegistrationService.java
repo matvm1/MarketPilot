@@ -165,10 +165,23 @@ public class RegistrationService {
 
     //TODO: Service that runs in the background and removes users from the pending repo if verification period has 
     // expired
-    //TODO: unit tests
-    public RegistrationResult completeRegistration(User user,
-                                                   UserType registrationUserType, String verificationCodeAttempt) {
-        UUID uuid = user.getUUID();
+    public RegistrationResult completeRegistration(String username, UserType registrationUserType,
+                                                   String verificationCodeAttempt) {
+        if (registrationUserType == null)
+            return RegistrationResult.FAILURE;
+
+        Optional<User> userOptional = pendingVerificationUserRepository.findByUsername(username);
+        if (userOptional.isEmpty())
+            return RegistrationResult.FAILURE;
+
+        User user = userOptional.get();
+        UUID uuid;
+        try {
+            uuid = user.getUUID();
+        } catch (IllegalStateException e) {
+            return RegistrationResult.FAILURE;
+        }
+
         Optional<String> verificationCode = switch (registrationUserType) {
             case CLIENT -> pendingVerificationUserRepository.getClientRegistrationVerificationCode(uuid);
             case EMPLOYEE -> pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(uuid);
@@ -177,8 +190,15 @@ public class RegistrationService {
         if (verificationCode.isPresent() && verificationCode.get().equals(verificationCodeAttempt)) {
             try {
                 if (pendingVerificationUserRepository.deleteByUUID(uuid))
-                    if (userRepository.save(user))
+                    if (userRepository.save(user)) {
+                        String recipientAddress = switch(registrationUserType) {
+                            case CLIENT -> user.getPersonalEmail();
+                            case EMPLOYEE -> user.getEmployeeEmail();
+                        };
+                        emailEngine.sendTemplatedEmail(new EmailMessage(recipientAddress, "Welcome to MarketPilot",
+                                null, null), "welcome_letter.html");
                         return RegistrationResult.SUCCESS;
+                    }
             }
             catch (Exception e) {
                 return RegistrationResult.FAILURE;
