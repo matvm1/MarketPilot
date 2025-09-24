@@ -45,13 +45,9 @@ public class RegistrationService {
         this.userFactory = userFactory;
     }
 
-    public RegistrationStatus initiateClientRegistration(String username, char[] rawPassword,
+    public RegistrationStatus initiateClientRegistration(String username, String passwordHash,
                                                          Set<Role.RoleName> clientRoleNames, String personalEmail,
                                                          String firstName, String middleName, String lastName) {
-        String passwordHash = passwordHasher.hash(rawPassword);
-        Arrays.fill(rawPassword, '\0');
-        rawPassword = null;
-
         Optional<User> userOptional = userRepository.findByUsername(username)
                 .or(() -> userRepository.findByPersonalEmail(personalEmail));
         if (userOptional.isPresent()) {
@@ -76,13 +72,9 @@ public class RegistrationService {
         return RegistrationStatus.FAILURE;
     }
 
-    public RegistrationStatus initiateClientRegistrationForExistingEmployee(String username, char[] rawPassword,
+    public RegistrationStatus initiateClientRegistrationForExistingEmployee(String username, String passwordHash,
                                                                             Set<Role.RoleName> clientRoleNames,
                                                                             String personalEmail) {
-        String passwordHash = passwordHasher.hash(rawPassword);
-        Arrays.fill(rawPassword, '\0');
-        rawPassword = null;
-
         Optional<User> existingEmployeeOptional = userRepository.findByUsername(username)
                 .or(() -> userRepository.findByPersonalEmail(personalEmail));
         if (existingEmployeeOptional.isPresent()) {
@@ -102,13 +94,9 @@ public class RegistrationService {
         return RegistrationStatus.FAILURE;
     }
 
-    public RegistrationStatus initiateEmployeeRegistration(String employeeId, String username, char[] rawPassword,
+    public RegistrationStatus initiateEmployeeRegistration(String employeeId, String username, String passwordHash,
                                                            Set<Role.RoleName> employeeRoleNames, String employeeEmail,
                                                            String firstName, String middleName, String lastName) {
-        String passwordHash = passwordHasher.hash(rawPassword);
-        Arrays.fill(rawPassword, '\0');
-        rawPassword = null;
-
         if (!employeeRepository.employeeIdExists(employeeId))
             return RegistrationStatus.FAILURE;
 
@@ -138,14 +126,8 @@ public class RegistrationService {
         return RegistrationStatus.FAILURE;
     }
 
-    public RegistrationStatus initiateEmployeeRegistrationForExistingClient(String employeeId, String username,
-                                                                            char[] rawPassword,
-                                                                            Set<Role.RoleName> employeeRoleNames,
-                                                                            String employeeEmail) {
-        String passwordHash = passwordHasher.hash(rawPassword);
-        Arrays.fill(rawPassword, '\0');
-        rawPassword = null;
-
+    public RegistrationStatus initiateEmployeeRegistrationForExistingClient(String employeeId, String username, String passwordHash,
+                                                                            Set<Role.RoleName> employeeRoleNames, String employeeEmail) {
         if (!employeeRepository.employeeIdExists(employeeId))
             return RegistrationStatus.FAILURE;
 
