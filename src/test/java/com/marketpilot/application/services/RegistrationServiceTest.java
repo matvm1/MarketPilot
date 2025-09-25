@@ -64,10 +64,10 @@ public class RegistrationServiceTest {
         employeeRoles = new HashSet<>();
         employeeRoles.add(TestRoles.ANALYST_ROLE);
 
-        existingClient = userFactory.createClientUser(clientRoles, "johnmdoe", dummyPasswordHash,
-                "johnmdoe@outlook.com", "John", "M", "Doe");
-        existingEmployee = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", dummyPasswordHash,
-                "johnmdoe@company.com", "John", "M", "Doe");
+        existingClient = userFactory.createClientUser(clientRoles, "johnmdoe", "johnmdoe@outlook.com",
+                "John", "M", "Doe");
+        existingEmployee = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", "johnmdoe@company.com",
+                "John", "M", "Doe");
 
         lenient().when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
     }
@@ -77,7 +77,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistration("johnmdoe",
-                        dummyPasswordHash, clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
+                        clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistration("johnmdoe1",
-                        dummyPasswordHash, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
+                        clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
@@ -95,17 +95,17 @@ public class RegistrationServiceTest {
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistration("johnmdoe",
-                       nonRegisteredPasswordHash, clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
+                        clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistration("johnmdoe1",
-                        nonRegisteredPasswordHash, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
+                        clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
     void initiateClientRegistration_throwsIfRoleNotFound() {
         assertThrows(NoSuchElementException.class,
                 () -> registrationService.initiateClientRegistration("johnmdoe",
-                        dummyPasswordHash, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
+                        clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
@@ -119,9 +119,9 @@ public class RegistrationServiceTest {
                 eq(VERIFICATION_EMAIL_TEMPLATE)))
                 .thenReturn(true);
         assertDoesNotThrow(() -> registrationService.initiateClientRegistration("johnmdoe",
-                dummyPasswordHash, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
+                clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
         assertEquals(RegistrationStatus.PENDING_VERIFICATION,
-                registrationService.initiateClientRegistration("johnmdoe", dummyPasswordHash, clientRoleNames, "johnmdoe@outlook.com",
+                registrationService.initiateClientRegistration("johnmdoe", clientRoleNames, "johnmdoe@outlook.com",
                         "John", "M", "Doe"));
     }
 
@@ -130,14 +130,14 @@ public class RegistrationServiceTest {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
-                        dummyPasswordHash, clientRoleNames, "johnmdoe@outlook.com"));
+                        clientRoleNames, "johnmdoe@outlook.com"));
     }
 
     @Test
     void initiateClientRegistrationForExistingEmployee_returnsFailureIfUsernameIsNotFound() {
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
-                        dummyPasswordHash, clientRoleNames, "johnmdoe@outlook.com"));
+                        clientRoleNames, "johnmdoe@outlook.com"));
     }
 
     @Test
@@ -147,10 +147,10 @@ public class RegistrationServiceTest {
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
-                        nonRegisteredPasswordHash, clientRoleNames, "johnmdoe1@outlook.com"));
+                        clientRoleNames, "johnmdoe1@outlook.com"));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe1",
-                        nonRegisteredPasswordHash, clientRoleNames, "johnmdoe@outlook.com"));
+                        clientRoleNames, "johnmdoe@outlook.com"));
     }
 
     @Test
@@ -166,7 +166,7 @@ public class RegistrationServiceTest {
                 .thenReturn(true);
         assertEquals(RegistrationStatus.PENDING_VERIFICATION,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
-                        dummyPasswordHash, clientRoleNames, "johnmdoe@outlook.com"));
+                        clientRoleNames, "johnmdoe@outlook.com"));
     }
 
     @Test
@@ -250,7 +250,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
-                        dummyPasswordHash, clientRoleNames, "johnmdoe@outlook.com"));
+                        clientRoleNames, "johnmdoe@outlook.com"));
     }
 
     @Test

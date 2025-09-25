@@ -8,30 +8,27 @@ import java.util.Set;
 import java.util.UUID;
 
 public class UserFactory {
-    public User createClientUser(Set<Role> clientRoles, String username, String clientPasswordHash,
-                                 String personalEmail, String firstName, String middleName, String lastName) {
+    public User createClientUser(Set<Role> clientRoles, String username, String personalEmail,
+                                 String firstName, String middleName, String lastName) {
         User newUser = new User(null, username, personalEmail, null, firstName, middleName, lastName);
         validateRolesAndGrant(newUser, clientRoles, UserType.CLIENT);
-        newUser.setClientPasswordHash(clientPasswordHash);
         newUser.setUUID(UUID.randomUUID());
         newUser.setClient(true);
 
         return newUser;
     }
 
-    public User createEmployeeUser(String employeeId, Set<Role> employeeRoles, String username, String employeePasswordHash,
-                                 String employeeEmail, String firstName, String middleName, String lastName) {
+    public User createEmployeeUser(String employeeId, Set<Role> employeeRoles, String username, String employeeEmail,
+                                   String firstName, String middleName, String lastName) {
         User newUser = new User(employeeId, username, null, employeeEmail, firstName, middleName, lastName);
         validateRolesAndGrant(newUser, employeeRoles, UserType.EMPLOYEE);
-        newUser.setEmployeePasswordHash(employeePasswordHash);
         newUser.setUUID(UUID.randomUUID());
         newUser.setEmployee(true);
 
         return newUser;
     }
 
-    public User assignEmployeeAttributes(User existingClient, String employeeId, Set<Role> employeeRoles,
-                                                  String employeePasswordHash, String employeeEmail) {
+    public User assignEmployeeAttributes(User existingClient, String employeeId, Set<Role> employeeRoles, String employeeEmail) {
         if (existingClient == null)
             throw new IllegalArgumentException("existingClient cannot be null");
         if (employeeRoles == null)
@@ -41,15 +38,13 @@ public class UserFactory {
 
         existingClient.setEmployeeId(employeeId);
         validateRolesAndGrant(existingClient, employeeRoles, UserType.EMPLOYEE);
-        existingClient.setEmployeePasswordHash(employeePasswordHash);
         existingClient.setEmployeeEmail(employeeEmail);
         existingClient.setEmployee(true);
 
         return existingClient;
     }
 
-    public User assignClientAttributes(User existingEmployee, Set<Role> clientRoles,
-                                         String clientPasswordHash, String personalEmail) {
+    public User assignClientAttributes(User existingEmployee, Set<Role> clientRoles, String personalEmail) {
         if (existingEmployee == null)
             throw new IllegalArgumentException("existingClient cannot be null");
         if (clientRoles == null)
@@ -58,7 +53,6 @@ public class UserFactory {
             throw new IllegalArgumentException("clientRoles cannot be empty");
 
         validateRolesAndGrant(existingEmployee, clientRoles, UserType.CLIENT);
-        existingEmployee.setClientPasswordHash(clientPasswordHash);
         existingEmployee.setPersonalEmail(personalEmail);
         existingEmployee.setClient(true);
 

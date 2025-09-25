@@ -76,10 +76,6 @@ public class User {
 
     public String getUsername() { return username; }
 
-    //TODO: delete
-    public String getClientPasswordHash() { return null; }
-    public String getEmployeePasswordHash() { return null; }
-
     public Set<Role> getRoles() { return roles; }
 
     public boolean hasRole(Role.RoleName roleName) {
@@ -132,10 +128,6 @@ public class User {
 
         this.employeeId = employeeId;
     }
-
-    //TODO: delete
-    public void setClientPasswordHash(String clientPasswordHash) {}
-    public void setEmployeePasswordHash(String employeePasswordHash) {}
 
     public void grantRole(Role role) {
         if (role == null)

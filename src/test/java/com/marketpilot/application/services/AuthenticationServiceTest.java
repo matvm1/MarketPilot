@@ -60,10 +60,10 @@ public class AuthenticationServiceTest {
         employeeRoles = new HashSet<>();
         employeeRoles.add(TestRoles.ANALYST_ROLE);
 
-        existingClient = userFactory.createClientUser(clientRoles, "johnmdoe", null,
-                "johnmdoe@outlook.com", "John", "M", "Doe");
-        existingEmployee = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", null,
-                "johnmdoe@company.com", "John", "M", "Doe");
+        existingClient = userFactory.createClientUser(clientRoles, "johnmdoe", "johnmdoe@outlook.com",
+                "John", "M", "Doe");
+        existingEmployee = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", "johnmdoe@company.com",
+                "John", "M", "Doe");
 
         dummyPasswordLightHash = "nc36784gfyu43vbf7623frtycwdvtyuawjcevdfyu12b367821f".toCharArray();
     }

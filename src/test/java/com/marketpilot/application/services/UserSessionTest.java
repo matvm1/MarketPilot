@@ -22,8 +22,6 @@ public class UserSessionTest {
     private Instant investorSessionStart;
     private Instant analystSessionStart;
 
-    private static final String BCRYPT_STRONG_PASSWORD = "$2a$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW";
-
     // TODO: Register test user as a personal investor first, then as an analyst employee
     @BeforeEach
     void setUp() {
@@ -31,8 +29,8 @@ public class UserSessionTest {
         Set<Role> employeeRoles = new HashSet<>();
         //employeeRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
         employeeRoles.add(TestRoles.ANALYST_ROLE);
-        investorAndAnalystUser = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe",
-                 BCRYPT_STRONG_PASSWORD,"johnmdoe@company.com","John", "M", "Doe");
+        investorAndAnalystUser = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe","johnmdoe@company.com",
+                "John", "M", "Doe");
 
         investorSessionStart = Instant.parse("2025-01-01T10:00:00Z");
         userInvestorRoleAssignment = new UserRoleAssignment(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE);
