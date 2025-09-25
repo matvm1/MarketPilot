@@ -11,8 +11,6 @@ public class User {
     private String employeeId;
     private Set<Role> roles;
     private final String username;
-    private String clientPasswordHash;
-    private String employeePasswordHash;
     private String personalEmail;
     private String employeeEmail;
     private String firstName;
@@ -78,9 +76,9 @@ public class User {
 
     public String getUsername() { return username; }
 
-    public String getClientPasswordHash() { return clientPasswordHash; }
-
-    public String getEmployeePasswordHash() { return employeePasswordHash; }
+    //TODO: delete
+    public String getClientPasswordHash() { return null; }
+    public String getEmployeePasswordHash() { return null; }
 
     public Set<Role> getRoles() { return roles; }
 
@@ -135,21 +133,9 @@ public class User {
         this.employeeId = employeeId;
     }
 
-    public void setClientPasswordHash(String clientPasswordHash) {
-        if (clientPasswordHash == null)
-            throw new IllegalArgumentException("clientPasswordHash cannot be null");
-        if (clientPasswordHash.isBlank())
-            throw new IllegalArgumentException("clientPasswordHash cannot be blank");
-        this.clientPasswordHash = clientPasswordHash;
-    }
-
-    public void setEmployeePasswordHash(String employeePasswordHash) {
-        if (employeePasswordHash == null)
-            throw new IllegalArgumentException("employeePasswordHash cannot be null");
-        if (employeePasswordHash.isBlank())
-            throw new IllegalArgumentException("employeePasswordHash cannot be blank");
-        this.employeePasswordHash = employeePasswordHash;
-    }
+    //TODO: delete
+    public void setClientPasswordHash(String clientPasswordHash) {}
+    public void setEmployeePasswordHash(String employeePasswordHash) {}
 
     public void grantRole(Role role) {
         if (role == null)
