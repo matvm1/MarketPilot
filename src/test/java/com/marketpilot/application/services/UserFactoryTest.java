@@ -1,4 +1,4 @@
-package com.marketpilot.domain.services;
+package com.marketpilot.application.services;
 
 import com.marketpilot.domain.entities.auth.*;
 import org.junit.jupiter.api.BeforeEach;
