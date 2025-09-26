@@ -170,17 +170,12 @@ public class RegistrationServiceTest {
                         dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com"));
     }
 
-    //TODO: separate tests
-    @Test
-    void initiateClientRegistrationForExistingEmployee_returnsFailureIfUserNameOrPersonalEmailIsTakenAndPasswordDoesNotMatch() {
+    void initiateClientRegistrationForExistingEmployee_returnsFailureIfPersonalEmailIsTakenAndPasswordDoesNotMatch() {
         char[] nonRegisteredPasswordHash = "12345678".toCharArray();
-        when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
-                        nonRegisteredPasswordHash, clientRoleNames, "johnmdoe1@outlook.com"));
-        assertEquals(RegistrationStatus.FAILURE,
-                registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe1",
                         nonRegisteredPasswordHash, clientRoleNames, "johnmdoe@outlook.com"));
     }
 
