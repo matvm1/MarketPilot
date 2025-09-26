@@ -227,18 +227,29 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void initiateEmployeeRegistration_returnsFailureIfUserNameOrEmployeeIdOrEmployeeEmailIsTakenAndPasswordDoesNotMatch() {
+    void initiateEmployeeRegistration_returnsFailureIfUserNameIsTakenAndPasswordDoesNotMatch() {
         char[] nonRegisteredPasswordHash = "12345678".toCharArray();
         when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
-        when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
-        when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
-        assertEquals(RegistrationStatus.FAILURE,
-                registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe1",
-                        nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistration("ab123457", "johnmdoe",
                         nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
+    }
+
+    @Test
+    void initiateEmployeeRegistration_returnsFailureIfEmployeeIdIsTakenAndPasswordDoesNotMatch() {
+        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
+        when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
+        when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
+        assertEquals(RegistrationStatus.FAILURE,
+                registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe1",
+                        nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));    }
+
+    @Test
+    void initiateEmployeeRegistration_returnsFailureIfEmployeeEmailIsTakenAndPasswordDoesNotMatch() {
+        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
+        when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
+        when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistration("ab123457", "johnmdoe1",
                         nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
@@ -293,18 +304,30 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void initiateEmployeeRegistrationForExistingClient_returnsFailureIfUserNameOrEmployeeIdOrEmployeeEmailIsTakenAndPasswordDoesNotMatch() {
+    void initiateEmployeeRegistrationForExistingClient_returnsFailureIfUserNameIsTakenAndPasswordDoesNotMatch() {
         char[] nonRegisteredPasswordHash = "12345678".toCharArray();
         when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
-        when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
-        when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
-        assertEquals(RegistrationStatus.FAILURE,
-                registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe1",
-                        nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe1@company.com"));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123457", "johnmdoe",
                         nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe1@company.com"));
+    }
+
+    @Test
+    void initiateEmployeeRegistrationForExistingClient_returnsFailureIfEmployeeIdIsTakenAndPasswordDoesNotMatch() {
+        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
+        when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
+        when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
+        assertEquals(RegistrationStatus.FAILURE,
+                registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe1",
+                        nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe1@company.com"));
+    }
+
+    @Test
+    void initiateEmployeeRegistrationForExistingClient_returnsFailureIfEmployeeEmailIsTakenAndPasswordDoesNotMatch() {
+        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
+        when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
+        when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123457", "johnmdoe1",
                         nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe@company.com"));
