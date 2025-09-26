@@ -58,8 +58,9 @@ public class RegistrationService {
         BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByPersonalEmail(identifier2);
         BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) -> userFactory.createClientUser((UserClientDTO) b);
 
-        //TODO:supply password
-        return initiateRegistration(false, username, personalEmail, userClientDTO, passwordLightHash,
+        return initiateRegistration(false,
+                null,
+                username, personalEmail, userClientDTO, passwordLightHash,
                 null,
                 userRepository::getClientPasswordSalt,
                 userRepository::getClientPasswordHash,
@@ -72,18 +73,20 @@ public class RegistrationService {
 
     public RegistrationStatus initiateClientRegistrationForExistingEmployee(String username, char[] passwordLightHash, Set<Role.RoleName> clientRoleNames,
                                                                             String personalEmail) {
-        Optional<User> existingEmployeeOptional = userRepository.findByUsername(username)
-                .or(() -> userRepository.findByPersonalEmail(personalEmail));
+
+        //TODO: Authenticate the employee
+        Optional<User> existingEmployeeOptional = userRepository.findByUsername(username);
         if (existingEmployeeOptional.isPresent()) {
             User existingEmployee = existingEmployeeOptional.get();
             UserClientDTO userClientDTO = new UserClientDTO(username, getRolesFromRoleNames(clientRoleNames), personalEmail,
                     existingEmployee.getFirstName(), existingEmployee.getMiddleName(), existingEmployee.getLastName());
-            //TODO: user already found, pass user object
             BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByPersonalEmail(identifier2);
             BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) ->
                     userFactory.assignClientAttributes(existingEmployee, (UserClientDTO) b);
 
-            return initiateRegistration(true, username, personalEmail, userClientDTO, passwordLightHash,
+            return initiateRegistration(true,
+                    existingEmployee,
+                    username, personalEmail, userClientDTO, passwordLightHash,
                     null,
                     userRepository::getClientPasswordSalt,
                     userRepository::getClientPasswordHash,
@@ -111,8 +114,9 @@ public class RegistrationService {
                 .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
         BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) -> userFactory.createEmployeeUser((UserEmployeeDTO) b);
 
-        //TODO:supply password
-        return initiateRegistration(false, employeeId, employeeEmail, userEmployeeDTO, passwordLightHash,
+        return initiateRegistration(false,
+                null,
+                employeeId, employeeEmail, userEmployeeDTO, passwordLightHash,
                 employeeRepository::employeeIdExists,
                 userRepository::getEmployeePasswordSalt,
                 userRepository::getEmployeePasswordHash,
@@ -128,20 +132,20 @@ public class RegistrationService {
         if (!employeeRepository.employeeIdExists(employeeId))
             return RegistrationStatus.FAILURE;
 
-        Optional<User> existingClientOptional = userRepository.findByEmployeeId(employeeId)
-                .or(() -> userRepository.findByUsername(username))
-                .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
+        //TODO: Authenticate the client
+        Optional<User> existingClientOptional = userRepository.findByUsername(username);
         if (existingClientOptional.isPresent()) {
             User existingClient = existingClientOptional.get();
             UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, getRolesFromRoleNames(employeeRoleNames), employeeEmail,
                     existingClient.getFirstName(), existingClient.getMiddleName(), existingClient.getLastName());
-            //TODO: user already found, pass user object
             BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByEmployeeId(employeeId)
                     .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
             BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) ->
                     userFactory.assignEmployeeAttributes(existingClient, (UserEmployeeDTO) b);
 
-            return initiateRegistration(true, employeeId, employeeEmail, userEmployeeDTO, passwordLightHash,
+            return initiateRegistration(true,
+                    existingClient,
+                    employeeId, employeeEmail, userEmployeeDTO, passwordLightHash,
                     employeeRepository::employeeIdExists,
                     userRepository::getEmployeePasswordSalt,
                     userRepository::getEmployeePasswordHash,
@@ -157,9 +161,10 @@ public class RegistrationService {
 
     //TODO: Store password hash if registering a new user (instead of matching hash)
     private RegistrationStatus initiateRegistration(boolean isForExistingUser,
+                                                    User existingUser,
                                                     String identifier1,
                                                     String identifier2,
-                                                    UserAbstractDTO userAbstractDTO,
+                                                    UserAbstractDTO newUserAbstractDTO,
                                                     char[] passwordLightHash,
                                                     Predicate<String> employeeIdFinder,
                                                     Function<UUID, Optional<char[]>> passwordSaltFinder,
@@ -171,14 +176,18 @@ public class RegistrationService {
                                                     String verificationEmailSubject)
     {
         if (employeeIdFinder != null)
-            if (!employeeIdFinder.test(((UserEmployeeDTO)userAbstractDTO).getEmployeeId()))
+            if (!employeeIdFinder.test(((UserEmployeeDTO)newUserAbstractDTO).getEmployeeId()))
                 return RegistrationStatus.FAILURE;
 
         //TODO: validate identifier2
         boolean identifierIsValid = identifier1 != null && !identifier1.isBlank();
 
-        Optional<User> userOptional = userRepository.findByUsername(userAbstractDTO.getUsername())
-                .or(() -> userFinder.apply(identifier1, identifier2));
+        Optional<User> userOptional;
+
+        if (isForExistingUser)
+            userOptional = Optional.of(existingUser);
+        else
+            userOptional = userRepository.findByUsername(newUserAbstractDTO.getUsername()).or(() -> userFinder.apply(identifier1, identifier2));
 
         boolean userExists = userOptional.isPresent();
         User user = userOptional.orElse(null);
@@ -211,7 +220,7 @@ public class RegistrationService {
 
         //TODO: add && passwordMatches -> user must authenticate
         if (identifierIsValid && (!isForExistingUser || (userExists && !isRegistrationType.test(user)))) {
-            user = userFactoryAction.apply(user, userAbstractDTO);
+            user = userFactoryAction.apply(user, newUserAbstractDTO);
             if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE))
                 if (pendingVerificationUserRepository.save(user))
                     return RegistrationStatus.PENDING_VERIFICATION;
