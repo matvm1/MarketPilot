@@ -214,7 +214,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab987654", "johnmdoe",
-                        dummyPasswordHash, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
+                        dummyPasswordLightHash, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
     }
 
     @Test
@@ -223,7 +223,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab987654", "johnmdoe1",
-                        dummyPasswordHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
+                        dummyPasswordLightHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
     }
 
     @Test
