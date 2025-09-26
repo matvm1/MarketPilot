@@ -210,14 +210,7 @@ public class RegistrationService {
         }
 
         //TODO: add && passwordMatches -> user must authenticate
-        if (isForExistingUser && identifierIsValid && userExists && isRegistrationType.test(user)) {
-            user = userFactoryAction.apply(user, userAbstractDTO);
-            if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE))
-                if (pendingVerificationUserRepository.save(user))
-                    return RegistrationStatus.PENDING_VERIFICATION;
-        }
-
-        if (!isForExistingUser && identifierIsValid) {
+        if (identifierIsValid && (!isForExistingUser || (userExists && !isRegistrationType.test(user)))) {
             user = userFactoryAction.apply(user, userAbstractDTO);
             if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE))
                 if (pendingVerificationUserRepository.save(user))
