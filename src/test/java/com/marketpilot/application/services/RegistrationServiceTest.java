@@ -291,9 +291,10 @@ public class RegistrationServiceTest {
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsAlreadyRegisteredIfEmployeeEmailIsRegistered() {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
-                registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
-                        dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com"));
+                registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe",
+                        dummyPasswordLightHash, employeeRoleNames, "johnmdoe@company.com"));
     }
 
     @Test
