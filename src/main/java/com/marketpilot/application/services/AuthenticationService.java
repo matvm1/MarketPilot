@@ -47,14 +47,14 @@ public class AuthenticationService {
                 userRepository::getClientPasswordHash);
     }
 
-    public AuthenticationStatus initiateEmployeeAuthentication(String employeeId, char[] lightlyHashedPassword, RoleName roleName) {
-        return authenticate(employeeId, lightlyHashedPassword, roleName,
+    public AuthenticationStatus initiateEmployeeAuthentication(String employeeId, char[] passwordLightHash, RoleName roleName) {
+        return authenticate(employeeId, passwordLightHash, roleName,
                 userRepository::findByEmployeeId,
                 userRepository::getEmployeePasswordSalt,
                 userRepository::getEmployeePasswordHash);
     }
 
-    private AuthenticationStatus authenticate(String identifier, char[] lightlyHashedPassword, RoleName roleName,
+    private AuthenticationStatus authenticate(String identifier, char[] passwordLightHash, RoleName roleName,
                                               Function<String, Optional<User>> userFinder,
                                               Function<UUID, Optional<char[]>> passwordSaltFinder,
                                               Function<UUID, Optional<char[]>> passwordHashFinder) {
@@ -69,13 +69,13 @@ public class AuthenticationService {
         char[] passwordSalt = userExists ? passwordSaltFinder.apply(user.getUUID()).orElse(null) : null;
         char[] passwordHash;
         try {
-            passwordHash = passwordHasher.hash(lightlyHashedPassword, passwordSalt);
+            passwordHash = passwordHasher.hash(passwordLightHash, passwordSalt);
         } catch (IllegalArgumentException e) {
             passwordHash = null;
         }
-        fillZero(lightlyHashedPassword);
+        fillZero(passwordLightHash);
         fillZero(passwordSalt);
-        lightlyHashedPassword = null;
+        passwordLightHash = null;
         passwordSalt = null;
         char[] dummyPasswordHashStored = "$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX".toCharArray();
         char[] passwordHashStored = userExists ? passwordHashFinder.apply(user.getUUID()).orElse(dummyPasswordHashStored) : dummyPasswordHashStored;
