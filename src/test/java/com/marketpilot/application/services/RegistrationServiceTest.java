@@ -1,5 +1,6 @@
 package com.marketpilot.application.services;
 
+import com.marketpilot.application.dto.EmailMessage;
 import com.marketpilot.application.ports.EmailEngine;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.persistence.EmployeeRepository;
@@ -11,7 +12,6 @@ import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
-import com.marketpilot.domain.services.UserFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,12 +41,21 @@ public class RegistrationServiceTest {
 
     private User existingClient;
     private User existingEmployee;
-    private static final String dummyPasswordHash = "$2a$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW";
     private Set<RoleName> clientRoleNames;
     private Set<RoleName> employeeRoleNames;
     private Set<Role> clientRoles;
     private Set<Role> employeeRoles;
+    private Set<Role> adminRoles;
+
+    private final String CLIENT_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Account";
+    private final String EMPLOYEE_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Employee Account";
     private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email.html";
+
+    // use dummyPasswordLightHash as argument to all authentication calls
+    private char[] dummyPasswordLightHash;
+    private final char[] dummySalt = "b234vhnosd9021bhj23vsdb#nkjb$bnjk32!mjkhn*msdhjb3493bn".toCharArray();
+    private final char[] dummyPasswordHash = "xcusdhfgvasj@#njkhbf@nmdsejkhf%jnkjkbhjsd!!@$%bn1sdasd2n19xvds71ns3".toCharArray();
+    private final char[] dummyPasswordHashStored = dummyPasswordHash.clone();
 
     @BeforeEach
     void setUp() {
@@ -69,7 +78,29 @@ public class RegistrationServiceTest {
         existingEmployee = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", "johnmdoe@company.com",
                 "John", "M", "Doe");
 
+        dummyPasswordLightHash = "nc36784gfyu43vbf7623frtycwdvtyuawjcevdfyu12b367821f".toCharArray();
+
+        //TODO: avoid the use of lenient()
         lenient().when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
+        lenient().when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
+        lenient().when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
+        //TODO: separate client and employee dummy passwords and salts
+        lenient().when(userRepository.getClientPasswordSalt(existingClient.getUUID())).thenReturn(Optional.of(dummySalt));
+        lenient().when(userRepository.getEmployeePasswordSalt(existingEmployee.getUUID())).thenReturn(Optional.of(dummySalt));
+        lenient().when(passwordHasher.hash(dummyPasswordLightHash, dummySalt)).thenReturn(dummyPasswordHash);
+        lenient().when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
+        lenient().when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
+        lenient().when(passwordHasher.matches(dummyPasswordHash, dummyPasswordHashStored)).thenReturn(true);
+        lenient().when(emailEngine.sendTemplatedEmail(
+                eq(new EmailMessage(existingClient.getPersonalEmail(), CLIENT_VERIFICATION_EMAIL_SUBJECT, null, null)),
+                anyString()
+        )).thenReturn(true);
+        lenient().when(emailEngine.sendTemplatedEmail(
+                eq(new EmailMessage(existingEmployee.getEmployeeEmail(), EMPLOYEE_VERIFICATION_EMAIL_SUBJECT, null, null)),
+                anyString()
+        )).thenReturn(true);
+        lenient().when(pendingVerificationUserRepository.save(existingClient)).thenReturn(true);
+        lenient().when(pendingVerificationUserRepository.save(existingEmployee)).thenReturn(true);
     }
 
     @Test
@@ -77,7 +108,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistration("johnmdoe",
-                        clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
+                        dummyPasswordLightHash, clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
@@ -85,31 +116,32 @@ public class RegistrationServiceTest {
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistration("johnmdoe1",
-                        clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
+                        dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
     void initiateClientRegistration_returnsFailureIfUserNameOrPersonalEmailIsTakenAndPasswordDoesNotMatch() {
-        String nonRegisteredPasswordHash = "12345678";
+        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistration("johnmdoe",
-                        clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
+                        nonRegisteredPasswordHash, clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistration("johnmdoe1",
-                        clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
+                        nonRegisteredPasswordHash, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
     void initiateClientRegistration_throwsIfRoleNotFound() {
+        when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.empty());
         assertThrows(NoSuchElementException.class,
                 () -> registrationService.initiateClientRegistration("johnmdoe",
-                        clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
+                        dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
     @Test
-    void initiateClientRegistration_doesNotThrowWhenUserIsNotYetRegisteredAndRoleExists() {
+    void initiateClientRegistration_returnsPendingVerificationIfIdentifiersAreValidAndPasswordIsValid() {
         when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
         when(pendingVerificationUserRepository.save(argThat(pendingUser ->
                 pendingUser.getUsername().equals("johnmdoe"))))
@@ -118,10 +150,8 @@ public class RegistrationServiceTest {
                 argThat(email -> email.recipient().equals("johnmdoe@outlook.com")),
                 eq(VERIFICATION_EMAIL_TEMPLATE)))
                 .thenReturn(true);
-        assertDoesNotThrow(() -> registrationService.initiateClientRegistration("johnmdoe",
-                clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
         assertEquals(RegistrationStatus.PENDING_VERIFICATION,
-                registrationService.initiateClientRegistration("johnmdoe", clientRoleNames, "johnmdoe@outlook.com",
+                registrationService.initiateClientRegistration("johnmdoe", dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com",
                         "John", "M", "Doe"));
     }
 
@@ -130,27 +160,28 @@ public class RegistrationServiceTest {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
-                        clientRoleNames, "johnmdoe@outlook.com"));
+                        dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com"));
     }
 
     @Test
     void initiateClientRegistrationForExistingEmployee_returnsFailureIfUsernameIsNotFound() {
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
-                        clientRoleNames, "johnmdoe@outlook.com"));
+                        dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com"));
     }
 
+    //TODO: separate tests
     @Test
     void initiateClientRegistrationForExistingEmployee_returnsFailureIfUserNameOrPersonalEmailIsTakenAndPasswordDoesNotMatch() {
-        String nonRegisteredPasswordHash = "12345678";
+        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
-                        clientRoleNames, "johnmdoe1@outlook.com"));
+                        nonRegisteredPasswordHash, clientRoleNames, "johnmdoe1@outlook.com"));
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe1",
-                        clientRoleNames, "johnmdoe@outlook.com"));
+                        nonRegisteredPasswordHash, clientRoleNames, "johnmdoe@outlook.com"));
     }
 
     @Test
@@ -166,14 +197,14 @@ public class RegistrationServiceTest {
                 .thenReturn(true);
         assertEquals(RegistrationStatus.PENDING_VERIFICATION,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
-                        clientRoleNames, "johnmdoe@outlook.com"));
+                        dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com"));
     }
 
     @Test
     void initiateEmployeeRegistration_returnsAlreadyRegisteredIfEmployeeIdIsTaken() {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
-                registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe1", dummyPasswordHash,
+                registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe1", dummyPasswordLightHash,
                         employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
     }
 
@@ -197,7 +228,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_returnsFailureIfUserNameOrEmployeeIdOrEmployeeEmailIsTakenAndPasswordDoesNotMatch() {
-        String nonRegisteredPasswordHash = "12345678";
+        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
         when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
@@ -215,6 +246,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_throwsIfRoleNotFound() {
+        when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.empty());
         assertThrows(NoSuchElementException.class,
                 () -> registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
                         dummyPasswordHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
@@ -250,7 +282,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
-                        clientRoleNames, "johnmdoe@outlook.com"));
+                        dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com"));
     }
 
     @Test
@@ -262,7 +294,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsFailureIfUserNameOrEmployeeIdOrEmployeeEmailIsTakenAndPasswordDoesNotMatch() {
-        String nonRegisteredPasswordHash = "12345678";
+        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
         when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
