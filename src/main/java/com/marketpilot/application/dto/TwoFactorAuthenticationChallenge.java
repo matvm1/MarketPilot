@@ -1,5 +1,6 @@
 package com.marketpilot.application.dto;
 
+@Deprecated
 public record TwoFactorAuthenticationChallenge(String username, String challengeToken) {
     public TwoFactorAuthenticationChallenge {
         if (username == null)

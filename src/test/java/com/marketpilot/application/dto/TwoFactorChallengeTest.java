@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Deprecated
 class TwoFactorChallengeTest {
     @Test
     void constructor_throwsForNullUserName() {
