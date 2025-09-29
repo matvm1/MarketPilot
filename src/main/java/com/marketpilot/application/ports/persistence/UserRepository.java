@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UserRepository extends BaseRepository<User, Long> {
+    Optional<User> findByUUID(UUID uuid);
     Optional<User> findByUsername(String username);
     Optional<User> findByEmployeeId(String employeeId);
     Optional<User> findByPersonalEmail(String personalEmail);

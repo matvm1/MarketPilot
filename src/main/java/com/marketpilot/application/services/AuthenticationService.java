@@ -4,6 +4,8 @@ import com.marketpilot.application.dto.AuthenticationResult;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.SessionManager;
 import com.marketpilot.application.ports.auth.TwoFactorService;
+import com.marketpilot.application.dto.auth.credentials.MfaCredential;
+import com.marketpilot.application.dto.auth.credentials.TotpCredential;
 import com.marketpilot.application.ports.persistence.RoleRepository;
 import com.marketpilot.application.ports.persistence.UserRepository;
 import com.marketpilot.domain.entities.auth.Role;
@@ -22,17 +24,21 @@ public class AuthenticationService {
         FAILURE
     }
 
+    public enum MfaType {
+        TOTP
+    }
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final TwoFactorService twoFactorService;
+    private final TwoFactorService totpService;
     private final PasswordHasher passwordHasher;
     private final SessionManager sessionManager;
 
-    public AuthenticationService(UserRepository userRepository, RoleRepository roleRepository, TwoFactorService twoFactorService,
+    public AuthenticationService(UserRepository userRepository, RoleRepository roleRepository, TwoFactorService totpService,
                                  PasswordHasher passwordHasher, SessionManager sessionManager) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.twoFactorService = twoFactorService;
+        this.totpService = totpService;
         this.passwordHasher = passwordHasher;
         this.sessionManager = sessionManager;
     }
@@ -41,23 +47,23 @@ public class AuthenticationService {
         Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(identifier)
                 .or(() -> userRepository.findByPersonalEmail(identifier));
 
-        return authenticate(usernameOrEmail, passwordLightHash, roleName,
+        return initiateAuthentication(usernameOrEmail, passwordLightHash, roleName,
                 userFinder,
                 userRepository::getClientPasswordSalt,
                 userRepository::getClientPasswordHash);
     }
 
     public AuthenticationStatus initiateEmployeeAuthentication(String employeeId, char[] passwordLightHash, RoleName roleName) {
-        return authenticate(employeeId, passwordLightHash, roleName,
+        return initiateAuthentication(employeeId, passwordLightHash, roleName,
                 userRepository::findByEmployeeId,
                 userRepository::getEmployeePasswordSalt,
                 userRepository::getEmployeePasswordHash);
     }
 
-    private AuthenticationStatus authenticate(String identifier, char[] passwordLightHash, RoleName roleName,
-                                              Function<String, Optional<User>> userFinder,
-                                              Function<UUID, Optional<char[]>> passwordSaltFinder,
-                                              Function<UUID, Optional<char[]>> passwordHashFinder) {
+    private AuthenticationStatus initiateAuthentication(String identifier, char[] passwordLightHash, RoleName roleName,
+                                                        Function<String, Optional<User>> userFinder,
+                                                        Function<UUID, Optional<char[]>> passwordSaltFinder,
+                                                        Function<UUID, Optional<char[]>> passwordHashFinder) {
         boolean identifierIsValid = identifier != null && !identifier.isBlank();
 
         Optional<User> userOptional = userFinder.apply(identifier);
@@ -91,17 +97,36 @@ public class AuthenticationService {
             return AuthenticationStatus.AWAITING_2FA;
         }
 
-        //TODO: A dummy challenge should also be sent
         return AuthenticationStatus.FAILURE;
     }
 
-    public AuthenticationStatus completeAuthentication(String username, RoleName roleName, String challenge) {
-        AuthenticationStatus authenticationStatus = twoFactorService.verify(username, roleName, challenge);
-        if (authenticationStatus == AuthenticationStatus.SUCCESS) {
-            Optional<User> userOptional = userRepository.findByUsername(username);
-            if (userOptional.isPresent() && userOptional.get().hasRole(roleName))
+    public AuthenticationStatus twoFactorAuthentication(MfaType mfaType, MfaCredential credentials) {
+        if (mfaType == null)
+            return AuthenticationStatus.FAILURE;
+        if (credentials == null)
+            return AuthenticationStatus.FAILURE;
+
+        if (mfaType == MfaType.TOTP) {
+            return completeAuthentication(mfaType, credentials);
+        }
+
+        return AuthenticationStatus.FAILURE;
+    }
+
+    public AuthenticationStatus completeAuthentication(MfaType mfaType, MfaCredential credentials) {
+        if (mfaType == null)
+            return AuthenticationStatus.FAILURE;
+        if (credentials == null)
+            return AuthenticationStatus.FAILURE;
+
+        if (mfaType == MfaType.TOTP) {
+            Optional<User> userOptional = userRepository.findByUUID(((TotpCredential)credentials).getUserUuid());
+            RoleName roleName = ((TotpCredential)credentials).getRoleName();
+            if (userOptional.isPresent() && userOptional.get().hasRole(roleName)) {
+                if (totpService.verify(credentials))
                     if (sessionManager.createSession(new AuthenticationResult(userOptional.get(), getRole(roleName))).isPresent())
                         return AuthenticationStatus.SUCCESS;
+            }
         }
 
         return AuthenticationStatus.FAILURE;
