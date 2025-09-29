@@ -1,6 +1,6 @@
 package com.marketpilot.application.services;
 
-import com.marketpilot.application.dto.AuthenticationResult;
+import com.marketpilot.application.dto.auth.AuthenticationResult;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.SessionManager;
 import com.marketpilot.application.ports.auth.TwoFactorService;

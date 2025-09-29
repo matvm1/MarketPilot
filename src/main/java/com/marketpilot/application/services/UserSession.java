@@ -1,6 +1,6 @@
 package com.marketpilot.application.services;
 
-import com.marketpilot.application.dto.AuthenticationResult;
+import com.marketpilot.application.dto.auth.AuthenticationResult;
 import com.marketpilot.domain.entities.auth.Permission;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
@@ -8,7 +8,6 @@ import com.marketpilot.domain.entities.auth.User;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
-import java.util.UUID;
 
 public class UserSession {
     private final User principal;
