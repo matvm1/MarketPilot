@@ -17,7 +17,7 @@ import java.util.function.Function;
 // TODO: Integration tests
 public class AuthenticationService {
     public enum AuthenticationStatus {
-        CHALLENGE_SENT,
+        AWAITING_2FA,
         SUCCESS,
         FAILURE
     }
@@ -88,9 +88,7 @@ public class AuthenticationService {
         boolean hasRole = userExists && userOptional.get().hasRole(roleName);
 
         if (identifierIsValid && userExists && hasRole && passwordMatches) {
-            return twoFactorService.sendChallenge(user.getUsername(), roleName).isPresent()
-                    ? AuthenticationStatus.CHALLENGE_SENT
-                    : AuthenticationStatus.FAILURE;
+            return AuthenticationStatus.AWAITING_2FA;
         }
 
         //TODO: A dummy challenge should also be sent

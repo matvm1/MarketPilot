@@ -114,9 +114,7 @@ public class AuthenticationServiceTest {
         when(passwordHasher.hash(dummyPasswordLightHash, dummySalt)).thenReturn(dummyPasswordHash);
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordHash, dummyPasswordHashStored)).thenReturn(true);
-        when(twoFactorService.sendChallenge(existingClient.getUsername(), RoleName.PersonalInvestor))
-                .thenReturn(Optional.of(new TwoFactorAuthenticationChallenge(existingClient.getUsername(), "123456")));
-        assertEquals(AuthenticationStatus.CHALLENGE_SENT,
+        assertEquals(AuthenticationStatus.AWAITING_2FA,
                 authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
@@ -128,9 +126,7 @@ public class AuthenticationServiceTest {
         when(passwordHasher.hash(dummyPasswordLightHash, dummySalt)).thenReturn(dummyPasswordHash);
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordHash, dummyPasswordHashStored)).thenReturn(true);
-        when(twoFactorService.sendChallenge(existingClient.getUsername(), RoleName.PersonalInvestor))
-                .thenReturn(Optional.of(new TwoFactorAuthenticationChallenge(existingClient.getUsername(), "123456")));
-        assertEquals(AuthenticationStatus.CHALLENGE_SENT,
+        assertEquals(AuthenticationStatus.AWAITING_2FA,
                 authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
@@ -170,9 +166,7 @@ public class AuthenticationServiceTest {
         when(passwordHasher.hash(dummyPasswordLightHash, dummySalt)).thenReturn(dummyPasswordHash);
         when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordHash, dummyPasswordHashStored)).thenReturn(true);
-        when(twoFactorService.sendChallenge(existingEmployee.getUsername(), RoleName.Analyst))
-                .thenReturn(Optional.of(new TwoFactorAuthenticationChallenge(existingEmployee.getUsername(), "123456")));
-        assertEquals(AuthenticationStatus.CHALLENGE_SENT,
+        assertEquals(AuthenticationStatus.AWAITING_2FA,
                 authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordLightHash, RoleName.Analyst));
     }
 
