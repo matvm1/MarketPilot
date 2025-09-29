@@ -26,6 +26,13 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+
+      <!-- Override ZXing dependency used by dev.samstevens.totp QR generator -->
+      <dependency>
+        <groupId>com.google.zxing</groupId>
+        <artifactId>javase</artifactId>
+        <version>3.5.3</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -73,6 +80,13 @@
       <artifactId>mockito-junit-jupiter</artifactId>
       <version>5.19.0</version>
       <scope>test</scope>
+    </dependency>
+
+    <!-- TOTP 2FA -->
+    <dependency>
+      <groupId>dev.samstevens.totp</groupId>
+      <artifactId>totp</artifactId>
+      <version>1.7.1</version>
     </dependency>
   </dependencies>
 
