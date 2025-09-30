@@ -100,19 +100,6 @@ public class AuthenticationService {
         return AuthenticationStatus.FAILURE;
     }
 
-    public AuthenticationStatus twoFactorAuthentication(MfaType mfaType, MfaCredential credentials) {
-        if (mfaType == null)
-            return AuthenticationStatus.FAILURE;
-        if (credentials == null)
-            return AuthenticationStatus.FAILURE;
-
-        if (mfaType == MfaType.TOTP) {
-            return completeAuthentication(mfaType, credentials);
-        }
-
-        return AuthenticationStatus.FAILURE;
-    }
-
     public AuthenticationStatus completeAuthentication(MfaType mfaType, MfaCredential credentials) {
         if (mfaType == null)
             return AuthenticationStatus.FAILURE;
