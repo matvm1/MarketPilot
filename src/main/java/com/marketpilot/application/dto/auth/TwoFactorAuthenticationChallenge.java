@@ -1,4 +1,4 @@
-package com.marketpilot.application.dto;
+package com.marketpilot.application.dto.auth;
 
 @Deprecated
 public record TwoFactorAuthenticationChallenge(String username, String challengeToken) {
