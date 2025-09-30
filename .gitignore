@@ -34,3 +34,4 @@ target/
 
 ### secrets ###
 secrets/
+src/main/resources/db/migration/oraclecloud/INSERT_APP_USER_ADMIN.sql
