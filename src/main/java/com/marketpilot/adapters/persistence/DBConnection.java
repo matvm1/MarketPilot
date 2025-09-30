@@ -7,10 +7,7 @@ package com.marketpilot.adapters.persistence;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Properties;
 
 import oracle.ucp.jdbc.PoolDataSourceFactory;
@@ -83,6 +80,11 @@ public class DBConnection {
                 ResultSet rs = stmt.executeQuery("SELECT 1 FROM DUAL")) {
                 if (rs.next()) {
                     System.out.println("Oracle Connection is working! Query result: " + rs.getInt(1));
+                    // Create Oracle DatabaseMetaData object
+                    DatabaseMetaData meta = conn.getMetaData();
+
+                    // gets driver info:
+                    System.out.println("JDBC driver version is " + meta.getDriverVersion());
                     return true;
                 }
                 return false;
