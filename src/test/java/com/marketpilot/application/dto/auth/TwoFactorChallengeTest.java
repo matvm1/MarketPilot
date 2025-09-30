@@ -1,6 +1,5 @@
-package com.marketpilot.application.dto;
+package com.marketpilot.application.dto.auth;
 
-import com.marketpilot.application.dto.auth.TwoFactorAuthenticationChallenge;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
