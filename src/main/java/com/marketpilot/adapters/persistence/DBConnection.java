@@ -85,6 +85,7 @@ public class DBConnection {
 
                     // gets driver info:
                     System.out.println("JDBC driver version is " + meta.getDriverVersion());
+                    System.out.println(conn.getMetaData());
                     return true;
                 }
                 return false;
