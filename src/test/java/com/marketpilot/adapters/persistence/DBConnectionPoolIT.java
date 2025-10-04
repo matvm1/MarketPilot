@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DBConnectionIT {
+public class DBConnectionPoolIT {
     @Test
     void constructor_establishesConnection() {
-        DBConnection conn = assertDoesNotThrow(DBConnection::new);
+        DBConnectionPool conn = assertDoesNotThrow(DBConnectionPool::new);
         assertTrue(conn.testConnection());
         assertTrue(conn.isConnectionEstablished());
     }

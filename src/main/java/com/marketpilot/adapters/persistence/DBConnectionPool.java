@@ -13,7 +13,7 @@ import java.util.Properties;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import oracle.ucp.jdbc.PoolDataSource;
 
-public class DBConnection {
+public class DBConnectionPool {
     // Replace USER_NAME, PASSWORD with your username and password
     private static String DB_USER;
     private static String DB_PASSWORD;
@@ -30,7 +30,7 @@ public class DBConnection {
     private final static String CONNECT_STRING ="marketpilotdev_high";
     private final static String CONN_FACTORY_CLASS_NAME = "oracle.jdbc.replay.OracleConnectionPoolDataSourceImpl";
     private final PoolDataSource poolDataSource;
-    public DBConnection() throws SQLException {
+    public DBConnectionPool() throws SQLException {
         readCredentials();
         this.poolDataSource = PoolDataSourceFactory.getPoolDataSource();
         poolDataSource.setConnectionFactoryClassName(CONN_FACTORY_CLASS_NAME);
@@ -51,24 +51,6 @@ public class DBConnection {
         poolDataSource.setConnectionPoolName("JDBC_UCP_POOL");
 
         isConnectionEstablished = true;
-    }
-
-    private void readCredentials() {
-        String propsPath = System.getenv("DB_PROPERTIES_PATH");
-        if (propsPath == null) {
-            System.err.println("DB_PROPERTIES_PATH environment variable is not set");
-            return;
-        }
-
-        Properties props = new Properties();
-        try (FileInputStream fis = new FileInputStream(propsPath)) {
-            props.load(fis);
-        } catch (IOException e) {
-            System.out.println("File " + propsPath + " could not be found.");
-        }
-
-        DB_USER = props.getProperty("db.user");
-        DB_PASSWORD = props.getProperty("db.password");
     }
 
     public boolean isConnectionEstablished() { return isConnectionEstablished; }
@@ -94,5 +76,23 @@ public class DBConnection {
             System.out.println("Could not connect to the database - SQLException occurred: " + e.getMessage());
             return false;
         }
+    }
+
+    private void readCredentials() {
+        String propsPath = System.getenv("DB_PROPERTIES_PATH");
+        if (propsPath == null) {
+            System.err.println("DB_PROPERTIES_PATH environment variable is not set");
+            return;
+        }
+
+        Properties props = new Properties();
+        try (FileInputStream fis = new FileInputStream(propsPath)) {
+            props.load(fis);
+        } catch (IOException e) {
+            System.out.println("File " + propsPath + " could not be found.");
+        }
+
+        DB_USER = props.getProperty("db.user");
+        DB_PASSWORD = props.getProperty("db.password");
     }
 }
