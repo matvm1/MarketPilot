@@ -16,7 +16,9 @@ public class JdbcExecutor {
 
     // prepares a PreparedStatement, executes, and returns the queried data wrapped in a ResultSet
     public static ResultSet executeQuery(String sql, Param... params) {
-        try (PreparedStatement ps = prepareStatement(sql, params)) {
+        try (Connection conn = pool.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            setParameters(ps, params);
             return ps.executeQuery();
         }
         catch (SQLException e) {
@@ -29,7 +31,9 @@ public class JdbcExecutor {
 
     // prepares a PreparedStatement, executes, and returns count of affected records
     public static int executeUpdate(String sql, Param... params) {
-        try (PreparedStatement ps = prepareStatement(sql, params)) {
+        try (Connection conn = pool.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            setParameters(ps, params);
             return ps.executeUpdate();
         }
         catch (SQLException e) {
@@ -40,17 +44,10 @@ public class JdbcExecutor {
         }
     }
 
-    // prepares a PreparedStatement with the query in String sql and varargs params
-    private static PreparedStatement prepareStatement(String sql, Param... params) throws SQLException {
-        try (Connection conn = pool.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            for (Param p : params)
-                ps.setObject(p.index(), p.value(), p.sqlType());
-            return ps;
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Could not prepare statement:\nsql: " + sql + "\nparams:" + Arrays.toString(params));
+    // sets parameters on a prepared statement
+    private static void setParameters(PreparedStatement ps, Param... params) throws SQLException {
+        for (Param p : params) {
+            ps.setObject(p.index(), p.value(), p.sqlType());
         }
     }
 }
