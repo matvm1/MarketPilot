@@ -13,7 +13,7 @@ import java.util.Properties;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import oracle.ucp.jdbc.PoolDataSource;
 
-public class DBConnectionPool {
+public class ConnectionPool {
     // Replace USER_NAME, PASSWORD with your username and password
     private static String DB_USER;
     private static String DB_PASSWORD;
@@ -29,7 +29,7 @@ public class DBConnectionPool {
     private final static String CONN_FACTORY_CLASS_NAME = "oracle.jdbc.replay.OracleConnectionPoolDataSourceImpl";
     private static PoolDataSource poolDataSource;
 
-    private DBConnectionPool() {}
+    private ConnectionPool() {}
 
     public static PoolDataSource getPool() {
         if (poolDataSource == null) {
