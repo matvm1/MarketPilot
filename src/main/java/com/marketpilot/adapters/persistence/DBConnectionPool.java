@@ -18,8 +18,6 @@ public class DBConnectionPool {
     private static String DB_USER;
     private static String DB_PASSWORD;
 
-    private final boolean isConnectionEstablished;
-
     // If you want to connect using Wallet, comment the following line.
     // private final static String CONNECT_STRING = "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.us-ashburn-1.oraclecloud.com))(connect_data=(service_name=g4393aeaf8e37e6_marketpilotdev_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))";
 
@@ -49,11 +47,7 @@ public class DBConnectionPool {
         poolDataSource.setUser(DB_USER);
         poolDataSource.setPassword(DB_PASSWORD);
         poolDataSource.setConnectionPoolName("JDBC_UCP_POOL");
-
-        isConnectionEstablished = true;
     }
-
-    public boolean isConnectionEstablished() { return isConnectionEstablished; }
 
     public boolean testConnection() {
         try {
