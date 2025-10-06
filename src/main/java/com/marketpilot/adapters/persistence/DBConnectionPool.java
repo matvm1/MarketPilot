@@ -27,14 +27,19 @@ public class DBConnectionPool {
     */
     private final static String CONNECT_STRING ="marketpilotdev_high";
     private final static String CONN_FACTORY_CLASS_NAME = "oracle.jdbc.replay.OracleConnectionPoolDataSourceImpl";
-    private final PoolDataSource poolDataSource;
-    public DBConnectionPool() throws SQLException {
-        readCredentials();
-        this.poolDataSource = PoolDataSourceFactory.getPoolDataSource();
-        poolDataSource.setConnectionFactoryClassName(CONN_FACTORY_CLASS_NAME);
+    private static PoolDataSource poolDataSource;
 
-        // If THICK mode is needed, comment the following line. Unset TNS_ADMIN environment variable if you are using THIN mode
-        poolDataSource.setURL("jdbc:oracle:thin:@" + CONNECT_STRING);
+    private DBConnectionPool() {}
+
+    public static PoolDataSource getPool() {
+        if (poolDataSource == null) {
+            try {
+                readCredentials();
+                poolDataSource = PoolDataSourceFactory.getPoolDataSource();
+                poolDataSource.setConnectionFactoryClassName(CONN_FACTORY_CLASS_NAME);
+
+                // If THICK mode is needed, comment the following line. Unset TNS_ADMIN environment variable if you are using THIN mode
+                poolDataSource.setURL("jdbc:oracle:thin:@" + CONNECT_STRING);
         /*
 		 If THICK mode is needed, uncomment the following poolDataSource.setURL line.
 		  Note:
@@ -42,14 +47,24 @@ public class DBConnectionPool {
 		   TNS_ADMIN - Should be the path where the client credentials zip (wallet_dbname.zip) file is downloaded.
 		  2. Edit Wallet location value in sqlnet.ora
 		*/
-        // poolDataSource.setURL("jdbc:oracle:oci8:@" + CONNECT_STRING);
+                // poolDataSource.setURL("jdbc:oracle:oci8:@" + CONNECT_STRING);
 
-        poolDataSource.setUser(DB_USER);
-        poolDataSource.setPassword(DB_PASSWORD);
-        poolDataSource.setConnectionPoolName("JDBC_UCP_POOL");
+                poolDataSource.setUser(DB_USER);
+                poolDataSource.setPassword(DB_PASSWORD);
+                poolDataSource.setConnectionPoolName("JDBC_UCP_POOL");
+            }
+            catch (SQLException e) {
+                //TODO: Retry & log
+                e.printStackTrace();
+                throw new RuntimeException("Failed to initialize UCP pool\n");
+            }
+        }
+        return poolDataSource;
     }
 
-    public boolean testConnection() {
+    //TODO: Close pool upon app shutdown
+
+    public static boolean testConnection() {
         try {
             try (Connection conn = poolDataSource.getConnection();
                 Statement stmt = conn.createStatement();
@@ -72,7 +87,7 @@ public class DBConnectionPool {
         }
     }
 
-    private void readCredentials() {
+    private static void readCredentials() {
         String propsPath = System.getenv("DB_PROPERTIES_PATH");
         if (propsPath == null) {
             System.err.println("DB_PROPERTIES_PATH environment variable is not set");
