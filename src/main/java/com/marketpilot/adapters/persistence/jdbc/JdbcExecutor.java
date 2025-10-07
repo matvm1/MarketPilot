@@ -1,4 +1,4 @@
-package com.marketpilot.adapters.persistence;
+package com.marketpilot.adapters.persistence.jdbc;
 
 import oracle.ucp.jdbc.PoolDataSource;
 

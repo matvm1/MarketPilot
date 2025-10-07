@@ -1,5 +1,6 @@
 package com.marketpilot.adapters.persistence;
 
+import com.marketpilot.adapters.persistence.jdbc.ConnectionPool;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;

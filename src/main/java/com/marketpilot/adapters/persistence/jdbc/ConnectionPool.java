@@ -3,7 +3,7 @@
  https://www.oracle.com/database/technologies/getting-started-using-jdbc.html
 */
 
-package com.marketpilot.adapters.persistence;
+package com.marketpilot.adapters.persistence.jdbc;
 
 import java.io.FileInputStream;
 import java.io.IOException;

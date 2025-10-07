@@ -1,12 +1,12 @@
 package com.marketpilot.adapters.persistence.migration;
 
-import com.marketpilot.adapters.persistence.Batch;
-import com.marketpilot.adapters.persistence.JdbcExecutor;
-import com.marketpilot.adapters.persistence.Param;
+import com.marketpilot.adapters.persistence.jdbc.Batch;
+import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
+import com.marketpilot.adapters.persistence.jdbc.Param;
 
 import java.util.Set;
 
-import static com.marketpilot.adapters.persistence.Param.stringP;
+import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
 
 public class EnumSeederUtil {
     private final static Set<String> allowedTables = Set.of(
