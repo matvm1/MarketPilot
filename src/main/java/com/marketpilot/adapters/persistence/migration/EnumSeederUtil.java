@@ -1,6 +1,8 @@
 package com.marketpilot.adapters.persistence.migration;
 
 import com.marketpilot.adapters.persistence.JdbcExecutor;
+import com.marketpilot.adapters.persistence.Param;
+
 import java.util.Set;
 
 import static com.marketpilot.adapters.persistence.Param.stringP;
@@ -40,7 +42,7 @@ public class EnumSeederUtil {
         E[] enumConstants = enumClass.getEnumConstants();
         String tableNameUpper = targetTableName.toUpperCase();
 
-        String sql = String.format("""
+        String insertSql = String.format("""
             INSERT INTO %s (NAME, CREATED_AT, UPDATED_AT)
             SELECT ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
             FROM dual
@@ -55,6 +57,20 @@ public class EnumSeederUtil {
                     stringP(2, enumConstants[i].toString()));
         }
 
-        JdbcExecutor.executeUpdateBatch(sql, batches);
+        JdbcExecutor.executeUpdateBatch(insertSql, batches);
+
+
+        StringBuilder deleteSql = new StringBuilder("DELETE FROM " + tableNameUpper + " WHERE NAME NOT IN (");
+        Param[] params = new Param[enumConstants.length];
+        for (int i = 0; i < enumConstants.length; i++) {
+            deleteSql.append("?");
+            params[i] = stringP(i + 1, enumConstants[i].toString());
+            if (i < enumConstants.length - 1) {
+                deleteSql.append(", ");
+            }
+        }
+        deleteSql.append(")");
+
+        JdbcExecutor.executeUpdate(deleteSql.toString(), params);
     }
 }
