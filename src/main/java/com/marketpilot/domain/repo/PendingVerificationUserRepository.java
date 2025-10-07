@@ -1,6 +1,4 @@
-package com.marketpilot.application.ports.persistence;
-
-import com.marketpilot.domain.entities.auth.User;
+package com.marketpilot.domain.repo;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package com.marketpilot.application.ports.persistence;
+package com.marketpilot.domain.repo;
 
 import java.util.Optional;
 

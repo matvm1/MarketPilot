@@ -1,8 +1,6 @@
-package com.marketpilot.application.ports.persistence;
+package com.marketpilot.domain.repo;
 
 import com.marketpilot.domain.entities.auth.User;
-
-import java.util.Optional;
 
 public interface EmployeeRepository extends BaseRepository<User, Long> {
     boolean employeeIdExists(String employeeId);

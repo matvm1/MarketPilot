@@ -1,4 +1,4 @@
-package com.marketpilot.application.ports.persistence;
+package com.marketpilot.domain.repo;
 
 import com.marketpilot.domain.entities.auth.User;
 
