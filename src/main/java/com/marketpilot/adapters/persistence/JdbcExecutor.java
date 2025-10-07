@@ -1,6 +1,5 @@
 package com.marketpilot.adapters.persistence;
 
-import com.marketpilot.adapters.persistence.migration.Batch;
 import oracle.ucp.jdbc.PoolDataSource;
 
 import java.sql.Connection;

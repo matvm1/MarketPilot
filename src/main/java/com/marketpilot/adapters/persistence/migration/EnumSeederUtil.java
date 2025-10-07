@@ -1,5 +1,6 @@
 package com.marketpilot.adapters.persistence.migration;
 
+import com.marketpilot.adapters.persistence.Batch;
 import com.marketpilot.adapters.persistence.JdbcExecutor;
 import com.marketpilot.adapters.persistence.Param;
 
