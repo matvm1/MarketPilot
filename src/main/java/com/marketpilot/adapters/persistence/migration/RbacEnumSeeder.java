@@ -11,5 +11,6 @@ public class RbacEnumSeeder {
     public static void main(String[] args) {
         EnumSeederUtil.seed(Permission.class, "APP_PERMISSION");
         EnumSeederUtil.seed(RoleName.class, "APP_ROLE");
+        EnumSeederUtil.seed(UserType.class, "APP_USER_TYPE");
     }
 }

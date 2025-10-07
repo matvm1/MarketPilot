@@ -11,7 +11,8 @@ import static com.marketpilot.adapters.persistence.Param.stringP;
 public class EnumSeederUtil {
     private final static Set<String> allowedTables = Set.of(
             "app_permission",
-            "app_role"
+            "app_role",
+            "app_user_type"
     );
 
     protected static <E> void seed(Class<E> enumClass, String targetTableName) {
