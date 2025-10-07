@@ -1,14 +1,15 @@
 package com.marketpilot.adapters.persistence;
 
+import com.marketpilot.adapters.persistence.migration.Batch;
 import oracle.ucp.jdbc.PoolDataSource;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 
 // Do not expose outside MarketPilot project
+//TODO: validate incoming sql
 public class JdbcExecutor {
     private static final PoolDataSource pool = ConnectionPool.getPool();
 
@@ -39,6 +40,21 @@ public class JdbcExecutor {
         catch (SQLException e) {
             //TODO: Rollback? Commit?
             //TODO: Log
+            e.printStackTrace();
+            throw new RuntimeException("Could not execute query:\n" + sql);
+        }
+    }
+
+    public static int[] executeUpdateBatch(String sql, Batch[] batches) {
+        try (Connection conn = pool.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (Batch batch : batches) {
+                setParameters(ps, batch.params());
+                ps.addBatch();
+            }
+            return ps.executeBatch();
+        }
+        catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Could not execute query:\n" + sql);
         }
