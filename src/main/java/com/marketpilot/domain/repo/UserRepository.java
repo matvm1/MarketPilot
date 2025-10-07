@@ -5,7 +5,7 @@ import com.marketpilot.domain.entities.auth.User;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository extends BaseRepository<User, Long> {
+public interface UserRepository extends BaseRepository<Long, User> {
     Optional<User> findByUUID(UUID uuid);
     Optional<User> findByUsername(String username);
     Optional<User> findByEmployeeId(String employeeId);
