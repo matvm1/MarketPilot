@@ -17,4 +17,6 @@ public interface UserRepository extends BaseRepository<Long, User> {
     Optional<char[]> getEmployeePasswordHash(UUID uuid);
     Optional<char[]> getClientPasswordSalt(UUID uuid);
     Optional<char[]> getEmployeePasswordSalt(UUID uuid);
+    Optional<char[]> getClientTotpSecret(UUID uuid);
+    Optional<char[]> getEmployeeTotpSecret(UUID uuid);
 }

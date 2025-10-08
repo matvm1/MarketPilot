@@ -205,6 +205,46 @@ public class OjdbcUserRepository implements UserRepository {
     }
 
     @Override
+    public Optional<char[]> getClientTotpSecret(UUID uuid) {
+        if (uuid == null)
+            return Optional.empty();
+
+        return JdbcExecutor.fetchRecord("""
+            SELECT CLIENT_TOTP_SECRET
+            FROM APP_USER
+            WHERE UUID = ?
+            """,
+            rs -> {
+                String result = rs.getString("CLIENT_TOTP_SECRET");
+                if (result == null)
+                    return null;
+                return result.toCharArray();
+            },
+            bytesP(1, uuidToBytes(uuid)
+        ));
+    }
+
+    @Override
+    public Optional<char[]> getEmployeeTotpSecret(UUID uuid) {
+        if (uuid == null)
+            return Optional.empty();
+
+        return JdbcExecutor.fetchRecord("""
+            SELECT EMPLOYEE_TOTP_SECRET
+            FROM APP_USER
+            WHERE UUID = ?
+            """,
+            rs -> {
+                String result = rs.getString("EMPLOYEE_TOTP_SECRET");
+                if (result == null)
+                    return null;
+                return result.toCharArray();
+            },
+            bytesP(1, uuidToBytes(uuid)
+        ));
+    }
+
+    @Override
     public Optional<User> findById(Long aLong) {
         return Optional.empty();
     }
