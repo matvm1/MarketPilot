@@ -77,6 +77,14 @@ public class User {
     public String getUsername() { return username; }
 
     public Set<Role> getRoles() { return roles; }
+    
+    public Role getRole(Role.RoleName roleName) {
+        Role roleResult = null;
+        for (Role role : roles)
+            if (role.getRoleName().equals(roleName))
+                roleResult = role;
+        return roleResult;
+    }
 
     public boolean hasRole(Role.RoleName roleName) {
         for (Role role : roles)
