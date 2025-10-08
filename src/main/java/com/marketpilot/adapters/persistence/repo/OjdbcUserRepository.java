@@ -16,6 +16,7 @@ import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
 import static com.marketpilot.util.UuidUtil.bytesToUUID;
 import static com.marketpilot.util.UuidUtil.uuidToBytes;
 
+//TODO: Unit tests
 public class OjdbcUserRepository implements UserRepository {
     private final UserFactory userFactory;
     private final RoleRepository roleRepository;
@@ -125,22 +126,82 @@ public class OjdbcUserRepository implements UserRepository {
 
     @Override
     public Optional<char[]> getClientPasswordHash(UUID uuid) {
-        return Optional.empty();
+        if (uuid == null)
+            return Optional.empty();
+
+        return JdbcExecutor.fetchRecord("""
+            SELECT CLIENT_PASSWORD_HASH
+            FROM APP_USER
+            WHERE UUID = ?
+            """,
+            rs -> {
+                String result = rs.getString("CLIENT_PASSWORD_HASH");
+                if (result == null)
+                    return null;
+                return result.toCharArray();
+            },
+            bytesP(1, uuidToBytes(uuid)
+        ));
     }
 
     @Override
     public Optional<char[]> getEmployeePasswordHash(UUID uuid) {
-        return Optional.empty();
+        if (uuid == null)
+            return Optional.empty();
+
+        return JdbcExecutor.fetchRecord("""
+            SELECT EMPLOYEE_PASSWORD_HASH
+            FROM APP_USER
+            WHERE UUID = ?
+            """,
+            rs -> {
+                String result = rs.getString("EMPLOYEE_PASSWORD_HASH");
+                if (result == null)
+                    return null;
+                return result.toCharArray();
+            },
+            bytesP(1, uuidToBytes(uuid)
+        ));
     }
 
     @Override
     public Optional<char[]> getClientPasswordSalt(UUID uuid) {
-        return Optional.empty();
+        if (uuid == null)
+            return Optional.empty();
+
+        return JdbcExecutor.fetchRecord("""
+            SELECT CLIENT_PASSWORD_SALT
+            FROM APP_USER
+            WHERE UUID = ?
+            """,
+            rs -> {
+                String result = rs.getString("CLIENT_PASSWORD_SALT");
+                if (result == null)
+                    return null;
+                return result.toCharArray();
+            },
+            bytesP(1, uuidToBytes(uuid)
+        ));
     }
 
     @Override
     public Optional<char[]> getEmployeePasswordSalt(UUID uuid) {
-        return Optional.empty();
+        if (uuid == null)
+            return Optional.empty();
+
+        return JdbcExecutor.fetchRecord("""
+            SELECT EMPLOYEE_PASSWORD_SALT
+            FROM APP_USER
+            WHERE UUID = ?
+            """,
+            rs -> {
+                String result = rs.getString("EMPLOYEE_PASSWORD_SALT");
+                if (result == null)
+                    return null;
+                return result.toCharArray();
+            },
+            bytesP(1, uuidToBytes(uuid)
+        ));
     }
 
     @Override
