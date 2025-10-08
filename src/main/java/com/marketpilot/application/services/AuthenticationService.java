@@ -7,6 +7,7 @@ import com.marketpilot.application.ports.auth.SessionManager;
 import com.marketpilot.application.ports.auth.TwoFactorService;
 import com.marketpilot.application.dto.auth.credentials.MfaCredential;
 import com.marketpilot.application.dto.auth.credentials.TotpCredential;
+import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.domain.repo.UserRepository;
 import com.marketpilot.domain.entities.auth.Role;
@@ -51,20 +52,23 @@ public class AuthenticationService {
         return initiateAuthentication(usernameOrEmail, passwordLightHash, roleName,
                 userFinder,
                 userRepository::getClientPasswordSalt,
-                userRepository::getClientPasswordHash);
+                userRepository::getClientPasswordHash,
+                UserType.CLIENT);
     }
 
     public Tuple<AuthenticationStatus, Optional<UUID>> initiateEmployeeAuthentication(String employeeId, char[] passwordLightHash, RoleName roleName) {
         return initiateAuthentication(employeeId, passwordLightHash, roleName,
                 userRepository::findByEmployeeId,
                 userRepository::getEmployeePasswordSalt,
-                userRepository::getEmployeePasswordHash);
+                userRepository::getEmployeePasswordHash,
+                UserType.EMPLOYEE);
     }
 
     private Tuple<AuthenticationStatus, Optional<UUID>> initiateAuthentication(String identifier, char[] passwordLightHash, RoleName roleName,
                                                               Function<String, Optional<User>> userFinder,
                                                               Function<UUID, Optional<char[]>> passwordSaltFinder,
-                                                              Function<UUID, Optional<char[]>> passwordHashFinder) {
+                                                              Function<UUID, Optional<char[]>> passwordHashFinder,
+                                                              UserType userType) {
         boolean identifierIsValid = identifier != null && !identifier.isBlank();
 
         Optional<User> userOptional = userFinder.apply(identifier);
@@ -92,7 +96,8 @@ public class AuthenticationService {
         passwordHash = null;
         passwordHashStored = null;
 
-        boolean hasRole = userExists && user.hasRole(roleName);
+        Role authRole = userExists ? user.getRole(roleName) : null;
+        boolean hasRole = userExists && authRole != null && authRole.getUserType().equals(userType);
 
         if (identifierIsValid && userExists && hasRole && passwordMatches) {
             return new Tuple<>(AuthenticationStatus.AWAITING_2FA, Optional.of(user.getUUID()));
