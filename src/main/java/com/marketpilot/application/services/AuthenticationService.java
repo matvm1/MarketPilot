@@ -1,5 +1,6 @@
 package com.marketpilot.application.services;
 
+import com.marketpilot.adapters.persistence.jdbc.Tuple;
 import com.marketpilot.application.dto.auth.AuthenticationResult;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.SessionManager;
@@ -43,7 +44,7 @@ public class AuthenticationService {
         this.sessionManager = sessionManager;
     }
 
-    public AuthenticationStatus initiateClientAuthentication(String usernameOrEmail, char[] passwordLightHash, RoleName roleName) {
+    public Tuple<AuthenticationStatus, Optional<UUID>> initiateClientAuthentication(String usernameOrEmail, char[] passwordLightHash, RoleName roleName) {
         Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(identifier)
                 .or(() -> userRepository.findByPersonalEmail(identifier));
 
@@ -53,17 +54,17 @@ public class AuthenticationService {
                 userRepository::getClientPasswordHash);
     }
 
-    public AuthenticationStatus initiateEmployeeAuthentication(String employeeId, char[] passwordLightHash, RoleName roleName) {
+    public Tuple<AuthenticationStatus, Optional<UUID>> initiateEmployeeAuthentication(String employeeId, char[] passwordLightHash, RoleName roleName) {
         return initiateAuthentication(employeeId, passwordLightHash, roleName,
                 userRepository::findByEmployeeId,
                 userRepository::getEmployeePasswordSalt,
                 userRepository::getEmployeePasswordHash);
     }
 
-    private AuthenticationStatus initiateAuthentication(String identifier, char[] passwordLightHash, RoleName roleName,
-                                                        Function<String, Optional<User>> userFinder,
-                                                        Function<UUID, Optional<char[]>> passwordSaltFinder,
-                                                        Function<UUID, Optional<char[]>> passwordHashFinder) {
+    private Tuple<AuthenticationStatus, Optional<UUID>> initiateAuthentication(String identifier, char[] passwordLightHash, RoleName roleName,
+                                                              Function<String, Optional<User>> userFinder,
+                                                              Function<UUID, Optional<char[]>> passwordSaltFinder,
+                                                              Function<UUID, Optional<char[]>> passwordHashFinder) {
         boolean identifierIsValid = identifier != null && !identifier.isBlank();
 
         Optional<User> userOptional = userFinder.apply(identifier);
@@ -91,13 +92,13 @@ public class AuthenticationService {
         passwordHash = null;
         passwordHashStored = null;
 
-        boolean hasRole = userExists && userOptional.get().hasRole(roleName);
+        boolean hasRole = userExists && user.hasRole(roleName);
 
         if (identifierIsValid && userExists && hasRole && passwordMatches) {
-            return AuthenticationStatus.AWAITING_2FA;
+            return new Tuple<>(AuthenticationStatus.AWAITING_2FA, Optional.of(user.getUUID()));
         }
 
-        return AuthenticationStatus.FAILURE;
+        return new Tuple<>(AuthenticationStatus.FAILURE, Optional.empty());
     }
 
     public AuthenticationStatus completeAuthentication(MfaType mfaType, MfaCredential credentials) {
