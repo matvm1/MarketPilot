@@ -115,9 +115,11 @@ public class AuthenticationService {
         if (mfaType == MfaType.TOTP) {
             Optional<User> userOptional = userRepository.findByUUID(((TotpCredential)credentials).getUserUuid());
             RoleName roleName = ((TotpCredential)credentials).getRoleName();
-            if (userOptional.isPresent() && userOptional.get().hasRole(roleName)) {
-                if (totpService.verify(credentials))
-                    if (sessionManager.createSession(new AuthenticationResult(userOptional.get(), getRole(roleName))).isPresent())
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                Role userRole = user.getRole(roleName);
+                if (userRole != null && totpService.verify(credentials))
+                    if (sessionManager.createSession(new AuthenticationResult(user, userRole)).isPresent())
                         return AuthenticationStatus.SUCCESS;
             }
         }
