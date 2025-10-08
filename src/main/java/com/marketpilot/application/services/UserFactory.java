@@ -2,7 +2,6 @@ package com.marketpilot.application.services;
 
 import com.marketpilot.application.dto.user.UserClientDTO;
 import com.marketpilot.application.dto.user.UserEmployeeDTO;
-import com.marketpilot.application.dto.user.UserAbstractDTO;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
@@ -106,11 +105,37 @@ public class UserFactory {
                 userClientDTO.getEmail());
     }
 
-    public void validateRolesAndGrant(User user, Set<Role> roles, UserType expectedUserType) {
+    // use only when populating a User object from persisted data
+    public User hydrate(UUID uuid, String employeeId, String username, String personalEmail, String employeeEmail,
+                         String firstName, String middleName, String lastName, boolean isClient, boolean isEmployee) {
+        User user = new User(employeeId, username, personalEmail, employeeEmail, firstName, middleName, lastName);
+
+        user.setUUID(uuid);
+        user.setClient(isClient);
+        user.setEmployee(isEmployee);
+
+        return user;
+    }
+
+    // use only when populating a User object from persisted data
+    public void hydrateWithRoles(User user, Set<Role> roles) {
+        if (user == null)
+            throw new IllegalArgumentException("user cannot be null");
+        if (roles == null)
+            throw new IllegalArgumentException("roles cannot be null");
+        if (roles.isEmpty())
+            throw new IllegalArgumentException("roles cannot be empty");
+
+        validateRolesAndGrant(user, roles, null);
+    }
+
+    // ignores expectedUserType if expectedUserType is null
+    private void validateRolesAndGrant(User user, Set<Role> roles, UserType expectedUserType) {
         // validate all roles prior to granting them
-        for (Role role : roles)
-            if (role.getUserType() != expectedUserType)
-                throw new IllegalArgumentException("Role " + role.getRoleName() + " is not of expected roleType " + expectedUserType);
+        if (expectedUserType != null)
+            for (Role role : roles)
+                if (role.getUserType() != expectedUserType)
+                    throw new IllegalArgumentException("Role " + role.getRoleName() + " is not of expected roleType " + expectedUserType);
         for (Role role : roles)
             user.grantRole(role);
     }

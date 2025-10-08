@@ -102,21 +102,4 @@ public class UserFactoryTest {
         assertThrows(IllegalArgumentException.class, () ->
                 userFactory.assignClientAttributes(employeeUser, new HashSet<>(), "johnmdoe@company.com"));
     }
-
-    @Test
-    void validateRolesAndGrant_throwsIfRoleHasUnexpectedUserType() {
-        assertThrows(IllegalArgumentException.class, () ->
-                userFactory.validateRolesAndGrant(clientUser, employeeRoles, UserType.CLIENT));
-    }
-
-    @Test
-    void validateRolesAndGrant_grantsRolesToUserIfValidationSuccessful() {
-        assertDoesNotThrow(() ->
-                userFactory.validateRolesAndGrant(clientUser, employeeRoles, UserType.EMPLOYEE));
-
-        Set<Role> expectedRoles = new HashSet<>(clientRoles);
-        expectedRoles.addAll(employeeRoles);
-
-        assertEquals(expectedRoles, clientUser.getRoles());
-    }
 }
