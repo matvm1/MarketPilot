@@ -58,7 +58,7 @@ public class JavaTotpService implements TotpService {
     }
 
     // returns embeddable data URI for a newly generated secret
-    public String generateSecretQr(String label) {
+    public String generateSecretQrDataUri(String label) {
         // generate secret with padding removed
         String secret = this.generateSecret().replace("=", "");
         QrData.Builder qrDataBuilder = new QrData.Builder()
