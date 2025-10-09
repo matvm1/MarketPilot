@@ -10,6 +10,7 @@ import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
+import com.marketpilot.util.Tuple;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,7 +69,7 @@ public class AuthenticationServiceTest {
 
     @Test
     void initiateClientAuthentication_returnsFailureIfUsernameoremailIsNull() {
-        assertEquals(AuthenticationStatus.FAILURE,
+        assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateClientAuthentication(null, dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
@@ -78,9 +79,9 @@ public class AuthenticationServiceTest {
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe"))).thenReturn(Optional.empty());
         when(userRepository.findByUsername("johnmdoe@outlook.com")
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe@outlook.com"))).thenReturn(Optional.empty());
-        assertEquals(AuthenticationStatus.FAILURE,
+        assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordLightHash, RoleName.PersonalInvestor));
-        assertEquals(AuthenticationStatus.FAILURE,
+        assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
@@ -90,9 +91,9 @@ public class AuthenticationServiceTest {
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe"))).thenReturn(Optional.of(existingClient));
         when(userRepository.findByUsername("johnmdoe@outlook.com")
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe@outlook.com"))).thenReturn(Optional.of(existingClient));
-        assertEquals(AuthenticationStatus.FAILURE,
+        assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordLightHash, RoleName.Admin));
-        assertEquals(AuthenticationStatus.FAILURE,
+        assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPasswordLightHash, RoleName.Admin));
     }
 
@@ -101,7 +102,7 @@ public class AuthenticationServiceTest {
         char[] dummyPasswordHashStored = "sdhjfrgbjh24bqw2bsdf099$n@12!hg1".toCharArray();
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.ofNullable(existingClient));
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
-        assertEquals(AuthenticationStatus.FAILURE,
+        assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
@@ -113,7 +114,7 @@ public class AuthenticationServiceTest {
         when(passwordHasher.hash(dummyPasswordLightHash, dummySalt)).thenReturn(dummyPasswordHash);
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordHash, dummyPasswordHashStored)).thenReturn(true);
-        assertEquals(AuthenticationStatus.AWAITING_2FA,
+        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(existingClient.getUUID())),
                 authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
@@ -125,27 +126,27 @@ public class AuthenticationServiceTest {
         when(passwordHasher.hash(dummyPasswordLightHash, dummySalt)).thenReturn(dummyPasswordHash);
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordHash, dummyPasswordHashStored)).thenReturn(true);
-        assertEquals(AuthenticationStatus.AWAITING_2FA,
+        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(existingClient.getUUID())),
                 authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
     @Test
     void initiateEmployeeAuthentication_returnsFailureIfEmployeeIdIsNull() {
-        assertEquals(AuthenticationStatus.FAILURE,
+        assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateEmployeeAuthentication(null, dummyPasswordLightHash, RoleName.Analyst));
     }
 
     @Test
     void initiateEmployeeAuthentication_returnsFailureIfEmployeeIdNotFound(){
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.empty());
-        assertEquals(AuthenticationStatus.FAILURE,
+        assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordLightHash, RoleName.Analyst));
     }
 
     @Test
     void initiateEmployeeAuthentication_returnsFailureIfUserDoesNotHaveRole(){
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
-        assertEquals(AuthenticationStatus.FAILURE,
+        assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordLightHash, RoleName.Admin));
     }
 
@@ -154,7 +155,7 @@ public class AuthenticationServiceTest {
         char[] dummyPasswordHashStored = "sdhjfrgbjh24bqw2bsdf099$n@12!hg1".toCharArray();
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
-        assertEquals(AuthenticationStatus.FAILURE,
+        assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordLightHash, RoleName.Analyst));
     }
 
@@ -165,7 +166,7 @@ public class AuthenticationServiceTest {
         when(passwordHasher.hash(dummyPasswordLightHash, dummySalt)).thenReturn(dummyPasswordHash);
         when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordHash, dummyPasswordHashStored)).thenReturn(true);
-        assertEquals(AuthenticationStatus.AWAITING_2FA,
+        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(existingEmployee.getUUID())),
                 authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordLightHash, RoleName.Analyst));
     }
 
