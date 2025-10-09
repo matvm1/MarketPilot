@@ -145,11 +145,6 @@ public class AuthenticationService {
         return AuthenticationStatus.FAILURE;
     }
 
-    private Role getRole(RoleName roleName) {
-        Optional<Role> roleOptional = roleRepository.findByRoleName(roleName);
-        return roleOptional.orElse(null);
-    }
-
     private static void fillZero(char[] arr) {
         if (arr == null)
             return;
