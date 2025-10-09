@@ -1,6 +1,6 @@
 package com.marketpilot.application.services;
 
-import com.marketpilot.adapters.persistence.jdbc.Tuple;
+import com.marketpilot.util.Tuple;
 import com.marketpilot.application.dto.auth.AuthenticationResult;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.SessionManager;

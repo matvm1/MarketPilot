@@ -1,11 +1,10 @@
 package com.marketpilot.adapters.persistence.repo;
 
 import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
-import com.marketpilot.adapters.persistence.jdbc.Tuple;
+import com.marketpilot.util.Tuple;
 import com.marketpilot.domain.entities.auth.Permission;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
-import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.RoleRepository;
 
