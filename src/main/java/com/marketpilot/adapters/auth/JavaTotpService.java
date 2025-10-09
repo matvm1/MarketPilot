@@ -23,9 +23,14 @@ public class JavaTotpService implements TwoFactorService {
         if (!(credentials instanceof TotpCredential))
             return false;
 
-        CodeGenerator codeGenerator = new DefaultCodeGenerator(HashingAlgorithm.SHA512);
+        //TODO: hash with SHA-512
+        //TODO: Support 64 byte (103 character) secret generation / QR code
+        // May have DB schema implications
+        CodeGenerator codeGenerator = new DefaultCodeGenerator(HashingAlgorithm.SHA1);
         CodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
 
-        return verifier.isValidCode(((TotpCredential)credentials).getSecret(), ((TotpCredential)credentials).getCode());
+        boolean res = verifier.isValidCode(((TotpCredential)credentials).getSecret(), ((TotpCredential)credentials).getCode());
+        System.out.println(res);
+        return res;
     }
 }

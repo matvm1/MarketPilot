@@ -50,6 +50,7 @@ class JavaTotpServiceTest {
         assertFalse(javaTotpService.verify(credential));
     }
 
+    //TODO: Test with 64-byte secret
     @Test
     void verify_returnsTrue_forValidCodeInFixedTime() {
         String secret = "JBSWY3DPEHPK3PXP";
