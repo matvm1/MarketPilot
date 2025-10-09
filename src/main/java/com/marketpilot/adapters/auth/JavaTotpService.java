@@ -3,13 +3,18 @@ package com.marketpilot.adapters.auth;
 import com.marketpilot.application.dto.auth.credentials.MfaCredential;
 import com.marketpilot.application.dto.auth.credentials.TotpCredential;
 import com.marketpilot.application.ports.auth.TotpService;
-import com.marketpilot.application.ports.auth.TwoFactorService;
 import dev.samstevens.totp.code.*;
+import dev.samstevens.totp.exceptions.QrGenerationException;
+import dev.samstevens.totp.qr.QrData;
+import dev.samstevens.totp.qr.QrGenerator;
+import dev.samstevens.totp.qr.ZxingPngQrGenerator;
 import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
 import dev.samstevens.totp.time.TimeProvider;
 
 import java.util.Arrays;
+
+import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 
 // TOTP Verification by https://github.com/samdjstevens/java-totp
 public class JavaTotpService implements TotpService {
@@ -50,5 +55,31 @@ public class JavaTotpService implements TotpService {
         int numCharacters = hashingAlgorithm == HashingAlgorithm.SHA256 ? 52 : 103;
         SecretGenerator secretGenerator = new DefaultSecretGenerator(numCharacters);
         return secretGenerator.generate();
+    }
+
+    // returns embeddable data URI for a newly generated secret
+    public String generateSecretQr(String label) {
+        // generate secret with padding removed
+        String secret = this.generateSecret().replace("=", "");
+        QrData.Builder qrDataBuilder = new QrData.Builder()
+                .secret(secret)
+                .issuer("Market Pilot")
+                .algorithm(hashingAlgorithm)
+                .digits(6)
+                .period(30);
+
+        if (label != null)
+            qrDataBuilder.label(label);
+
+        QrGenerator qrGenerator = new ZxingPngQrGenerator();
+        try {
+            byte[] data = qrGenerator.generate(qrDataBuilder.build());
+            return getDataUriForImage(data, qrGenerator.getImageMimeType());
+        } catch (QrGenerationException e) {
+            //TODO: log
+            e.printStackTrace();
+        }
+
+        return "";
     }
 }
