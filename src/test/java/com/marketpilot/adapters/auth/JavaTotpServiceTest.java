@@ -5,7 +5,6 @@ import com.marketpilot.application.dto.auth.credentials.TotpCredential;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import dev.samstevens.totp.code.*;
 import dev.samstevens.totp.exceptions.CodeGenerationException;
-import dev.samstevens.totp.time.SystemTimeProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import dev.samstevens.totp.time.TimeProvider;
@@ -26,7 +25,7 @@ class JavaTotpServiceTest {
 
     @BeforeEach
     void setUp() {
-        javaTotpService = new JavaTotpService(mockTimeProvider);
+        javaTotpService = new JavaTotpService(mockTimeProvider, HashingAlgorithm.SHA256);
     }
 
     @Test
