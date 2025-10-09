@@ -115,12 +115,30 @@ public class AuthenticationService {
         if (mfaType == MfaType.TOTP) {
             Optional<User> userOptional = userRepository.findByUUID(((TotpCredential)credentials).getUserUuid());
             RoleName roleName = ((TotpCredential)credentials).getRoleName();
-            if (userOptional.isPresent()) {
+
+            if (userOptional.isPresent() ) {
                 User user = userOptional.get();
                 Role userRole = user.getRole(roleName);
-                if (userRole != null && totpService.verify(credentials))
-                    if (sessionManager.createSession(new AuthenticationResult(user, userRole)).isPresent())
-                        return AuthenticationStatus.SUCCESS;
+                UUID userUuid = ((TotpCredential) credentials).getUserUuid();
+
+                if (userRole != null) {
+                    Optional<char[]> totpSecretOptional =
+                        switch (userRole.getUserType()) {
+                            case CLIENT -> userRepository.getClientTotpSecret(userUuid);
+                            case EMPLOYEE -> userRepository.getEmployeeTotpSecret(userUuid);
+                        };
+                    ((TotpCredential) credentials).setSecret(totpSecretOptional.orElse(null));
+                    if (totpService.verify(credentials)) {
+                        totpSecretOptional.ifPresent(secret -> {
+                            fillZero(secret);
+                            secret = null;
+                        });
+                        totpSecretOptional = Optional.empty();
+                        credentials = null;
+                        if (sessionManager.createSession(new AuthenticationResult(user, userRole)).isPresent())
+                            return AuthenticationStatus.SUCCESS;
+                    }
+                }
             }
         }
 
