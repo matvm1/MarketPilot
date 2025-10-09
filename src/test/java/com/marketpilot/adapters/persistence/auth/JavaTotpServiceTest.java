@@ -45,7 +45,7 @@ class JavaTotpServiceTest {
         String secret = "JBSWY3DPEHPK3PXP";
         long fixedTime = 1_700_000_000_000L;
         when(mockTimeProvider.getTime()).thenReturn(fixedTime);
-        TotpCredential credential = new TotpCredential(UUID.randomUUID(), RoleName.PersonalInvestor, secret, "012345");
+        TotpCredential credential = new TotpCredential(UUID.randomUUID(), RoleName.PersonalInvestor,  "012345");
 
         assertFalse(javaTotpService.verify(credential));
     }
@@ -56,7 +56,7 @@ class JavaTotpServiceTest {
         String secret = "JBSWY3DPEHPK3PXP";
         long fixedTime = 1_700_000_000_000L;
         when(mockTimeProvider.getTime()).thenReturn(fixedTime);
-        TotpCredential credential = new TotpCredential(UUID.randomUUID(), RoleName.PersonalInvestor, secret, "813407");
+        TotpCredential credential = new TotpCredential(UUID.randomUUID(), RoleName.PersonalInvestor, "813407");
 
         assertTrue(javaTotpService.verify(credential));
     }
@@ -76,7 +76,7 @@ class JavaTotpServiceTest {
             throw new RuntimeException(e);
         }
 
-        TotpCredential credential = new TotpCredential(UUID.randomUUID(), RoleName.PersonalInvestor, secret, validCode);
+        TotpCredential credential = new TotpCredential(UUID.randomUUID(), RoleName.PersonalInvestor, validCode);
 
         assertTrue(javaTotpService.verify(credential));
     }

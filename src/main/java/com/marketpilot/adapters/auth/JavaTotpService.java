@@ -6,6 +6,8 @@ import com.marketpilot.application.ports.auth.TwoFactorService;
 import dev.samstevens.totp.code.*;
 import dev.samstevens.totp.time.TimeProvider;
 
+import java.util.Arrays;
+
 // TOTP Verification by https://github.com/samdjstevens/java-totp
 public class JavaTotpService implements TwoFactorService {
     private final TimeProvider timeProvider;
@@ -29,7 +31,7 @@ public class JavaTotpService implements TwoFactorService {
         CodeGenerator codeGenerator = new DefaultCodeGenerator(HashingAlgorithm.SHA1);
         CodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
 
-        boolean res = verifier.isValidCode(((TotpCredential)credentials).getSecret(), ((TotpCredential)credentials).getCode());
+        boolean res = verifier.isValidCode(Arrays.toString(((TotpCredential) credentials).getSecret()), ((TotpCredential)credentials).getCode());
         System.out.println(res);
         return res;
     }
