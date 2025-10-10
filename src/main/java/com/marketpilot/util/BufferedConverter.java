@@ -7,12 +7,14 @@ import java.nio.charset.StandardCharsets;
 public class BufferedConverter {
     public static byte[] toBytes(char[] data) {
         ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap(data));
-        byteBuffer.flip();
         byte[] encoded = new byte[byteBuffer.remaining()];
         byteBuffer.get(encoded);
 
         fillZero(data);
         data = null;
+
+        if(byteBuffer.hasArray())
+            fillZero(byteBuffer.array());
 
         return encoded;
     }
@@ -28,6 +30,9 @@ public class BufferedConverter {
         fillZero(dataCharArr);
         dataCharArr = null;
 
+        if(byteBuffer.hasArray())
+            fillZero(byteBuffer.array());
+
         return encoded;
     }
 
@@ -38,6 +43,9 @@ public class BufferedConverter {
 
         fillZero(data);
         data = null;
+
+        if(charBuffer.hasArray())
+            fillZero(charBuffer.array());
 
         return decoded;
     }
