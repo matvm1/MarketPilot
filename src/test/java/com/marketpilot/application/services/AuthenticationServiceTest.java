@@ -113,7 +113,7 @@ public class AuthenticationServiceTest {
         when(userRepository.getClientPasswordSalt(existingClient.getUUID())).thenReturn(Optional.of(dummySalt));
         when(passwordHasher.hash(dummyPasswordLightHash, dummySalt)).thenReturn(dummyPasswordHash);
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
-        when(passwordHasher.matches(dummyPasswordHash, dummyPasswordHashStored)).thenReturn(true);
+        when(passwordHasher.matches(dummyPasswordHash, dummySalt, dummyPasswordHashStored)).thenReturn(true);
         assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(existingClient.getUUID())),
                 authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
@@ -125,7 +125,7 @@ public class AuthenticationServiceTest {
         when(userRepository.getClientPasswordSalt(existingClient.getUUID())).thenReturn(Optional.of(dummySalt));
         when(passwordHasher.hash(dummyPasswordLightHash, dummySalt)).thenReturn(dummyPasswordHash);
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
-        when(passwordHasher.matches(dummyPasswordHash, dummyPasswordHashStored)).thenReturn(true);
+        when(passwordHasher.matches(dummyPasswordHash, dummySalt, dummyPasswordHashStored)).thenReturn(true);
         assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(existingClient.getUUID())),
                 authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
@@ -165,7 +165,7 @@ public class AuthenticationServiceTest {
         when(userRepository.getEmployeePasswordSalt(existingEmployee.getUUID())).thenReturn(Optional.of(dummySalt));
         when(passwordHasher.hash(dummyPasswordLightHash, dummySalt)).thenReturn(dummyPasswordHash);
         when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
-        when(passwordHasher.matches(dummyPasswordHash, dummyPasswordHashStored)).thenReturn(true);
+        when(passwordHasher.matches(dummyPasswordHash, dummySalt, dummyPasswordHashStored)).thenReturn(true);
         assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(existingEmployee.getUUID())),
                 authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordLightHash, RoleName.Analyst));
     }

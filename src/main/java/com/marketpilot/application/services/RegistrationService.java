@@ -195,14 +195,14 @@ public class RegistrationService {
             passwordHash = null;
         }
         fillZero(passwordLightHash);
-        fillZero(passwordSalt);
         passwordLightHash = null;
-        passwordSalt = null;
         char[] dummyPasswordHashStored = "$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX".toCharArray();
         char[] passwordHashStored = userExists ? passwordHashFinder.apply(user.getUUID()).orElse(dummyPasswordHashStored) : dummyPasswordHashStored;
-        boolean passwordMatches = passwordHasher.matches(passwordHash, passwordHashStored);
+        boolean passwordMatches = passwordHasher.matches(passwordHash, passwordSalt, passwordHashStored);
+        fillZero(passwordSalt);
         fillZero(passwordHash);
         fillZero(passwordHashStored);
+        passwordSalt = null;
         passwordHash = null;
         passwordHashStored = null;
 
