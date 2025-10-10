@@ -22,7 +22,6 @@ public class BufferedConverter {
         data = null;
 
         ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap(dataCharArr));
-        byteBuffer.flip();
         byte[] encoded = new byte[byteBuffer.remaining()];
         byteBuffer.get(encoded);
 

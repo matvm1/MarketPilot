@@ -5,12 +5,7 @@ import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.password4j.Hash;
 import com.password4j.Password;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
-public class PasswordHasherImpl implements PasswordHasher {
+public class Password4JHasher implements PasswordHasher {
     @Override
     public byte[] hash(byte[] password) throws IllegalArgumentException {
         String PEPPER = System.getenv("MARKETPILOT_PEPPER");
@@ -22,7 +17,7 @@ public class PasswordHasherImpl implements PasswordHasher {
 
         PEPPER = null;
 
-        return hash.getBytes();
+        return hash.getResultAsBytes();
     }
 
     @Override
