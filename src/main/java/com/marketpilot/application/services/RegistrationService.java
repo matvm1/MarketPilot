@@ -59,7 +59,8 @@ public class RegistrationService {
         BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByPersonalEmail(identifier2);
         BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) -> userFactory.createClientUser((UserClientDTO) b);
 
-        return initiateRegistration(null,
+        return initiateRegistration(UserType.CLIENT,
+                null,
                 username, personalEmail, userClientDTO, passwordLightHash,
                 null,
                 userRepository::getClientPasswordHash,
@@ -83,7 +84,8 @@ public class RegistrationService {
             BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) ->
                     userFactory.assignClientAttributes(existingEmployee, (UserClientDTO) b);
 
-            return initiateRegistration(existingEmployee,
+            return initiateRegistration(UserType.CLIENT,
+                    existingEmployee,
                     username, personalEmail, userClientDTO, passwordLightHash,
                     null,
                     userRepository::getClientPasswordHash,
@@ -111,7 +113,8 @@ public class RegistrationService {
                 .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
         BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) -> userFactory.createEmployeeUser((UserEmployeeDTO) b);
 
-        return initiateRegistration(null,
+        return initiateRegistration(UserType.EMPLOYEE,
+                null,
                 employeeId, employeeEmail, userEmployeeDTO, passwordLightHash,
                 employeeRepository::employeeIdExists,
                 userRepository::getEmployeePasswordHash,
@@ -138,7 +141,8 @@ public class RegistrationService {
             BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) ->
                     userFactory.assignEmployeeAttributes(existingClient, (UserEmployeeDTO) b);
 
-            return initiateRegistration(existingClient,
+            return initiateRegistration(UserType.EMPLOYEE,
+                    existingClient,
                     employeeId, employeeEmail, userEmployeeDTO, passwordLightHash,
                     employeeRepository::employeeIdExists,
                     userRepository::getEmployeePasswordHash,
@@ -153,7 +157,8 @@ public class RegistrationService {
     }
 
     //TODO: Store password hash if registering a new user (instead of matching hash)
-    private RegistrationStatus initiateRegistration(User existingUser,
+    private RegistrationStatus initiateRegistration(UserType registrationUserType,
+                                                    User existingUser,
                                                     String identifier1,
                                                     String identifier2,
                                                     UserAbstractDTO newUserAbstractDTO,
@@ -166,8 +171,8 @@ public class RegistrationService {
                                                     String verificationEmail,
                                                     String verificationEmailSubject)
     {
-        if (employeeIdFinder != null)
-            if (!employeeIdFinder.test(((UserEmployeeDTO)newUserAbstractDTO).getEmployeeId()))
+        if (registrationUserType == UserType.EMPLOYEE)
+            if (employeeIdFinder == null || !employeeIdFinder.test(((UserEmployeeDTO)newUserAbstractDTO).getEmployeeId()))
                 return RegistrationStatus.FAILURE;
 
         boolean identifiersAreValid = identifier1 != null && !identifier1.isBlank() && identifier2 != null && !identifier2.isBlank();
