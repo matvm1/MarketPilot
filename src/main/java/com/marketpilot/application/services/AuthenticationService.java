@@ -15,9 +15,12 @@ import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.User;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+
+import static com.marketpilot.adapters.client.web.AuthenticationClientExample.bytesToHex;
 
 // TODO: Integration tests
 public class AuthenticationService {
@@ -75,20 +78,14 @@ public class AuthenticationService {
         boolean userExists = userOptional.isPresent();
         User user = userOptional.orElse(null);
 
-        byte[] passwordHash;
-        try {
-            passwordHash = passwordHasher.hash(passwordLightHash);
-        } catch (IllegalArgumentException e) {
-            passwordHash = null;
-        }
-        fillZero(passwordLightHash);
-        passwordLightHash = null;
         byte[] dummyPasswordHashStored = BufferedConverter.toBytes("$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         byte[] passwordHashStored = userExists ? passwordHashFinder.apply(user.getUUID()).orElse(dummyPasswordHashStored) : dummyPasswordHashStored;
-        boolean passwordMatches = passwordHasher.matches(passwordHash, passwordHashStored);
-        fillZero(passwordHash);
+        System.out.println("password hash stored: " + new String(passwordHashStored, StandardCharsets.UTF_8));
+        System.out.println("password hash stored hex: " + bytesToHex(passwordHashStored));
+        boolean passwordMatches = passwordHasher.matches(passwordLightHash, passwordHashStored);
+        fillZero(passwordLightHash);
         fillZero(passwordHashStored);
-        passwordHash = null;
+        passwordLightHash = null;
         passwordHashStored = null;
 
         Role authRole = userExists ? user.getRole(roleName) : null;
