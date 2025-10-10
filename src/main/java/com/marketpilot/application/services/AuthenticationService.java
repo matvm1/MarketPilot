@@ -1,5 +1,6 @@
 package com.marketpilot.application.services;
 
+import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
 import com.marketpilot.application.dto.auth.AuthenticationResult;
 import com.marketpilot.application.ports.auth.PasswordHasher;
@@ -45,29 +46,26 @@ public class AuthenticationService {
         this.sessionManager = sessionManager;
     }
 
-    public Tuple<AuthenticationStatus, Optional<UUID>> initiateClientAuthentication(String usernameOrEmail, char[] passwordLightHash, RoleName roleName) {
+    public Tuple<AuthenticationStatus, Optional<UUID>> initiateClientAuthentication(String usernameOrEmail, byte[] passwordLightHash, RoleName roleName) {
         Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(identifier)
                 .or(() -> userRepository.findByPersonalEmail(identifier));
 
         return initiateAuthentication(usernameOrEmail, passwordLightHash, roleName,
                 userFinder,
-                userRepository::getClientPasswordSalt,
                 userRepository::getClientPasswordHash,
                 UserType.CLIENT);
     }
 
-    public Tuple<AuthenticationStatus, Optional<UUID>> initiateEmployeeAuthentication(String employeeId, char[] passwordLightHash, RoleName roleName) {
+    public Tuple<AuthenticationStatus, Optional<UUID>> initiateEmployeeAuthentication(String employeeId, byte[] passwordLightHash, RoleName roleName) {
         return initiateAuthentication(employeeId, passwordLightHash, roleName,
                 userRepository::findByEmployeeId,
-                userRepository::getEmployeePasswordSalt,
                 userRepository::getEmployeePasswordHash,
                 UserType.EMPLOYEE);
     }
 
-    private Tuple<AuthenticationStatus, Optional<UUID>> initiateAuthentication(String identifier, char[] passwordLightHash, RoleName roleName,
+    private Tuple<AuthenticationStatus, Optional<UUID>> initiateAuthentication(String identifier, byte[] passwordLightHash, RoleName roleName,
                                                               Function<String, Optional<User>> userFinder,
-                                                              Function<UUID, Optional<char[]>> passwordSaltFinder,
-                                                              Function<UUID, Optional<char[]>> passwordHashFinder,
+                                                              Function<UUID, Optional<byte[]>> passwordHashFinder,
                                                               UserType userType) {
         boolean identifierIsValid = identifier != null && !identifier.isBlank();
 
@@ -77,22 +75,19 @@ public class AuthenticationService {
         boolean userExists = userOptional.isPresent();
         User user = userOptional.orElse(null);
 
-        char[] passwordSalt = userExists ? passwordSaltFinder.apply(user.getUUID()).orElse(null) : null;
-        char[] passwordHash;
+        byte[] passwordHash;
         try {
-            passwordHash = passwordHasher.hash(passwordLightHash, passwordSalt);
+            passwordHash = passwordHasher.hash(passwordLightHash);
         } catch (IllegalArgumentException e) {
             passwordHash = null;
         }
         fillZero(passwordLightHash);
         passwordLightHash = null;
-        char[] dummyPasswordHashStored = "$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX".toCharArray();
-        char[] passwordHashStored = userExists ? passwordHashFinder.apply(user.getUUID()).orElse(dummyPasswordHashStored) : dummyPasswordHashStored;
-        boolean passwordMatches = passwordHasher.matches(passwordHash, passwordSalt, passwordHashStored);
-        fillZero(passwordSalt);
+        byte[] dummyPasswordHashStored = BufferedConverter.toBytes("$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        byte[] passwordHashStored = userExists ? passwordHashFinder.apply(user.getUUID()).orElse(dummyPasswordHashStored) : dummyPasswordHashStored;
+        boolean passwordMatches = passwordHasher.matches(passwordHash, passwordHashStored);
         fillZero(passwordHash);
         fillZero(passwordHashStored);
-        passwordSalt = null;
         passwordHash = null;
         passwordHashStored = null;
 
@@ -151,5 +146,13 @@ public class AuthenticationService {
         int len = arr.length;
         for (int i = 0; i < len; ++i)
             arr[i] = '\0';
+    }
+
+    private static void fillZero(byte[] arr) {
+        if (arr == null)
+            return;
+        int len = arr.length;
+        for (int i = 0; i < len; ++i)
+            arr[i] = (byte) 0;
     }
 }

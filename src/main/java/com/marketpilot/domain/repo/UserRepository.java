@@ -13,10 +13,8 @@ public interface UserRepository extends BaseRepository<Long, User> {
     Optional<User> findByEmployeeEmail(String employeeEmail);
     boolean update(User user);
     boolean deleteByUUID(UUID uuid);
-    Optional<char[]> getClientPasswordHash(UUID uuid);
-    Optional<char[]> getEmployeePasswordHash(UUID uuid);
-    Optional<char[]> getClientPasswordSalt(UUID uuid);
-    Optional<char[]> getEmployeePasswordSalt(UUID uuid);
+    Optional<byte[]> getClientPasswordHash(UUID uuid);
+    Optional<byte[]> getEmployeePasswordHash(UUID uuid);
     Optional<char[]> getClientTotpSecret(UUID uuid);
     Optional<char[]> getEmployeeTotpSecret(UUID uuid);
 }

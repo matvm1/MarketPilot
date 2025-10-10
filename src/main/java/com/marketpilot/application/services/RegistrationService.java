@@ -13,6 +13,7 @@ import com.marketpilot.domain.repo.UserRepository;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
+import com.marketpilot.util.BufferedConverter;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -52,7 +53,7 @@ public class RegistrationService {
         this.userFactory = userFactory;
     }
 
-    public RegistrationStatus initiateClientRegistration(String username, char[] passwordLightHash, Set<Role.RoleName> clientRoleNames, String personalEmail,
+    public RegistrationStatus initiateClientRegistration(String username, byte[] passwordLightHash, Set<Role.RoleName> clientRoleNames, String personalEmail,
                                                          String firstName, String middleName, String lastName) {
         UserClientDTO userClientDTO = new UserClientDTO(username, getRolesFromRoleNames(clientRoleNames), personalEmail, firstName, middleName, lastName);
         BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByPersonalEmail(identifier2);
@@ -61,7 +62,6 @@ public class RegistrationService {
         return initiateRegistration(null,
                 username, personalEmail, userClientDTO, passwordLightHash,
                 null,
-                userRepository::getClientPasswordSalt,
                 userRepository::getClientPasswordHash,
                 userFinder,
                 User::isClient,
@@ -70,7 +70,7 @@ public class RegistrationService {
                 CLIENT_VERIFICATION_EMAIL_SUBJECT);
     }
 
-    public RegistrationStatus initiateClientRegistrationForExistingEmployee(String username, char[] passwordLightHash, Set<Role.RoleName> clientRoleNames,
+    public RegistrationStatus initiateClientRegistrationForExistingEmployee(String username, byte[] passwordLightHash, Set<Role.RoleName> clientRoleNames,
                                                                             String personalEmail) {
 
         //TODO: Authenticate the employee
@@ -86,7 +86,6 @@ public class RegistrationService {
             return initiateRegistration(existingEmployee,
                     username, personalEmail, userClientDTO, passwordLightHash,
                     null,
-                    userRepository::getClientPasswordSalt,
                     userRepository::getClientPasswordHash,
                     userFinder,
                     User::isClient,
@@ -98,7 +97,7 @@ public class RegistrationService {
         return RegistrationStatus.FAILURE;
     }
 
-    public RegistrationStatus initiateEmployeeRegistration(String employeeId, String username, char[] passwordLightHash, Set<Role.RoleName> employeeRoleNames,
+    public RegistrationStatus initiateEmployeeRegistration(String employeeId, String username, byte[] passwordLightHash, Set<Role.RoleName> employeeRoleNames,
                                                            String employeeEmail, String firstName, String middleName, String lastName) {
         if (!employeeRepository.employeeIdExists(employeeId))
             return RegistrationStatus.FAILURE;
@@ -115,7 +114,6 @@ public class RegistrationService {
         return initiateRegistration(null,
                 employeeId, employeeEmail, userEmployeeDTO, passwordLightHash,
                 employeeRepository::employeeIdExists,
-                userRepository::getEmployeePasswordSalt,
                 userRepository::getEmployeePasswordHash,
                 userFinder,
                 User::isEmployee,
@@ -124,7 +122,7 @@ public class RegistrationService {
                 EMPLOYEE_VERIFICATION_EMAIL_SUBJECT);
     }
 
-    public RegistrationStatus initiateEmployeeRegistrationForExistingClient(String employeeId, String username, char[] passwordLightHash,
+    public RegistrationStatus initiateEmployeeRegistrationForExistingClient(String employeeId, String username, byte[] passwordLightHash,
                                                                             Set<Role.RoleName> employeeRoleNames, String employeeEmail) {
         if (!employeeRepository.employeeIdExists(employeeId))
             return RegistrationStatus.FAILURE;
@@ -143,7 +141,6 @@ public class RegistrationService {
             return initiateRegistration(existingClient,
                     employeeId, employeeEmail, userEmployeeDTO, passwordLightHash,
                     employeeRepository::employeeIdExists,
-                    userRepository::getEmployeePasswordSalt,
                     userRepository::getEmployeePasswordHash,
                     userFinder,
                     User::isEmployee,
@@ -160,10 +157,9 @@ public class RegistrationService {
                                                     String identifier1,
                                                     String identifier2,
                                                     UserAbstractDTO newUserAbstractDTO,
-                                                    char[] passwordLightHash,
+                                                    byte[] passwordLightHash,
                                                     Predicate<String> employeeIdFinder,
-                                                    Function<UUID, Optional<char[]>> passwordSaltFinder,
-                                                    Function<UUID, Optional<char[]>> passwordHashFinder,
+                                                    Function<UUID, Optional<byte[]>> passwordHashFinder,
                                                     BiFunction<String, String, Optional<User>> userFinder,
                                                     Predicate<User> isRegistrationType,
                                                     BiFunction<User, UserAbstractDTO, User> userFactoryAction,
@@ -187,22 +183,19 @@ public class RegistrationService {
         boolean userExists = userOptional.isPresent();
         User user = userOptional.orElse(null);
 
-        char[] passwordSalt = userExists ? passwordSaltFinder.apply(user.getUUID()).orElse(null) : null;
-        char[] passwordHash;
+        byte[] passwordHash;
         try {
-            passwordHash = passwordHasher.hash(passwordLightHash, passwordSalt);
+            passwordHash = passwordHasher.hash(passwordLightHash);
         } catch (IllegalArgumentException e) {
             passwordHash = null;
         }
         fillZero(passwordLightHash);
         passwordLightHash = null;
-        char[] dummyPasswordHashStored = "$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX".toCharArray();
-        char[] passwordHashStored = userExists ? passwordHashFinder.apply(user.getUUID()).orElse(dummyPasswordHashStored) : dummyPasswordHashStored;
-        boolean passwordMatches = passwordHasher.matches(passwordHash, passwordSalt, passwordHashStored);
-        fillZero(passwordSalt);
+        byte[] dummyPasswordHashStored = BufferedConverter.toBytes("$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        byte[] passwordHashStored = userExists ? passwordHashFinder.apply(user.getUUID()).orElse(dummyPasswordHashStored) : dummyPasswordHashStored;
+        boolean passwordMatches = passwordHasher.matches(passwordHash, passwordHashStored);
         fillZero(passwordHash);
         fillZero(passwordHashStored);
-        passwordSalt = null;
         passwordHash = null;
         passwordHashStored = null;
 
@@ -281,11 +274,11 @@ public class RegistrationService {
         return roles;
     }
 
-    private static void fillZero(char[] arr) {
+    private static void fillZero(byte[] arr) {
         if (arr == null)
             return;
         int len = arr.length;
         for (int i = 0; i < len; ++i)
-            arr[i] = '\0';
+            arr[i] = (byte) 0;
     }
 }

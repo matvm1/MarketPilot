@@ -12,6 +12,7 @@ import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
+import com.marketpilot.util.BufferedConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,10 +53,10 @@ public class RegistrationServiceTest {
     private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email.html";
 
     // use dummyPasswordLightHash as argument to all authentication calls
-    private char[] dummyPasswordLightHash;
-    private final char[] dummySalt = "b234vhnosd9021bhj23vsdb#nkjb$bnjk32!mjkhn*msdhjb3493bn".toCharArray();
-    private final char[] dummyPasswordHash = "xcusdhfgvasj@#njkhbf@nmdsejkhf%jnkjkbhjsd!!@$%bn1sdasd2n19xvds71ns3".toCharArray();
-    private final char[] dummyPasswordHashStored = dummyPasswordHash.clone();
+    private byte[] dummyPasswordLightHash;
+    private final byte[] dummySalt = BufferedConverter.toBytes("b234vhnosd9021bhj23vsdb#nkjb$bnjk32!mjkhn*msdhjb3493bn");
+    private final byte[] dummyPasswordHash = BufferedConverter.toBytes("xcusdhfgvasj@#njkhbf@nmdsejkhf%jnkjkbhjsd!!@$%bn1sdasd2n19xvds71ns3");
+    private final byte[] dummyPasswordHashStored = dummyPasswordHash.clone();
 
     @BeforeEach
     void setUp() {
@@ -78,19 +79,17 @@ public class RegistrationServiceTest {
         existingEmployee = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", "johnmdoe@company.com",
                 "John", "M", "Doe");
 
-        dummyPasswordLightHash = "nc36784gfyu43vbf7623frtycwdvtyuawjcevdfyu12b367821f".toCharArray();
+        dummyPasswordLightHash = BufferedConverter.toBytes("nc36784gfyu43vbf7623frtycwdvtyuawjcevdfyu12b367821f");
 
         //TODO: avoid the use of lenient()
         lenient().when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         lenient().when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
         lenient().when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
         //TODO: separate client and employee dummy passwords and salts
-        lenient().when(userRepository.getClientPasswordSalt(existingClient.getUUID())).thenReturn(Optional.of(dummySalt));
-        lenient().when(userRepository.getEmployeePasswordSalt(existingEmployee.getUUID())).thenReturn(Optional.of(dummySalt));
-        lenient().when(passwordHasher.hash(dummyPasswordLightHash, dummySalt)).thenReturn(dummyPasswordHash);
+        lenient().when(passwordHasher.hash(dummyPasswordLightHash)).thenReturn(dummyPasswordHash);
         lenient().when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         lenient().when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
-        lenient().when(passwordHasher.matches(dummyPasswordHash, dummySalt, dummyPasswordHashStored)).thenReturn(true);
+        lenient().when(passwordHasher.matches(dummyPasswordHash, dummyPasswordHashStored)).thenReturn(true);
         lenient().when(emailEngine.sendTemplatedEmail(
                 eq(new EmailMessage(existingClient.getPersonalEmail(), CLIENT_VERIFICATION_EMAIL_SUBJECT, null, null)),
                 anyString()
@@ -121,7 +120,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateClientRegistration_returnsFailureIfUserNameOrPersonalEmailIsTakenAndPasswordDoesNotMatch() {
-        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
+        byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.FAILURE,
@@ -171,7 +170,7 @@ public class RegistrationServiceTest {
     }
 
     void initiateClientRegistrationForExistingEmployee_returnsFailureIfPersonalEmailIsTakenAndPasswordDoesNotMatch() {
-        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
+        byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
         assertEquals(RegistrationStatus.FAILURE,
@@ -223,7 +222,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_returnsFailureIfUserNameIsTakenAndPasswordDoesNotMatch() {
-        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
+        byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
         when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.FAILURE,
@@ -233,7 +232,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_returnsFailureIfEmployeeIdIsTakenAndPasswordDoesNotMatch() {
-        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
+        byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
         when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.FAILURE,
@@ -242,7 +241,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_returnsFailureIfEmployeeEmailIsTakenAndPasswordDoesNotMatch() {
-        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
+        byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
         when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.FAILURE,
@@ -301,7 +300,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsFailureIfUserNameIsTakenAndPasswordDoesNotMatch() {
-        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
+        byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
         when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
         when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.FAILURE,
@@ -311,7 +310,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsFailureIfEmployeeIdIsTakenAndPasswordDoesNotMatch() {
-        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
+        byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
         when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.FAILURE,
@@ -321,7 +320,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsFailureIfEmployeeEmailIsTakenAndPasswordDoesNotMatch() {
-        char[] nonRegisteredPasswordHash = "12345678".toCharArray();
+        byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
         when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.FAILURE,
