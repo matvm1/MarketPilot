@@ -189,13 +189,13 @@ public class RegistrationService {
         } catch (IllegalArgumentException e) {
             passwordHash = null;
         }
-        fillZero(passwordLightHash);
-        passwordLightHash = null;
         byte[] dummyPasswordHashStored = BufferedConverter.toBytes("$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         byte[] passwordHashStored = userExists ? passwordHashFinder.apply(user.getUUID()).orElse(dummyPasswordHashStored) : dummyPasswordHashStored;
-        boolean passwordMatches = passwordHasher.matches(passwordHash, passwordHashStored);
+        boolean passwordMatches = passwordHasher.matches(passwordLightHash, passwordHashStored);
+        fillZero(passwordLightHash);
         fillZero(passwordHash);
         fillZero(passwordHashStored);
+        passwordLightHash = null;
         passwordHash = null;
         passwordHashStored = null;
 
@@ -206,7 +206,6 @@ public class RegistrationService {
                 return RegistrationStatus.FAILURE;
         }
 
-        //TODO: add && passwordMatches -> user must authenticate
         if (identifierIsValid && (existingUser == null || !isRegistrationType.test(user))) {
             user = userFactoryAction.apply(user, newUserAbstractDTO);
             if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE))
