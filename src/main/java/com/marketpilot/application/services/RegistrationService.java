@@ -170,8 +170,7 @@ public class RegistrationService {
             if (!employeeIdFinder.test(((UserEmployeeDTO)newUserAbstractDTO).getEmployeeId()))
                 return RegistrationStatus.FAILURE;
 
-        //TODO: validate identifier2
-        boolean identifierIsValid = identifier1 != null && !identifier1.isBlank();
+        boolean identifiersAreValid = identifier1 != null && !identifier1.isBlank() && identifier2 != null && !identifier2.isBlank();
 
         Optional<User> userOptional;
 
@@ -199,14 +198,14 @@ public class RegistrationService {
         passwordHash = null;
         passwordHashStored = null;
 
-        if (identifierIsValid && existingUser == null && userExists) {
+        if (identifiersAreValid && existingUser == null && userExists) {
             if (passwordMatches)
                 return RegistrationStatus.ALREADY_REGISTERED;
             else
                 return RegistrationStatus.FAILURE;
         }
 
-        if (identifierIsValid && (existingUser == null || !isRegistrationType.test(user))) {
+        if (identifiersAreValid && (existingUser == null || !isRegistrationType.test(user))) {
             user = userFactoryAction.apply(user, newUserAbstractDTO);
             if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE))
                 if (pendingVerificationUserRepository.save(user))
