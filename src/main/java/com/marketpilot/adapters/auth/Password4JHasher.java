@@ -22,7 +22,10 @@ public class Password4JHasher implements PasswordHasher {
 
     @Override
     public boolean matches(byte[] password, byte[] hash) {
+        String PEPPER = System.getenv("MARKETPILOT_PEPPER");
+
         return Password.check(password, hash)
+                .addPepper(PEPPER)
                 .withArgon2();
     }
 }
