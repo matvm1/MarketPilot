@@ -6,7 +6,7 @@ import com.marketpilot.domain.entities.auth.UserType;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface PendingVerificationUserRepository extends UserRepository {
+public interface PendingVerificationUserRepository extends BaseRepository<Long, User> {
     // Returns the verification code for the User entity that is pending client account verification
     Optional<String> getClientRegistrationVerificationCode(UUID userUUID);
     // Returns the verification code for the User entity that is pending employee account verification
