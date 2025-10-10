@@ -80,8 +80,6 @@ public class AuthenticationService {
 
         byte[] dummyPasswordHashStored = BufferedConverter.toBytes("$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         byte[] passwordHashStored = userExists ? passwordHashFinder.apply(user.getUUID()).orElse(dummyPasswordHashStored) : dummyPasswordHashStored;
-        System.out.println("password hash stored: " + new String(passwordHashStored, StandardCharsets.UTF_8));
-        System.out.println("password hash stored hex: " + bytesToHex(passwordHashStored));
         boolean passwordMatches = passwordHasher.matches(passwordLightHash, passwordHashStored);
         fillZero(passwordLightHash);
         fillZero(passwordHashStored);
