@@ -171,11 +171,13 @@ public class RegistrationService {
                                                     String verificationEmail,
                                                     String verificationEmailSubject)
     {
-        if (registrationUserType == UserType.EMPLOYEE)
-            if (employeeIdFinder == null || !employeeIdFinder.test(((UserEmployeeDTO)newUserAbstractDTO).getEmployeeId()))
-                return RegistrationStatus.FAILURE;
+        boolean isEmployeeIdFoundForEmployeeRegistration = registrationUserType == UserType.CLIENT ||
+                (registrationUserType == UserType.EMPLOYEE && !employeeIdFinder.test(((UserEmployeeDTO)newUserAbstractDTO).getEmployeeId()));
 
-        boolean identifiersAreValid = identifier1 != null && !identifier1.isBlank() && identifier2 != null && !identifier2.isBlank();
+        boolean identifiersAreValid =
+                isEmployeeIdFoundForEmployeeRegistration &&
+                        identifier1 != null && !identifier1.isBlank() &&
+                        identifier2 != null && !identifier2.isBlank();
 
         Optional<User> userOptional;
 
