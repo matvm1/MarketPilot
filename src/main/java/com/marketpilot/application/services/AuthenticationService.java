@@ -15,12 +15,10 @@ import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.User;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import static com.marketpilot.adapters.client.web.AuthenticationClientExample.bytesToHex;
 
 // TODO: Integration tests
 public class AuthenticationService {
