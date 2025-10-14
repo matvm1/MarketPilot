@@ -33,16 +33,16 @@ public class JdbcExecutor {
     }
 
     // prepares a PreparedStatement, executes, and returns cached queried data in a List
-    /*public static <T> Optional<List<T>> executeQueryToList(String sql, ResultSetToValue<T> resultSetToValue, Param... params) {
+    public static <T> Optional<Set<T>> executeQueryToSet(String sql, ResultSetToValue<T> resultSetToSet, Param... params) {
         try (Connection conn = pool.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             setParameters(ps, params);
 
             ResultSet rs = ps.executeQuery();
 
-            List<T> dataCache = new ArrayList<>();
+            Set<T> dataCache = new HashSet<>();
             while (rs.next())
-                dataCache.add(resultSetToValue.map(rs));
+                dataCache.add(resultSetToSet.map(rs));
             return dataCache.isEmpty() ? Optional.empty() : Optional.of(dataCache);
         }
         catch (SQLException e) {
@@ -51,7 +51,7 @@ public class JdbcExecutor {
             e.printStackTrace();
             throw new RuntimeException("Could not execute query:\n" + sql);
         }
-    }*/
+    }
 
     // prepares a PreparedStatement, executes, and returns cached queried data cached in a Tuple
     /*public static <T, U> Optional<Tuple<T, U>> executeQueryToTuple(String sql,
