@@ -21,8 +21,11 @@ public class JdbcExecutor {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             setParameters(ps, params);
             ResultSet rs = ps.executeQuery();
-            rs.next();
-            return Optional.of(resultSetToValue.map(rs));
+            if (rs.isBeforeFirst()) {
+                rs.next();
+                return Optional.of(resultSetToValue.map(rs));
+            }
+            return Optional.empty();
         }
         catch (SQLException e) {
             //TODO: Rollback? Commit?
