@@ -9,6 +9,21 @@ import java.util.UUID;
 
 public class OjdbcPendingVerificationUserRepository implements PendingVerificationUserRepository {
     @Override
+    public Optional<User> findByUsername(String username) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<User> findById(Long aLong) {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean register(UserType userType, User user, byte[] passwordHash) {
+        return false;
+    }
+
+    @Override
     public Optional<String> getClientRegistrationVerificationCode(UUID userUUID) {
         return Optional.empty();
     }
@@ -19,23 +34,8 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
     }
 
     @Override
-    public boolean register(UserType userType, User user, byte[] passwordHash) {
-        return false;
-    }
-
-    @Override
-    public Optional<User> findByUsername(String username) {
-        return Optional.empty();
-    }
-
-    @Override
     public boolean deleteByUuid(UUID uuid) {
         return false;
-    }
-
-    @Override
-    public Optional<User> findById(Long aLong) {
-        return Optional.empty();
     }
 
     @Override
