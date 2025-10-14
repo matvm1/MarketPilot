@@ -197,7 +197,13 @@ public class RegistrationService {
         }
         byte[] dummyPasswordHashStored = BufferedConverter.toBytes("$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         byte[] passwordHashStored = userExists ? passwordHashFinder.apply(user.getUUID()).orElse(dummyPasswordHashStored) : dummyPasswordHashStored;
-        boolean passwordMatches = passwordHasher.matches(passwordLightHash, passwordHashStored);
+        boolean passwordMatches;
+        try {
+            passwordMatches = passwordHasher.matches(passwordLightHash, passwordHashStored);
+        }
+        catch (Exception e) {
+            passwordMatches = false;
+        }
         fillZero(passwordLightHash);
         fillZero(passwordHash);
         fillZero(passwordHashStored);
