@@ -21,7 +21,7 @@ public class OjdbcRoleRepository implements RoleRepository {
             return Optional.empty();
         String roleNameStr = roleName.toString();
         Optional<Set<Permission>> permissionsOptional = JdbcExecutor.executeQueryToSet("""
-                    SELECT R.ID AS ROLE_ID, P.NAME AS PERMISSION_NAME
+                    SELECT P.NAME AS PERMISSION_NAME
                     FROM APP_ROLE R
                     JOIN APP_ROLE_PERMISSION ARP ON R.ID = ARP.ROLE_ID
                     JOIN APP_PERMISSION P ON P.ID = ARP.PERMISSION_ID
