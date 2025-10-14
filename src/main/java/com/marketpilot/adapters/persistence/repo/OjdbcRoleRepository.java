@@ -11,11 +11,36 @@ import com.marketpilot.domain.repo.RoleRepository;
 import java.util.*;
 
 import static com.marketpilot.adapters.persistence.jdbc.Param.longP;
+import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
 
 public class OjdbcRoleRepository implements RoleRepository {
 
     @Override
     public Optional<Role> findByRoleName(RoleName roleName) {
+        if (roleName == null)
+            return Optional.empty();
+        String roleNameStr = roleName.toString();
+        Optional<Set<Permission>> permissionsOptional = JdbcExecutor.executeQueryToSet("""
+                    SELECT R.ID AS ROLE_ID, P.NAME AS PERMISSION_NAME
+                    FROM APP_ROLE R
+                    JOIN APP_ROLE_PERMISSION ARP ON R.ID = ARP.ROLE_ID
+                    JOIN APP_PERMISSION P ON P.ID = ARP.PERMISSION_ID
+                    WHERE R.NAME = ?
+                """,
+                rs -> Permission.valueOf(rs.getString("PERMISSION_NAME")),
+                stringP(1, roleNameStr));
+        if (permissionsOptional.isPresent()) {
+            Optional<UserType> userTypeOptional = JdbcExecutor.fetchRecord("""
+                        SELECT UT.NAME AS USER_TYPE_NAME
+                        FROM APP_ROLE R
+                        JOIN APP_USER_TYPE UT ON R.USER_TYPE_ID = UT.ID
+                        WHERE R.NAME = ?
+                    """,
+                    rs -> UserType.valueOf(rs.getString("USER_TYPE_NAME")),
+            stringP(1, roleNameStr));
+            if (userTypeOptional.isPresent())
+                return Optional.of(new Role(roleName, permissionsOptional.get(), userTypeOptional.get()));
+        }
         return Optional.empty();
     }
 
