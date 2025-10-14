@@ -248,7 +248,7 @@ public class RegistrationService {
         };
         if (verificationCode.isPresent() && verificationCode.get().equals(verificationCodeAttempt)) {
             try {
-                if (pendingVerificationUserRepository.deleteByUUID(uuid))
+                if (pendingVerificationUserRepository.deleteByUuid(uuid))
                     if (userRepository.save(user)) {
                         String recipientAddress = switch(registrationUserType) {
                             case CLIENT -> user.getPersonalEmail();

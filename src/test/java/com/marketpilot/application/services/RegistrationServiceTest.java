@@ -386,7 +386,7 @@ public class RegistrationServiceTest {
         when(pendingVerificationUserRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         when(pendingVerificationUserRepository.getClientRegistrationVerificationCode(any(UUID.class)))
                 .thenReturn(Optional.of("123456"));
-        when(pendingVerificationUserRepository.deleteByUUID(any(UUID.class))).thenReturn(true);
+        when(pendingVerificationUserRepository.deleteByUuid(any(UUID.class))).thenReturn(true);
         when(userRepository.save(existingClient)).thenReturn(true);
         assertEquals(RegistrationStatus.SUCCESS, registrationService.completeRegistration("johnmdoe",
                 UserType.CLIENT, "123456"));
@@ -397,7 +397,7 @@ public class RegistrationServiceTest {
         when(pendingVerificationUserRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
         when(pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(any(UUID.class)))
                 .thenReturn(Optional.of("123456"));
-        when(pendingVerificationUserRepository.deleteByUUID(any(UUID.class))).thenReturn(true);
+        when(pendingVerificationUserRepository.deleteByUuid(any(UUID.class))).thenReturn(true);
         when(userRepository.save(existingClient)).thenReturn(true);
         assertEquals(RegistrationStatus.SUCCESS, registrationService.completeRegistration("johnmdoe",
                 UserType.EMPLOYEE, "123456"));
