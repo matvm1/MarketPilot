@@ -57,7 +57,8 @@ public class RegistrationService {
 
     public RegistrationStatus initiateClientRegistration(String username, byte[] passwordLightHash, Set<Role.RoleName> clientRoleNames, String personalEmail,
                                                          String firstName, String middleName, String lastName) {
-        UserClientDTO userClientDTO = new UserClientDTO(username, getRolesFromRoleNames(clientRoleNames), personalEmail, firstName, middleName, lastName);
+        Set<Role> clientRoles = roleRepository.findByRoleNames(clientRoleNames).orElse(new HashSet<>());
+        UserClientDTO userClientDTO = new UserClientDTO(username, clientRoles, personalEmail, firstName, middleName, lastName);
         BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByPersonalEmail(identifier2);
         BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) -> userFactory.createClientUser((UserClientDTO) b);
 
@@ -80,7 +81,8 @@ public class RegistrationService {
         Optional<User> existingEmployeeOptional = userRepository.findByUsername(username);
         if (existingEmployeeOptional.isPresent()) {
             User existingEmployee = existingEmployeeOptional.get();
-            UserClientDTO userClientDTO = new UserClientDTO(username, getRolesFromRoleNames(clientRoleNames), personalEmail,
+            Set<Role> clientRoles = roleRepository.findByRoleNames(clientRoleNames).orElse(new HashSet<>());
+            UserClientDTO userClientDTO = new UserClientDTO(username, clientRoles, personalEmail,
                     existingEmployee.getFirstName(), existingEmployee.getMiddleName(), existingEmployee.getLastName());
             BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByPersonalEmail(identifier2);
             BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) ->
@@ -106,10 +108,8 @@ public class RegistrationService {
         if (!employeeRepository.employeeIdExists(employeeId))
             return RegistrationStatus.FAILURE;
 
-        Optional<User> userOptional = userRepository.findByEmployeeId(employeeId)
-                .or(() -> userRepository.findByUsername(username))
-                .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
-        UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, getRolesFromRoleNames(employeeRoleNames), employeeEmail,
+        Set<Role> employeeRoles = roleRepository.findByRoleNames(employeeRoleNames).orElse(new HashSet<>());
+        UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, employeeRoles, employeeEmail,
                 firstName, middleName, lastName);
         BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByEmployeeId(employeeId)
                 .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
@@ -136,7 +136,8 @@ public class RegistrationService {
         Optional<User> existingClientOptional = userRepository.findByUsername(username);
         if (existingClientOptional.isPresent()) {
             User existingClient = existingClientOptional.get();
-            UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, getRolesFromRoleNames(employeeRoleNames), employeeEmail,
+            Set<Role> employeeRoles = roleRepository.findByRoleNames(employeeRoleNames).orElse(new HashSet<>());
+            UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, employeeRoles, employeeEmail,
                     existingClient.getFirstName(), existingClient.getMiddleName(), existingClient.getLastName());
             BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByEmployeeId(employeeId)
                     .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
@@ -158,12 +159,11 @@ public class RegistrationService {
         return RegistrationStatus.FAILURE;
     }
 
-    //TODO: Store password hash if registering a new user (instead of matching hash)
     private RegistrationStatus initiateRegistration(UserType registrationUserType,
                                                     User existingUser,
                                                     String identifier1,
                                                     String identifier2,
-                                                    UserAbstractDTO newUserAbstractDTO,
+                                                    UserAbstractDTO userAbstractDTO,
                                                     byte[] passwordLightHash,
                                                     Predicate<String> employeeIdFinder,
                                                     Function<UUID, Optional<byte[]>> passwordHashFinder,
@@ -174,7 +174,7 @@ public class RegistrationService {
                                                     String verificationEmailSubject)
     {
         boolean isEmployeeIdFoundForEmployeeRegistration = registrationUserType == UserType.CLIENT ||
-                (registrationUserType == UserType.EMPLOYEE && !employeeIdFinder.test(((UserEmployeeDTO)newUserAbstractDTO).getEmployeeId()));
+                (registrationUserType == UserType.EMPLOYEE && !employeeIdFinder.test(((UserEmployeeDTO)userAbstractDTO).getEmployeeId()));
 
         boolean identifiersAreValid =
                 isEmployeeIdFoundForEmployeeRegistration &&
@@ -184,7 +184,7 @@ public class RegistrationService {
         Optional<User> userOptional;
 
         if (existingUser == null)
-            userOptional = userRepository.findByUsername(newUserAbstractDTO.getUsername()).or(() -> userFinder.apply(identifier1, identifier2));
+            userOptional = userRepository.findByUsername(userAbstractDTO.getUsername()).or(() -> userFinder.apply(identifier1, identifier2));
         else
             userOptional = Optional.of(existingUser);
 
@@ -218,8 +218,8 @@ public class RegistrationService {
                 return RegistrationStatus.FAILURE;
         }
 
-        if (identifiersAreValid && (existingUser == null || !isRegistrationType.test(user))) {
-            user = userFactoryAction.apply(user, newUserAbstractDTO);
+        if (userAbstractDTO.isValid() && identifiersAreValid && (existingUser == null || !isRegistrationType.test(user))) {
+            user = userFactoryAction.apply(user, userAbstractDTO);
             if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE)) {
                 try {
                     if (pendingVerificationUserRepository.register(registrationUserType, user, passwordHash, "123456")) {
@@ -285,18 +285,6 @@ public class RegistrationService {
         }
 
         return RegistrationStatus.FAILURE;
-    }
-
-    //TODO: safely handle role not found
-    private Set<Role> getRolesFromRoleNames(Set<Role.RoleName> roleNames) {
-        Set<Role> roles = new HashSet<>();
-        for (Role.RoleName roleName : roleNames) {
-            Optional<Role> optionalRole = roleRepository.findByRoleName(roleName);
-            Role role = optionalRole.orElseThrow(() -> new NoSuchElementException(roleName + " role not found."));
-            roles.add(role);
-        }
-
-        return roles;
     }
 
     private static void fillZero(byte[] arr) {
