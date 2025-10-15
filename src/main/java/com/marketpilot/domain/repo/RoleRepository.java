@@ -7,5 +7,6 @@ import java.util.Set;
 
 public interface RoleRepository extends BaseRepository<Long, Role> {
     Optional<Role> findByRoleName(Role.RoleName roleName);
+    Optional<Set<Role>> findByRoleNames(Set<Role.RoleName> roleNames);
     Optional<Set<Role>> getRolesForUser(long userId);
 }
