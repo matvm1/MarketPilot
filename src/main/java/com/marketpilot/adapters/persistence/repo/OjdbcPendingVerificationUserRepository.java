@@ -7,12 +7,12 @@ import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.util.Tuple;
+import com.marketpilot.util.UuidUtil;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.marketpilot.adapters.persistence.jdbc.Param.longP;
-import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
+import static com.marketpilot.adapters.persistence.jdbc.Param.*;
 import static com.marketpilot.util.UuidUtil.bytesToUUID;
 
 public class OjdbcPendingVerificationUserRepository implements PendingVerificationUserRepository {
@@ -97,8 +97,48 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
 
     //TODO: JdbcExecutor insert statement
     @Override
-    public boolean register(UserType userType, User user, byte[] passwordHash) {
-        return true;
+    public boolean register(UserType userType, User user, byte[] passwordHash, String verificationCode) {
+        if (userType == null)
+            return false;
+
+        int rowsAffected = JdbcExecutor.executeUpdate("""
+                INSERT INTO APP_PENDING_USER (
+                    UUID,
+                    EMPLOYEE_ID,
+                    USERNAME,
+                    PERSONAL_EMAIL,
+                    EMPLOYEE_EMAIL,
+                    FIRST_NAME,
+                    MIDDLE_NAME,
+                    LAST_NAME,
+                    CLIENT_PASSWORD_HASH,
+                    EMPLOYEE_PASSWORD_HASH,
+                    IS_CLIENT,
+                    IS_EMPLOYEE,
+                    CLIENT_REGISTRATION_CODE,
+                    EMPLOYEE_REGISTRATION_CODE
+                )
+                VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                );
+                """,
+            bytesP(1, UuidUtil.uuidToBytes(user.getUUID())),
+            stringP(2, user.getEmployeeId()),
+            stringP(3, user.getUsername()),
+            stringP(4, user.getPersonalEmail()),
+            stringP(5, user.getEmployeeEmail()),
+            stringP(6, user.getFirstName()),
+            stringP(7, user.getMiddleName()),
+            stringP(8, user.getLastName()),
+            userType == UserType.CLIENT ? bytesP(9, passwordHash) : nullP(9),
+            userType == UserType.EMPLOYEE ? bytesP(10, passwordHash) : nullP(10),
+            booleanP(11, user.isClient()),
+            booleanP(12, user.isEmployee()),
+            userType == UserType.CLIENT ? stringP(13, verificationCode) : nullP(14),
+            userType == UserType.EMPLOYEE ? stringP(14, verificationCode) : nullP(14)
+        );
+        //TODO: Insert user roles
+        return rowsAffected == 1;
     }
 
     @Override
