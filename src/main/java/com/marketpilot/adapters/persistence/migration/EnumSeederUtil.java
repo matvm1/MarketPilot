@@ -4,6 +4,7 @@ import com.marketpilot.adapters.persistence.jdbc.Batch;
 import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
 import com.marketpilot.adapters.persistence.jdbc.Param;
 
+import java.sql.SQLException;
 import java.util.Set;
 
 import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
@@ -37,7 +38,11 @@ public class EnumSeederUtil {
             );
             """, tableNameUpper, tableNameUpper);
 
-        JdbcExecutor.executeUpdate(sql);
+        try {
+            JdbcExecutor.executeUpdate(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     protected static <E> void syncEnumToTable(Class<E> enumClass, String targetTableName) {
@@ -76,6 +81,10 @@ public class EnumSeederUtil {
         }
         deleteSql.append(")");
 
-        JdbcExecutor.executeUpdate(deleteSql.toString(), params);
+        try {
+            JdbcExecutor.executeUpdate(deleteSql.toString(), params);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

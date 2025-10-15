@@ -9,6 +9,7 @@ import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.util.Tuple;
 import com.marketpilot.util.UuidUtil;
 
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -97,7 +98,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
 
     //TODO: JdbcExecutor insert statement
     @Override
-    public boolean register(UserType userType, User user, byte[] passwordHash, String verificationCode) {
+    public boolean register(UserType userType, User user, byte[] passwordHash, String verificationCode) throws SQLException {
         if (userType == null)
             return false;
 

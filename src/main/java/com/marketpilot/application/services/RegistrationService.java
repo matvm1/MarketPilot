@@ -15,6 +15,8 @@ import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.BufferedConverter;
 
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -218,12 +220,21 @@ public class RegistrationService {
 
         if (identifiersAreValid && (existingUser == null || !isRegistrationType.test(user))) {
             user = userFactoryAction.apply(user, newUserAbstractDTO);
-            if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE))
-                if (pendingVerificationUserRepository.register(registrationUserType, user, passwordHash, "123456")) {
-                    fillZero(passwordHash);
-                    passwordHash = null;
+            if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE)) {
+                try {
+                    if (pendingVerificationUserRepository.register(registrationUserType, user, passwordHash, "123456")) {
+                        fillZero(passwordHash);
+                        passwordHash = null;
+                        return RegistrationStatus.PENDING_VERIFICATION;
+                    }
+                }
+                catch (SQLIntegrityConstraintViolationException e) {
                     return RegistrationStatus.PENDING_VERIFICATION;
                 }
+                catch (SQLException e) {
+                    return RegistrationStatus.FAILURE;
+                }
+            }
         }
 
         fillZero(passwordHash);
