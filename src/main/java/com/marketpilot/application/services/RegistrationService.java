@@ -219,7 +219,7 @@ public class RegistrationService {
         if (identifiersAreValid && (existingUser == null || !isRegistrationType.test(user))) {
             user = userFactoryAction.apply(user, newUserAbstractDTO);
             if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE))
-                if (pendingVerificationUserRepository.register(registrationUserType, user, passwordHash)) {
+                if (pendingVerificationUserRepository.register(registrationUserType, user, passwordHash, "123456")) {
                     fillZero(passwordHash);
                     passwordHash = null;
                     return RegistrationStatus.PENDING_VERIFICATION;
