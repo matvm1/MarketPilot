@@ -24,4 +24,15 @@ public abstract class UserAbstractDTO {
     public String getFirstName() { return firstName; }
     public String getMiddleName() { return middleName; }
     public String getLastName() { return lastName; }
+    public boolean isValid() {
+        return username != null &&
+                !username.isBlank() &&
+                roles != null &&
+                !roles.isEmpty() &&
+                firstName != null &&
+                !firstName.isBlank() &&
+                middleName != null &&
+                lastName != null &&
+                !lastName.isBlank();
+    }
 }

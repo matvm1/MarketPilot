@@ -13,4 +13,9 @@ public class UserClientDTO extends UserAbstractDTO {
     }
 
     public String getEmail() { return email; }
+    public boolean isValid() {
+        return super.isValid() &&
+                email != null &&
+                !email.isBlank();
+    }
 }
