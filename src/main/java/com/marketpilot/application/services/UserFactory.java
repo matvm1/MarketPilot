@@ -131,6 +131,10 @@ public class UserFactory {
 
     // ignores expectedUserType if expectedUserType is null
     private void validateRolesAndGrant(User user, Set<Role> roles, UserType expectedUserType) {
+        if (roles == null)
+            throw new IllegalArgumentException("roles cannot be null");
+        if (roles.isEmpty())
+            throw new IllegalArgumentException("roles cannot be empty");
         // validate all roles prior to granting them
         if (expectedUserType != null)
             for (Role role : roles)
