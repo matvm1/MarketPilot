@@ -1,26 +1,104 @@
 package com.marketpilot.adapters.persistence.repo;
 
+import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
+import com.marketpilot.adapters.persistence.jdbc.Param;
+import com.marketpilot.application.services.UserFactory;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
+import com.marketpilot.util.Tuple;
 
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.marketpilot.adapters.persistence.jdbc.Param.longP;
+import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
+import static com.marketpilot.util.UuidUtil.bytesToUUID;
+
 public class OjdbcPendingVerificationUserRepository implements PendingVerificationUserRepository {
+    private final UserFactory userFactory;
+    private final String ENTITY_TABLE_NAME = "APP_USER";
+    private final String[] ENTITY_COLUMN_NAMES = {
+            "ID",
+            "UUID",
+            "EMPLOYEE_ID",
+            "USERNAME",
+            "PERSONAL_EMAIL",
+            "EMPLOYEE_EMAIL",
+            "FIRST_NAME",
+            "MIDDLE_NAME",
+            "LAST_NAME",
+            "IS_CLIENT",
+            "IS_EMPLOYEE"
+    };
+
+    public OjdbcPendingVerificationUserRepository() {
+        this.userFactory = new UserFactory();
+    }
+
     @Override
     public Optional<User> findByUsername(String username) {
-        return Optional.empty();
+        return findBy("USERNAME", stringP(1, username));
     }
 
     @Override
-    public Optional<User> findById(Long aLong) {
+    public Optional<User> findById(Long id) {
+        return findBy("ID", longP(1, id));
+    }
+
+    private Optional<User> findBy(String filterByColumn, Param filterBy) {
+        if (filterByColumn == null || filterBy == null || filterBy.value() == null)
+            return Optional.empty();
+
+        String fetchSql = buildEntityFetchSql(filterByColumn);
+        Optional<Tuple<Integer, User>> entityRecordOptional = JdbcExecutor.fetchRecord(fetchSql,
+                rs ->
+                        new Tuple<>(rs.getInt("ID"),
+                                userFactory.hydrate(
+                                        bytesToUUID(rs.getBytes("UUID")),
+                                        rs.getString("EMPLOYEE_ID"),
+                                        rs.getString("USERNAME"),
+                                        rs.getString("PERSONAL_EMAIL"),
+                                        rs.getString("EMPLOYEE_EMAIL"),
+                                        rs.getString("FIRST_NAME"),
+                                        rs.getString("MIDDLE_NAME"),
+                                        rs.getString("LAST_NAME"),
+                                        rs.getBoolean("IS_CLIENT"),
+                                        rs.getBoolean("IS_EMPLOYEE")
+                                )
+                        ), filterBy);
+        if (entityRecordOptional.isPresent())
+        {
+            Tuple<Integer, User> entityRecord = entityRecordOptional.get();
+            //int userId = entityRecord.t();
+            User user = entityRecord.u();
+            // No need to hydrate with roles as a session won't be created after registration
+            //Optional<Set<Role>> rolesOptional = roleRepository.getRolesForUser(userId);
+            //rolesOptional.ifPresent(roles -> userFactory.hydrateWithRoles(user, roles));*/
+            return Optional.of(user);
+        }
         return Optional.empty();
     }
 
+    private String buildEntityFetchSql(String filterByColumn) {
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(String.join(", ", ENTITY_COLUMN_NAMES))
+                .append(" FROM ")
+                .append(ENTITY_TABLE_NAME);
+
+        if (filterByColumn != null) {
+            sql.append(" WHERE ")
+                    .append(filterByColumn)
+                    .append(" = ?");
+        }
+
+        return sql.toString();
+    }
+
+    //TODO: JdbcExecutor insert statement
     @Override
     public boolean register(UserType userType, User user, byte[] passwordHash) {
-        return false;
+        return true;
     }
 
     @Override
