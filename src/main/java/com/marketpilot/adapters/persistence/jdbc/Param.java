@@ -17,5 +17,5 @@ public record Param(int index, Object value, int sqlType) {
     public static Param timestampP(int i, Timestamp v)  { return new Param(i, v, Types.TIMESTAMP); }
     public static Param timeP(int i, Time v)     { return new Param(i, v, Types.TIME); }
     public static Param bytesP(int i, byte[] b)     { return new Param(i, b, OracleTypes.RAW); }
-    public static Param nullP(int i, int type)   { return new Param(i, null, Types.NULL); }
+    public static Param nullP(int i)   { return new Param(i, null, Types.NULL); }
 }
