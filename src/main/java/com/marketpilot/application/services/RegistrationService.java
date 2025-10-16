@@ -1,6 +1,7 @@
 package com.marketpilot.application.services;
 
 import com.marketpilot.application.dto.EmailMessage;
+import com.marketpilot.application.dto.auth.RoleCache;
 import com.marketpilot.application.dto.user.UserAbstractDTO;
 import com.marketpilot.application.dto.user.UserClientDTO;
 import com.marketpilot.application.dto.user.UserEmployeeDTO;
@@ -37,6 +38,8 @@ public class RegistrationService {
     private final EmailEngine emailEngine;
     private final PasswordHasher passwordHasher;
     private final UserFactory userFactory;
+    private final RoleCache roleCache;
+
     private final String CLIENT_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Account";
     private final String EMPLOYEE_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Employee Account";
     private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email.html";
@@ -45,7 +48,10 @@ public class RegistrationService {
                                PendingVerificationUserRepository pendingVerificationUserRepository,
                                EmployeeRepository employeeRepository,
                                RoleRepository roleRepository,
-                               EmailEngine emailEngine, PasswordHasher passwordHasher, UserFactory userFactory) {
+                               EmailEngine emailEngine,
+                               PasswordHasher passwordHasher,
+                               UserFactory userFactory,
+                               RoleCache roleCache) {
         this.userRepository = userRepository;
         this.pendingVerificationUserRepository = pendingVerificationUserRepository;
         this.employeeRepository = employeeRepository;
@@ -53,6 +59,7 @@ public class RegistrationService {
         this.emailEngine = emailEngine;
         this.passwordHasher = passwordHasher;
         this.userFactory = userFactory;
+        this.roleCache = roleCache;
     }
 
     public RegistrationStatus initiateClientRegistration(String username, byte[] passwordLightHash, Set<Role.RoleName> clientRoleNames, String personalEmail,

@@ -1,6 +1,7 @@
 package com.marketpilot.application.services;
 
 import com.marketpilot.application.dto.EmailMessage;
+import com.marketpilot.application.dto.auth.RoleCache;
 import com.marketpilot.application.ports.EmailEngine;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.domain.repo.EmployeeRepository;
@@ -37,6 +38,7 @@ public class RegistrationServiceTest {
     @Mock private RoleRepository roleRepository;
     @Mock private EmailEngine emailEngine;
     @Mock private PasswordHasher passwordHasher;
+    private RoleCache roleCache;
 
     private RegistrationService registrationService;
 
@@ -61,8 +63,9 @@ public class RegistrationServiceTest {
     @BeforeEach
     void setUp() {
         userFactory = new UserFactory();
+        roleCache = new RoleCache(roleRepository);
         registrationService = new RegistrationService(userRepository, pendingVerificationUserRepository,
-                employeeRepository, roleRepository, emailEngine, passwordHasher, userFactory);
+                employeeRepository, roleRepository, emailEngine, passwordHasher, userFactory, roleCache);
 
         clientRoleNames = new HashSet<>();
         clientRoleNames.add(RoleName.PersonalInvestor);
