@@ -23,6 +23,7 @@ import static com.marketpilot.util.UuidUtil.bytesToUUID;
 
 public class OjdbcPendingVerificationUserRepository implements PendingVerificationUserRepository {
     private final UserFactory userFactory;
+    private final RoleCache roleCache;
     private final String ENTITY_TABLE_NAME = "APP_USER";
     private final String[] ENTITY_COLUMN_NAMES = {
             "ID",
@@ -38,8 +39,9 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
             "IS_EMPLOYEE"
     };
 
-    public OjdbcPendingVerificationUserRepository() {
+    public OjdbcPendingVerificationUserRepository(RoleCache roleCache) {
         this.userFactory = new UserFactory();
+        this.roleCache = roleCache;
     }
 
     @Override
@@ -114,7 +116,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
 
         int EXPIRATION_PERIOD_MINUTES = 30;
         Timestamp expiration = Timestamp.from(Instant.now().plusSeconds(60 * EXPIRATION_PERIOD_MINUTES));
-        int pendingUserRowsAffected = JdbcExecutor.executeUpdate("""
+        long[] generatedKeys = JdbcExecutor.executeInsert("""
                 INSERT INTO APP_USER (
                     UUID,
                     EMPLOYEE_ID,
@@ -137,7 +139,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
                 )
                 VALUES (
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-                );
+                )
                 """,
             bytesP(1, UuidUtil.uuidToBytes(user.getUUID())),
             stringP(2, user.getEmployeeId()),
@@ -159,9 +161,33 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
             paramElseNull(userType, UserType.EMPLOYEE, timestampP(18, expiration))
         );
 
-        //TODO: INSERT ROLES
-        int pendingUserRoleRowsAffected = 0;
-        return pendingUserRowsAffected == 1;// && pendingUserRoleRowsAffected == user.getRoles().size();
+        int rolesInserted = 0;
+        if (generatedKeys.length == 1) {
+            long userId = generatedKeys[0];
+            StringBuilder binders = new StringBuilder();
+            binders.append("(?, ?, ?),".repeat(Math.max(0, user.getRoles().size() - 1)));
+            binders.append("(?, ?, ?);");
+
+            Param[] params = new Param[user.getRoles().size() * 3];
+            int i = 0;
+            for (Role role : user.getRoles()) {
+                params[i] = longP(i + 1, userId);
+                params[i + 1] = intP(i + 2, roleCache.getId(role.getRoleName()));
+                params[i + 2] = timestampP(i + 3, expiration);
+                i += 3;
+            }
+
+            rolesInserted = JdbcExecutor.executeUpdate("""
+                    INSERT INTO APP_USER_ROLE (
+                        USER_ID,
+                        ROLE_ID,
+                        REGISTRATION_EXPIRATION
+                    )
+                    VALUES
+                    """ + binders,
+                    params);
+        }
+        return generatedKeys.length == 1 && rolesInserted == user.getRoles().size();
     }
 
     private Param paramElseNull(UserType supplied, UserType expected, Param forUserType) {
