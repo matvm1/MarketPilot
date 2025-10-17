@@ -1,5 +1,6 @@
 package com.marketpilot.adapters.persistence.migration;
 
+import com.marketpilot.application.dto.auth.UserStatus;
 import com.marketpilot.domain.entities.auth.Permission;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.UserType;
@@ -12,5 +13,6 @@ public class RbacEnumSeeder {
         EnumSeederUtil.seed(Permission.class, "APP_PERMISSION");
         EnumSeederUtil.seed(RoleName.class, "APP_ROLE");
         EnumSeederUtil.seed(UserType.class, "APP_USER_TYPE");
+        EnumSeederUtil.seed(UserStatus.class, "APP_USER_STATUS");
     }
 }

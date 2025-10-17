@@ -13,7 +13,8 @@ public class EnumSeederUtil {
     private final static Set<String> allowedTables = Set.of(
             "app_permission",
             "app_role",
-            "app_user_type"
+            "app_user_type",
+            "app_user_status"
     );
 
     protected static <E> void seed(Class<E> enumClass, String targetTableName) {
