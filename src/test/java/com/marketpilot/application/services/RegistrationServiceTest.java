@@ -360,7 +360,7 @@ public class RegistrationServiceTest {
 
     @Test
     void completeRegistration_returnsFailureIfClientVerificationCodeDoesNotMatch() {
-        when(pendingVerificationUserRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(existingClient));
         when(pendingVerificationUserRepository.getClientRegistrationVerificationCode(any(UUID.class)))
                 .thenReturn(Optional.of("123456"));
         assertEquals(RegistrationStatus.FAILURE, registrationService.completeRegistration("johnmdoe",
@@ -369,7 +369,7 @@ public class RegistrationServiceTest {
 
     @Test
     void completeRegistration_returnsFailureIfEmployeeVerificationCodeDoesNotMatch() {
-        when(pendingVerificationUserRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingEmployee));
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.of(existingEmployee));
         when(pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(any(UUID.class)))
                 .thenReturn(Optional.of("123456"));
         assertEquals(RegistrationStatus.FAILURE, registrationService.completeRegistration("johnmdoe",
@@ -378,7 +378,7 @@ public class RegistrationServiceTest {
 
     @Test
     void completeRegistration_returnsSuccessIfClientVerificationCodeMatches() {
-        when(pendingVerificationUserRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(existingClient));
         when(pendingVerificationUserRepository.getClientRegistrationVerificationCode(any(UUID.class)))
                 .thenReturn(Optional.of("123456"));
         when(pendingVerificationUserRepository.deleteByUuid(any(UUID.class))).thenReturn(true);
@@ -389,7 +389,7 @@ public class RegistrationServiceTest {
 
     @Test
     void completeRegistration_returnsSuccessIfEmployeeVerificationCodeMatches() {
-        when(pendingVerificationUserRepository.findByUsername("johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.of(existingClient));
         when(pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(any(UUID.class)))
                 .thenReturn(Optional.of("123456"));
         when(pendingVerificationUserRepository.deleteByUuid(any(UUID.class))).thenReturn(true);

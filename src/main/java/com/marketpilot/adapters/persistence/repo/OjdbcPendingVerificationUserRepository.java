@@ -43,20 +43,20 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
     }
 
     @Override
-    public Optional<User> findByUsername(String username) {
-        return findBy("USERNAME", stringP(1, username));
+    public Optional<User> findByUsername(UserType userType, String username) {
+        return findBy(userType, "USERNAME", stringP(1, username));
     }
 
     @Override
     public Optional<User> findById(Long id) {
-        return findBy("ID", longP(1, id));
+        return Optional.empty();
     }
 
-    private Optional<User> findBy(String filterByColumn, Param filterBy) {
+    private Optional<User> findBy(UserType userType, String filterByColumn, Param filterBy) {
         if (filterByColumn == null || filterBy == null || filterBy.value() == null)
             return Optional.empty();
 
-        String fetchSql = buildEntityFetchSql(filterByColumn);
+        String fetchSql = buildEntityFetchSql(userType, filterByColumn);
         Optional<Tuple<Integer, User>> entityRecordOptional = JdbcExecutor.fetchRecord(fetchSql,
                 rs ->
                         new Tuple<>(rs.getInt("ID"),
@@ -86,14 +86,19 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
         return Optional.empty();
     }
 
-    private String buildEntityFetchSql(String filterByColumn) {
+    private String buildEntityFetchSql(UserType userType, String filterByColumn) {
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(String.join(", ", ENTITY_COLUMN_NAMES))
                 .append(" FROM ")
                 .append(ENTITY_TABLE_NAME);
 
+        sql.append(" WHERE ")
+                .append(userType == UserType.CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID")
+                .append(" = ")
+                .append(UserStatus.PENDING.getCode());
+
         if (filterByColumn != null) {
-            sql.append(" WHERE ")
+            sql.append(" AND ")
                     .append(filterByColumn)
                     .append(" = ?");
         }

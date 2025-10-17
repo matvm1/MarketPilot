@@ -232,8 +232,11 @@ public class RegistrationService {
                     }
                 }
                 catch (SQLIntegrityConstraintViolationException e) {
-                    e.printStackTrace();
-                    return RegistrationStatus.PENDING_VERIFICATION;
+                    // should ideally be caught by applciation code
+                    // message may be vendor specific
+                    if (e.getMessage().contains("unique constraint"))
+                        return RegistrationStatus.PENDING_VERIFICATION;
+                    return RegistrationStatus.FAILURE;
                 }
                 catch (SQLException e) {
                     e.printStackTrace();
@@ -254,7 +257,7 @@ public class RegistrationService {
         if (registrationUserType == null)
             return RegistrationStatus.FAILURE;
 
-        Optional<User> userOptional = pendingVerificationUserRepository.findByUsername(username);
+        Optional<User> userOptional = pendingVerificationUserRepository.findByUsername(registrationUserType, username);
         if (userOptional.isEmpty())
             return RegistrationStatus.FAILURE;
 
