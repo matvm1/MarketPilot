@@ -1,5 +1,6 @@
-package com.marketpilot.application.services;
+package com.marketpilot.adapters.persistence.repo;
 
+import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.repo.RoleRepository;
 
@@ -11,7 +12,8 @@ import java.util.stream.Collectors;
 
 public class RoleCache {
     private final RoleRepository roleRepository;
-    private Map<Role.RoleName, Role> cache;
+    private Map<Role.RoleName, Role> roleCache;
+    private Map<Role.RoleName, Integer> idCache;
 
     public RoleCache(RoleRepository roleRepository) {
         if (roleRepository == null)
@@ -23,7 +25,14 @@ public class RoleCache {
         try {
             Set<Role.RoleName> roleNameSet = Arrays.stream(Role.RoleName.values()).collect(Collectors.toSet());
             Set<Role> roles = roleRepository.findByRoleNames(roleNameSet).orElseThrow();
-            cache = roles.stream().collect(Collectors.toMap(Role::getRoleName, role -> role));
+            roleCache = roles.stream().collect(Collectors.toMap(Role::getRoleName, role -> role));
+            idCache = JdbcExecutor.executeQueryToMap("""
+                    SELECT ID, NAME
+                    FROM APP_ROLE
+                    """,
+                    rs -> Role.RoleName.valueOf(rs.getString("NAME")),
+                    rs -> rs.getInt("ID")
+                    ).orElseThrow();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -32,7 +41,11 @@ public class RoleCache {
     public Set<Role> fetch(Role.RoleName[] roleNames) {
         Set<Role> roles = new HashSet<>();
         for (Role.RoleName roleName : roleNames)
-            roles.add(cache.get(roleName));
+            roles.add(roleCache.get(roleName));
         return roles;
+    }
+
+    public int getId(Role.RoleName roleName) {
+        return idCache.get(roleName);
     }
 }
