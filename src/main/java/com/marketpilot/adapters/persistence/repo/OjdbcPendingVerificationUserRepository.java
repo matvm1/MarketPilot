@@ -3,6 +3,8 @@ package com.marketpilot.adapters.persistence.repo;
 import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
 import com.marketpilot.adapters.persistence.jdbc.Param;
 import com.marketpilot.application.services.UserFactory;
+import com.marketpilot.domain.entities.auth.Role;
+import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
@@ -10,8 +12,10 @@ import com.marketpilot.util.Tuple;
 import com.marketpilot.util.UuidUtil;
 
 import java.sql.SQLException;
-import java.util.Optional;
-import java.util.UUID;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.time.Instant;
+import java.util.*;
 
 import static com.marketpilot.adapters.persistence.jdbc.Param.*;
 import static com.marketpilot.util.UuidUtil.bytesToUUID;
@@ -102,7 +106,8 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
         if (userType == null)
             return false;
 
-        int rowsAffected = JdbcExecutor.executeUpdate("""
+        int EXPIRATION_PERIOD_MINUTES = 30;
+        int pendingUserRowsAffected = JdbcExecutor.executeUpdate("""
                 INSERT INTO APP_PENDING_USER (
                     UUID,
                     EMPLOYEE_ID,
@@ -117,10 +122,11 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
                     IS_CLIENT,
                     IS_EMPLOYEE,
                     CLIENT_REGISTRATION_CODE,
-                    EMPLOYEE_REGISTRATION_CODE
+                    EMPLOYEE_REGISTRATION_CODE,
+                    EXPIRATION_DATE_TIME
                 )
                 VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 );
                 """,
             bytesP(1, UuidUtil.uuidToBytes(user.getUUID())),
@@ -135,11 +141,15 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
             userType == UserType.EMPLOYEE ? bytesP(10, passwordHash) : nullP(10),
             booleanP(11, user.isClient()),
             booleanP(12, user.isEmployee()),
-            userType == UserType.CLIENT ? stringP(13, verificationCode) : nullP(14),
-            userType == UserType.EMPLOYEE ? stringP(14, verificationCode) : nullP(14)
+            userType == UserType.CLIENT ? stringP(13, verificationCode) : nullP(13),
+            userType == UserType.EMPLOYEE ? stringP(14, verificationCode) : nullP(14),
+            timestampP(15, Timestamp.from(Instant.now().plusSeconds(60 * EXPIRATION_PERIOD_MINUTES)))
         );
-        //TODO: Insert user roles
-        return rowsAffected == 1;
+
+        //TODO: INSERT ROLES
+        int pendingUserRoleRowsAffected = 0;
+
+        return pendingUserRowsAffected == 1;// && pendingUserRoleRowsAffected == user.getRoles().size();
     }
 
     @Override
