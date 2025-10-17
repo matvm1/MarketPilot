@@ -2,6 +2,7 @@ package com.marketpilot.adapters.persistence.repo;
 
 import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
 import com.marketpilot.adapters.persistence.jdbc.Param;
+import com.marketpilot.application.dto.auth.UserStatus;
 import com.marketpilot.application.services.UserFactory;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
@@ -100,15 +101,16 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
         return sql.toString();
     }
 
-    //TODO: JdbcExecutor insert statement
+    // registers a new user
     @Override
     public boolean register(UserType userType, User user, byte[] passwordHash, String verificationCode) throws SQLException {
         if (userType == null)
             return false;
 
         int EXPIRATION_PERIOD_MINUTES = 30;
+        Timestamp expiration = Timestamp.from(Instant.now().plusSeconds(60 * EXPIRATION_PERIOD_MINUTES));
         int pendingUserRowsAffected = JdbcExecutor.executeUpdate("""
-                INSERT INTO APP_PENDING_USER (
+                INSERT INTO APP_USER (
                     UUID,
                     EMPLOYEE_ID,
                     USERNAME,
@@ -123,10 +125,13 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
                     IS_EMPLOYEE,
                     CLIENT_REGISTRATION_CODE,
                     EMPLOYEE_REGISTRATION_CODE,
-                    EXPIRATION_DATE_TIME
+                    CLIENT_USER_STATUS_ID,
+                    EMPLOYEE_USER_STATUS_ID,
+                    CLIENT_REGISTRATION_EXPIRATION,
+                    EMPLOYEE_REGISTRATION_EXPIRATION
                 )
                 VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 );
                 """,
             bytesP(1, UuidUtil.uuidToBytes(user.getUUID())),
@@ -137,19 +142,25 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
             stringP(6, user.getFirstName()),
             stringP(7, user.getMiddleName()),
             stringP(8, user.getLastName()),
-            userType == UserType.CLIENT ? bytesP(9, passwordHash) : nullP(9),
-            userType == UserType.EMPLOYEE ? bytesP(10, passwordHash) : nullP(10),
+            paramElseNull(userType, UserType.CLIENT, bytesP(9, passwordHash)),
+            paramElseNull(userType, UserType.EMPLOYEE, bytesP(10, passwordHash)),
             booleanP(11, user.isClient()),
             booleanP(12, user.isEmployee()),
-            userType == UserType.CLIENT ? stringP(13, verificationCode) : nullP(13),
-            userType == UserType.EMPLOYEE ? stringP(14, verificationCode) : nullP(14),
-            timestampP(15, Timestamp.from(Instant.now().plusSeconds(60 * EXPIRATION_PERIOD_MINUTES)))
+            paramElseNull(userType, UserType.CLIENT, stringP(13, verificationCode)),
+            paramElseNull(userType, UserType.EMPLOYEE, stringP(14, verificationCode)),
+            paramElseNull(userType, UserType.CLIENT, intP(15, UserStatus.PENDING.getCode())),
+            paramElseNull(userType, UserType.EMPLOYEE, intP(16, UserStatus.PENDING.getCode())),
+            paramElseNull(userType, UserType.CLIENT, timestampP(17, expiration)),
+            paramElseNull(userType, UserType.EMPLOYEE, timestampP(18, expiration))
         );
 
         //TODO: INSERT ROLES
         int pendingUserRoleRowsAffected = 0;
-
         return pendingUserRowsAffected == 1;// && pendingUserRoleRowsAffected == user.getRoles().size();
+    }
+
+    private Param paramElseNull(UserType supplied, UserType expected, Param forUserType) {
+        return supplied == expected ? forUserType : nullP(forUserType.index());
     }
 
     @Override

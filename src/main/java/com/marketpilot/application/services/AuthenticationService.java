@@ -48,7 +48,8 @@ public class AuthenticationService {
     }
 
     public Tuple<AuthenticationStatus, Optional<UUID>> initiateClientAuthentication(String usernameOrEmail, byte[] passwordLightHash, RoleName roleName) {
-        Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(identifier)
+        //TODO: pass in usertype
+        Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(null, identifier)
                 .or(() -> userRepository.findByPersonalEmail(identifier));
 
         return initiateAuthentication(usernameOrEmail, passwordLightHash, roleName,
@@ -101,7 +102,8 @@ public class AuthenticationService {
             return AuthenticationStatus.FAILURE;
 
         if (mfaType == MfaType.TOTP) {
-            Optional<User> userOptional = userRepository.findByUUID(((TotpCredential)credentials).getUserUuid());
+            //TODO: pass in userType
+            Optional<User> userOptional = userRepository.findByUUID(null, ((TotpCredential)credentials).getUserUuid());
             RoleName roleName = ((TotpCredential)credentials).getRoleName();
 
             if (userOptional.isPresent() ) {

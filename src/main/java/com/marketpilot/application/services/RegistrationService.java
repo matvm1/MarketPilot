@@ -83,7 +83,7 @@ public class RegistrationService {
                                                                             String personalEmail) {
 
         //TODO: Authenticate the employee
-        Optional<User> existingEmployeeOptional = userRepository.findByUsername(username);
+        Optional<User> existingEmployeeOptional = userRepository.findByUsername(UserType.EMPLOYEE, username);
         if (existingEmployeeOptional.isPresent()) {
             User existingEmployee = existingEmployeeOptional.get();
             UserClientDTO userClientDTO = new UserClientDTO(username, roleCache.fetch(clientRoleNames), personalEmail,
@@ -136,7 +136,7 @@ public class RegistrationService {
             return RegistrationStatus.FAILURE;
 
         //TODO: Authenticate the client
-        Optional<User> existingClientOptional = userRepository.findByUsername(username);
+        Optional<User> existingClientOptional = userRepository.findByUsername(UserType.EMPLOYEE, username);
         if (existingClientOptional.isPresent()) {
             User existingClient = existingClientOptional.get();
             UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, roleCache.fetch(employeeRoleNames), employeeEmail,
@@ -186,7 +186,8 @@ public class RegistrationService {
         Optional<User> userOptional;
 
         if (existingUser == null)
-            userOptional = userRepository.findByUsername(userAbstractDTO.getUsername()).or(() -> userFinder.apply(identifier1, identifier2));
+            userOptional = userRepository.findByUsername(registrationUserType, userAbstractDTO.getUsername()).or(() -> userFinder.apply(identifier1,
+                    identifier2));
         else
             userOptional = Optional.of(existingUser);
 
@@ -231,9 +232,11 @@ public class RegistrationService {
                     }
                 }
                 catch (SQLIntegrityConstraintViolationException e) {
+                    e.printStackTrace();
                     return RegistrationStatus.PENDING_VERIFICATION;
                 }
                 catch (SQLException e) {
+                    e.printStackTrace();
                     return RegistrationStatus.FAILURE;
                 }
             }
