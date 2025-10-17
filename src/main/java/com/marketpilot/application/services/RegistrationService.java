@@ -62,10 +62,9 @@ public class RegistrationService {
         this.roleCache = roleCache;
     }
 
-    public RegistrationStatus initiateClientRegistration(String username, byte[] passwordLightHash, Set<Role.RoleName> clientRoleNames, String personalEmail,
+    public RegistrationStatus initiateClientRegistration(String username, byte[] passwordLightHash, Role.RoleName[] clientRoleNames, String personalEmail,
                                                          String firstName, String middleName, String lastName) {
-        Set<Role> clientRoles = roleRepository.findByRoleNames(clientRoleNames).orElse(new HashSet<>());
-        UserClientDTO userClientDTO = new UserClientDTO(username, clientRoles, personalEmail, firstName, middleName, lastName);
+        UserClientDTO userClientDTO = new UserClientDTO(username, roleCache.fetch(clientRoleNames), personalEmail, firstName, middleName, lastName);
         BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByPersonalEmail(identifier2);
         BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) -> userFactory.createClientUser((UserClientDTO) b);
 
@@ -81,15 +80,14 @@ public class RegistrationService {
                 CLIENT_VERIFICATION_EMAIL_SUBJECT);
     }
 
-    public RegistrationStatus initiateClientRegistrationForExistingEmployee(String username, byte[] passwordLightHash, Set<Role.RoleName> clientRoleNames,
+    public RegistrationStatus initiateClientRegistrationForExistingEmployee(String username, byte[] passwordLightHash, Role.RoleName[] clientRoleNames,
                                                                             String personalEmail) {
 
         //TODO: Authenticate the employee
         Optional<User> existingEmployeeOptional = userRepository.findByUsername(username);
         if (existingEmployeeOptional.isPresent()) {
             User existingEmployee = existingEmployeeOptional.get();
-            Set<Role> clientRoles = roleRepository.findByRoleNames(clientRoleNames).orElse(new HashSet<>());
-            UserClientDTO userClientDTO = new UserClientDTO(username, clientRoles, personalEmail,
+            UserClientDTO userClientDTO = new UserClientDTO(username, roleCache.fetch(clientRoleNames), personalEmail,
                     existingEmployee.getFirstName(), existingEmployee.getMiddleName(), existingEmployee.getLastName());
             BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByPersonalEmail(identifier2);
             BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) ->
@@ -110,13 +108,12 @@ public class RegistrationService {
         return RegistrationStatus.FAILURE;
     }
 
-    public RegistrationStatus initiateEmployeeRegistration(String employeeId, String username, byte[] passwordLightHash, Set<Role.RoleName> employeeRoleNames,
+    public RegistrationStatus initiateEmployeeRegistration(String employeeId, String username, byte[] passwordLightHash, Role.RoleName[] employeeRoleNames,
                                                            String employeeEmail, String firstName, String middleName, String lastName) {
         if (!employeeRepository.employeeIdExists(employeeId))
             return RegistrationStatus.FAILURE;
 
-        Set<Role> employeeRoles = roleRepository.findByRoleNames(employeeRoleNames).orElse(new HashSet<>());
-        UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, employeeRoles, employeeEmail,
+        UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, roleCache.fetch(employeeRoleNames), employeeEmail,
                 firstName, middleName, lastName);
         BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByEmployeeId(employeeId)
                 .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
@@ -135,7 +132,7 @@ public class RegistrationService {
     }
 
     public RegistrationStatus initiateEmployeeRegistrationForExistingClient(String employeeId, String username, byte[] passwordLightHash,
-                                                                            Set<Role.RoleName> employeeRoleNames, String employeeEmail) {
+                                                                            Role.RoleName[] employeeRoleNames, String employeeEmail) {
         if (!employeeRepository.employeeIdExists(employeeId))
             return RegistrationStatus.FAILURE;
 
@@ -143,8 +140,7 @@ public class RegistrationService {
         Optional<User> existingClientOptional = userRepository.findByUsername(username);
         if (existingClientOptional.isPresent()) {
             User existingClient = existingClientOptional.get();
-            Set<Role> employeeRoles = roleRepository.findByRoleNames(employeeRoleNames).orElse(new HashSet<>());
-            UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, employeeRoles, employeeEmail,
+            UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, roleCache.fetch(employeeRoleNames), employeeEmail,
                     existingClient.getFirstName(), existingClient.getMiddleName(), existingClient.getLastName());
             BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByEmployeeId(employeeId)
                     .or(() -> userRepository.findByEmployeeEmail(employeeEmail));

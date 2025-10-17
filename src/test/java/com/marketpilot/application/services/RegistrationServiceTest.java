@@ -44,8 +44,8 @@ public class RegistrationServiceTest {
 
     private User existingClient;
     private User existingEmployee;
-    private Set<RoleName> clientRoleNames;
-    private Set<RoleName> employeeRoleNames;
+    private RoleName[] clientRoleNames;
+    private RoleName[] employeeRoleNames;
     private Set<Role> clientRoles;
     private Set<Role> employeeRoles;
     private Set<Role> adminRoles;
@@ -67,15 +67,8 @@ public class RegistrationServiceTest {
         registrationService = new RegistrationService(userRepository, pendingVerificationUserRepository,
                 employeeRepository, roleRepository, emailEngine, passwordHasher, userFactory, roleCache);
 
-        clientRoleNames = new HashSet<>();
-        clientRoleNames.add(RoleName.PersonalInvestor);
-        employeeRoleNames = new LinkedHashSet<>();
-        employeeRoleNames.add(RoleName.Analyst);
-
-        clientRoles = new HashSet<>();
-        clientRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
-        employeeRoles = new HashSet<>();
-        employeeRoles.add(TestRoles.ANALYST_ROLE);
+        clientRoleNames = new RoleName[] {RoleName.PersonalInvestor};
+        employeeRoleNames = new RoleName[] {RoleName.Analyst};
 
         existingClient = userFactory.createClientUser(clientRoles, "johnmdoe", "johnmdoe@outlook.com",
                 "John", "M", "Doe");
