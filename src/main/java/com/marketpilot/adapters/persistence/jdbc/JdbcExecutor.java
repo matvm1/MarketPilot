@@ -53,6 +53,45 @@ public class JdbcExecutor {
         }
     }
 
+    public static List<Integer> executeUpdateProc(String procName, boolean letProcCommit, Param... params) throws SQLException {
+        StringBuilder binders = new StringBuilder("(");
+        binders.append("?, ".repeat(Math.max(0, params.length - 1)));
+        if (params.length > 0)
+            binders.append("?)");
+        try (Connection conn = pool.getConnection()) {
+            boolean initialAutoCommit = conn.getAutoCommit();
+            try (CallableStatement cs = conn.prepareCall("{CALL " + procName + binders + " }")) {
+                setParameters(cs, params);
+
+                // either the proc commits or an explicit commit is sent
+                conn.setAutoCommit(false);
+
+                boolean hasUpdateCounts = !(cs.execute());
+                if (!hasUpdateCounts) {
+                    conn.rollback();
+                    throw new UnexpectedResultSetException(procName);
+                }
+
+                List<Integer> updateCounts = new LinkedList<>();
+                while (hasUpdateCounts && cs.getUpdateCount() != -1) {
+                    updateCounts.add(cs.getUpdateCount());
+                    hasUpdateCounts = cs.getMoreResults();
+                }
+
+                if (!letProcCommit)
+                    conn.commit();
+
+                return updateCounts;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw e;
+            }
+            finally {
+                conn.setAutoCommit(initialAutoCommit);
+            }
+        }
+    }
+
     // prepares a PreparedStatement, executes, and returns cached queried data cached in a Tuple
     /*public static <T, U> Optional<Tuple<T, U>> executeQueryToTuple(String sql,
            ResultSetToValue<T> resultSetToValueT,
@@ -159,4 +198,11 @@ public class JdbcExecutor {
             ps.setObject(p.index(), p.value(), p.sqlType());
         }
     }
+
+    public static class UnexpectedResultSetException extends RuntimeException {
+        public UnexpectedResultSetException(String procName) {
+            super("Procedure " + procName + " returned a result set, but update counts were expected");
+        }
+    }
+
 }
