@@ -1,5 +1,8 @@
 package com.marketpilot.adapters.persistence.jdbc;
 
+import com.marketpilot.util.Tuple;
+import oracle.jdbc.OracleResultSet;
+import oracle.sql.NUMBER;
 import oracle.ucp.jdbc.PoolDataSource;
 
 import java.sql.*;
@@ -175,6 +178,39 @@ public class JdbcExecutor {
         ps.close();
         conn.close();
         return rowsAffected;
+    }
+
+    // executes an INSERT statement and returns an array with the primary keys ("ID") that were generated
+    public static long[] executeInsert(String sql, Param... params) throws SQLException {
+        Connection conn = pool.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql, new String[] {"ID"} );
+        setParameters(ps, params);
+
+        int rowsInserted = ps.executeUpdate();
+        ResultSet generatedKeysRs = ps.getGeneratedKeys();
+
+        //ResultSetMetaData meta = generatedKeysRs.getMetaData();
+        //int columnCount = meta.getColumnCount();
+        // System.out.println("Columns:");
+        // for (int i = 1; i <= columnCount; i++) {
+        //     System.out.println(i + ": " + meta.getColumnLabel(i));
+        //     System.out.println(meta.getColumnType(i));
+        // }
+
+
+        long[] generatedKeys = new long[rowsInserted];
+        int i = 0;
+        while(generatedKeysRs.next()) {
+            // Use oracle.sql.NUMBER rather than java.math.BigDecimal when performance is critical and you are not manipulating the values, just reading and writing them.
+            NUMBER number = ((OracleResultSet)generatedKeysRs).getNUMBER(1);
+            generatedKeys[i] = number.longValue();
+            i++;
+        }
+
+        generatedKeysRs.close();
+        ps.close();
+        conn.close();
+        return generatedKeys;
     }
 
     public static int[] executeUpdateBatch(String sql, Batch[] batches) {
