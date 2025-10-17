@@ -1,4 +1,4 @@
-package com.marketpilot.application.dto.auth;
+package com.marketpilot.application.services;
 
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.repo.RoleRepository;

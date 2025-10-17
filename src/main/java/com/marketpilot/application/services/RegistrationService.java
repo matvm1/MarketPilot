@@ -1,7 +1,6 @@
 package com.marketpilot.application.services;
 
 import com.marketpilot.application.dto.EmailMessage;
-import com.marketpilot.application.dto.auth.RoleCache;
 import com.marketpilot.application.dto.user.UserAbstractDTO;
 import com.marketpilot.application.dto.user.UserClientDTO;
 import com.marketpilot.application.dto.user.UserEmployeeDTO;
