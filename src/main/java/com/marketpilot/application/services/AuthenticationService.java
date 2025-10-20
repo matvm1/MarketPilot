@@ -47,6 +47,15 @@ public class AuthenticationService {
         this.sessionManager = sessionManager;
     }
 
+    public AuthenticationService(UserRepository userRepository, RoleRepository roleRepository, TwoFactorService totpService,
+                                 PasswordHasher passwordHasher) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.totpService = totpService;
+        this.passwordHasher = passwordHasher;
+        this.sessionManager = null;
+    }
+
     public Tuple<AuthenticationStatus, Optional<UUID>> initiateClientAuthentication(String usernameOrEmail, byte[] passwordLightHash, RoleName roleName) {
         //TODO: pass in usertype
         Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(null, identifier)
@@ -125,7 +134,7 @@ public class AuthenticationService {
                         });
                         totpSecretOptional = Optional.empty();
                         credentials = null;
-                        if (sessionManager.createSession(new AuthenticationResult(user, userRole)).isPresent())
+                        if (sessionManager != null && sessionManager.createSession(new AuthenticationResult(user, userRole)).isPresent())
                             return AuthenticationStatus.SUCCESS;
                     }
                 }
