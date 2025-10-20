@@ -23,7 +23,7 @@ public class JdbcExecutor {
             ResultSet rs = ps.executeQuery();
             if (rs.isBeforeFirst()) {
                 rs.next();
-                return Optional.of(resultSetToValue.map(rs));
+                return Optional.ofNullable(resultSetToValue.map(rs));
             }
             return Optional.empty();
         }
