@@ -110,9 +110,6 @@ public class RegistrationService {
 
     public RegistrationStatus initiateEmployeeRegistration(String employeeId, String username, byte[] passwordLightHash, Role.RoleName[] employeeRoleNames,
                                                            String employeeEmail, String firstName, String middleName, String lastName) {
-        if (!employeeRepository.employeeIdExists(employeeId))
-            return RegistrationStatus.FAILURE;
-
         UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, roleCache.fetch(employeeRoleNames), employeeEmail,
                 firstName, middleName, lastName);
         BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByEmployeeId(employeeId)
@@ -133,9 +130,6 @@ public class RegistrationService {
 
     public RegistrationStatus initiateEmployeeRegistrationForExistingClient(String employeeId, String username, byte[] passwordLightHash,
                                                                             Role.RoleName[] employeeRoleNames, String employeeEmail) {
-        if (!employeeRepository.employeeIdExists(employeeId))
-            return RegistrationStatus.FAILURE;
-
         //TODO: Authenticate the client
         Optional<User> existingClientOptional = userRepository.findByUsername(UserType.EMPLOYEE, username);
         if (existingClientOptional.isPresent()) {
