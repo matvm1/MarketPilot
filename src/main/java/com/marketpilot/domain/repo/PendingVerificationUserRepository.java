@@ -10,6 +10,7 @@ import java.util.UUID;
 public interface PendingVerificationUserRepository extends BaseRepository<Long, User> {
     Optional<User> findByUsername(UserType userType, String username);
     boolean register(UserType userType, User user, byte[] passwordHash, String verificationCode) throws SQLException;
+    boolean completeRegistration(UserType userType, UUID userUUID) throws SQLException;
     // Returns the verification code for the User entity that is pending client account verification
     Optional<String> getClientRegistrationVerificationCode(UUID userUUID);
     // Returns the verification code for the User entity that is pending employee account verification

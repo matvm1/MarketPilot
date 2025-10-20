@@ -191,6 +191,27 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
         return generatedKeys.length == 1 && rolesInserted == user.getRoles().size();
     }
 
+    @Override
+    public boolean completeRegistration(UserType userType, UUID userUUID) throws SQLException {
+        if (userType == null || userUUID == null)
+            return false;
+
+        String statusColumn = userType == UserType.CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID";
+        String expirationColumn = userType == UserType.CLIENT ? "CLIENT_REGISTRATION_EXPIRATION" : "EMPLOYEE_REGISTRATION_EXPIRATION";
+        int result = JdbcExecutor.executeUpdate(String.format("""
+                UPDATE APP_USER
+                SET %s = ?
+                WHERE %s = ?
+                AND UUID = ?
+                AND SYSTIMESTAMP <= %s
+                """, statusColumn, statusColumn, expirationColumn),
+                intP(1, UserStatus.ACTIVE.getCode()),
+                intP(2, UserStatus.PENDING.getCode()),
+                bytesP(3, uuidToBytes(userUUID)));
+
+        return result == 1;
+    }
+
     private Param paramElseNull(UserType supplied, UserType expected, Param forUserType) {
         return supplied == expected ? forUserType : nullP(forUserType.index());
     }
