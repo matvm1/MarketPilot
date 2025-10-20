@@ -20,6 +20,7 @@ import java.util.*;
 
 import static com.marketpilot.adapters.persistence.jdbc.Param.*;
 import static com.marketpilot.util.UuidUtil.bytesToUUID;
+import static com.marketpilot.util.UuidUtil.uuidToBytes;
 
 public class OjdbcPendingVerificationUserRepository implements PendingVerificationUserRepository {
     private final UserFactory userFactory;
@@ -141,7 +142,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """,
-            bytesP(1, UuidUtil.uuidToBytes(user.getUUID())),
+            bytesP(1, uuidToBytes(user.getUUID())),
             stringP(2, user.getEmployeeId()),
             stringP(3, user.getUsername()),
             stringP(4, user.getPersonalEmail()),
@@ -196,12 +197,28 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
 
     @Override
     public Optional<String> getClientRegistrationVerificationCode(UUID userUUID) {
-        return Optional.empty();
+        return JdbcExecutor.fetchRecord("""
+                SELECT CLIENT_REGISTRATION_CODE
+                FROM APP_USER
+                WHERE CLIENT_USER_STATUS_ID = ?
+                AND UUID = ?
+                """,
+                rs -> rs.getString("CLIENT_REGISTRATION_CODE"),
+                intP(1, UserStatus.PENDING.getCode()),
+                bytesP(2, uuidToBytes(userUUID)));
     }
 
     @Override
     public Optional<String> getEmployeeRegistrationVerificationCode(UUID userUUID) {
-        return Optional.empty();
+        return JdbcExecutor.fetchRecord("""
+                SELECT EMPLOYEE_REGISTRATION_CODE
+                FROM APP_USER
+                WHERE EMPLOYEE_USER_STATUS_ID = ?
+                AND UUID = ?
+                """,
+                rs -> rs.getString("EMPLOYEE_REGISTRATION_CODE"),
+                intP(1, UserStatus.PENDING.getCode()),
+                bytesP(2, uuidToBytes(userUUID)));
     }
 
     @Override

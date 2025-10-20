@@ -280,6 +280,7 @@ public class RegistrationService {
             case EMPLOYEE -> pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(uuid);
             default -> Optional.empty();
         };
+        System.out.println("Verification code: " + verificationCode.orElse("null"));
         if (verificationCode.isPresent() && verificationCode.get().equals(verificationCodeAttempt)) {
             try {
                 if (pendingVerificationUserRepository.deleteByUuid(uuid))
