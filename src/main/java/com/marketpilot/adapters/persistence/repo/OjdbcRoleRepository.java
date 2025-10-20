@@ -117,14 +117,15 @@ public class OjdbcRoleRepository implements RoleRepository {
                 JdbcExecutor.executeQueryToMap("""
                     SELECT R.ID AS ROLE_ID, R.NAME AS ROLE_NAME, AUT.NAME AS USER_TYPE
                     FROM APP_USER U
-                    JOIN APP_USER_ROLE AUR ON U.ID = AUR.USER_ID
+                    JOIN APP_USER_ROLE AUR ON U.ID = ? AND U.ID = AUR.USER_ID
                     JOIN APP_ROLE R ON R.ID = AUR.ROLE_ID
                     JOIN APP_USER_TYPE AUT ON AUT.ID = R.USER_TYPE_ID
                     """, rs -> rs.getLong("ROLE_ID"),
                     rs -> new Tuple<>(
                             RoleName.valueOf(rs.getString("ROLE_NAME")),
                             UserType.valueOf(rs.getString("USER_TYPE"))
-                    ));
+                    ),
+                longP(1, userId));
             if (roleAttributesOptional.isPresent()) {
                 Map<Long, Tuple<RoleName, UserType>> roleAttributes = roleAttributesOptional.get();
 
