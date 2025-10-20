@@ -223,7 +223,12 @@ public class RegistrationService {
         }
 
         if (userAbstractDTO.isValid() && identifiersAreValid && (existingUser == null || !isRegistrationType.test(user))) {
-            user = userFactoryAction.apply(user, userAbstractDTO);
+            try {
+                user = userFactoryAction.apply(user, userAbstractDTO);
+            }
+            catch (IllegalArgumentException e) {
+                return RegistrationStatus.FAILURE;
+            }
             if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE)) {
                 try {
                     if (pendingVerificationUserRepository.register(registrationUserType, user, passwordHash, "123456")) {
@@ -233,7 +238,7 @@ public class RegistrationService {
                     }
                 }
                 catch (SQLIntegrityConstraintViolationException e) {
-                    // should ideally be caught by applciation code
+                    // should ideally be caught by application code
                     // message may be vendor specific
                     if (e.getMessage().contains("unique constraint"))
                         return RegistrationStatus.PENDING_VERIFICATION;
