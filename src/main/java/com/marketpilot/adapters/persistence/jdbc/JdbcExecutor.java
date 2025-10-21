@@ -1,11 +1,11 @@
 package com.marketpilot.adapters.persistence.jdbc;
 
+import com.marketpilot.util.Tuple;
+import oracle.jdbc.OracleResultSet;
+import oracle.sql.NUMBER;
 import oracle.ucp.jdbc.PoolDataSource;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 // Do not expose outside MarketPilot project
@@ -21,8 +21,11 @@ public class JdbcExecutor {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             setParameters(ps, params);
             ResultSet rs = ps.executeQuery();
-            rs.next();
-            return Optional.of(resultSetToValue.map(rs));
+            if (rs.isBeforeFirst()) {
+                rs.next();
+                return Optional.ofNullable(resultSetToValue.map(rs));
+            }
+            return Optional.empty();
         }
         catch (SQLException e) {
             //TODO: Rollback? Commit?
@@ -33,16 +36,16 @@ public class JdbcExecutor {
     }
 
     // prepares a PreparedStatement, executes, and returns cached queried data in a List
-    /*public static <T> Optional<List<T>> executeQueryToList(String sql, ResultSetToValue<T> resultSetToValue, Param... params) {
+    public static <T> Optional<Set<T>> executeQueryToSet(String sql, ResultSetToValue<T> resultSetToSet, Param... params) {
         try (Connection conn = pool.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             setParameters(ps, params);
 
             ResultSet rs = ps.executeQuery();
 
-            List<T> dataCache = new ArrayList<>();
+            Set<T> dataCache = new HashSet<>();
             while (rs.next())
-                dataCache.add(resultSetToValue.map(rs));
+                dataCache.add(resultSetToSet.map(rs));
             return dataCache.isEmpty() ? Optional.empty() : Optional.of(dataCache);
         }
         catch (SQLException e) {
@@ -51,7 +54,46 @@ public class JdbcExecutor {
             e.printStackTrace();
             throw new RuntimeException("Could not execute query:\n" + sql);
         }
-    }*/
+    }
+
+    public static List<Integer> executeUpdateProc(String procName, boolean letProcCommit, Param... params) throws SQLException {
+        StringBuilder binders = new StringBuilder("(");
+        binders.append("?, ".repeat(Math.max(0, params.length - 1)));
+        if (params.length > 0)
+            binders.append("?)");
+        try (Connection conn = pool.getConnection()) {
+            boolean initialAutoCommit = conn.getAutoCommit();
+            try (CallableStatement cs = conn.prepareCall("{CALL " + procName + binders + " }")) {
+                setParameters(cs, params);
+
+                // either the proc commits or an explicit commit is sent
+                conn.setAutoCommit(false);
+
+                boolean hasUpdateCounts = !(cs.execute());
+                if (!hasUpdateCounts) {
+                    conn.rollback();
+                    throw new UnexpectedResultSetException(procName);
+                }
+
+                List<Integer> updateCounts = new LinkedList<>();
+                while (hasUpdateCounts && cs.getUpdateCount() != -1) {
+                    updateCounts.add(cs.getUpdateCount());
+                    hasUpdateCounts = cs.getMoreResults();
+                }
+
+                if (!letProcCommit)
+                    conn.commit();
+
+                return updateCounts;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw e;
+            }
+            finally {
+                conn.setAutoCommit(initialAutoCommit);
+            }
+        }
+    }
 
     // prepares a PreparedStatement, executes, and returns cached queried data cached in a Tuple
     /*public static <T, U> Optional<Tuple<T, U>> executeQueryToTuple(String sql,
@@ -128,18 +170,47 @@ public class JdbcExecutor {
     }
 
     // prepares a PreparedStatement, executes, and returns count of affected records
-    public static int executeUpdate(String sql, Param... params) {
-        try (Connection conn = pool.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
-            setParameters(ps, params);
-            return ps.executeUpdate();
+    public static int executeUpdate(String sql, Param... params) throws SQLException {
+        Connection conn = pool.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql);
+        setParameters(ps, params);
+        int rowsAffected = ps.executeUpdate();
+        ps.close();
+        conn.close();
+        return rowsAffected;
+    }
+
+    // executes an INSERT statement and returns an array with the primary keys ("ID") that were generated
+    public static long[] executeInsert(String sql, Param... params) throws SQLException {
+        Connection conn = pool.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql, new String[] {"ID"} );
+        setParameters(ps, params);
+
+        int rowsInserted = ps.executeUpdate();
+        ResultSet generatedKeysRs = ps.getGeneratedKeys();
+
+        //ResultSetMetaData meta = generatedKeysRs.getMetaData();
+        //int columnCount = meta.getColumnCount();
+        // System.out.println("Columns:");
+        // for (int i = 1; i <= columnCount; i++) {
+        //     System.out.println(i + ": " + meta.getColumnLabel(i));
+        //     System.out.println(meta.getColumnType(i));
+        // }
+
+
+        long[] generatedKeys = new long[rowsInserted];
+        int i = 0;
+        while(generatedKeysRs.next()) {
+            // Use oracle.sql.NUMBER rather than java.math.BigDecimal when performance is critical and you are not manipulating the values, just reading and writing them.
+            NUMBER number = ((OracleResultSet)generatedKeysRs).getNUMBER(1);
+            generatedKeys[i] = number.longValue();
+            i++;
         }
-        catch (SQLException e) {
-            //TODO: Rollback? Commit?
-            //TODO: Log
-            e.printStackTrace();
-            throw new RuntimeException("Could not execute query:\n" + sql);
-        }
+
+        generatedKeysRs.close();
+        ps.close();
+        conn.close();
+        return generatedKeys;
     }
 
     public static int[] executeUpdateBatch(String sql, Batch[] batches) {
@@ -163,4 +234,11 @@ public class JdbcExecutor {
             ps.setObject(p.index(), p.value(), p.sqlType());
         }
     }
+
+    public static class UnexpectedResultSetException extends RuntimeException {
+        public UnexpectedResultSetException(String procName) {
+            super("Procedure " + procName + " returned a result set, but update counts were expected");
+        }
+    }
+
 }

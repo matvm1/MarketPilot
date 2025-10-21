@@ -3,6 +3,7 @@ package com.marketpilot.application.services;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.SessionManager;
 import com.marketpilot.application.ports.auth.TwoFactorService;
+import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.domain.repo.UserRepository;
 import com.marketpilot.application.services.AuthenticationService.AuthenticationStatus;
@@ -74,9 +75,9 @@ public class AuthenticationServiceTest {
 
     @Test
     void initiateClientAuthentication_returnsFailureIfUsernameoremailNotFound(){
-        when(userRepository.findByUsername("johnmdoe")
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe"))).thenReturn(Optional.empty());
-        when(userRepository.findByUsername("johnmdoe@outlook.com")
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe@outlook.com")
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe@outlook.com"))).thenReturn(Optional.empty());
         assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordLightHash, RoleName.PersonalInvestor));
@@ -86,9 +87,9 @@ public class AuthenticationServiceTest {
 
     @Test
     void initiateClientAuthentication_returnsFailureIfUserDoesNotHaveRole(){
-        when(userRepository.findByUsername("johnmdoe")
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe"))).thenReturn(Optional.of(existingClient));
-        when(userRepository.findByUsername("johnmdoe@outlook.com")
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe@outlook.com")
                 .or(() -> userRepository.findByPersonalEmail("johnmdoe@outlook.com"))).thenReturn(Optional.of(existingClient));
         assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordLightHash, RoleName.Admin));
@@ -99,7 +100,7 @@ public class AuthenticationServiceTest {
     @Test
     void initiateClientAuthentication_returnsFailureIfPasswordDoesNotMatch(){
         byte[] dummyPasswordHashStored = BufferedConverter.toBytes("sdhjfrgbjh24bqw2bsdf099$n@12!hg1");
-        when(userRepository.findByUsername("johnmdoe")).thenReturn(Optional.ofNullable(existingClient));
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.ofNullable(existingClient));
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         assertEquals(Tuple.of(AuthenticationStatus.FAILURE, Optional.empty()),
                 authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordLightHash, RoleName.PersonalInvestor));
@@ -107,7 +108,7 @@ public class AuthenticationServiceTest {
 
     @Test
     void initiateClientAuthentication_returnsChallengeSentIfUsernameAndPasswordExist() {
-        when(userRepository.findByUsername("johnmdoe").or(() -> userRepository.findByPersonalEmail("johnmdoe")))
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe").or(() -> userRepository.findByPersonalEmail("johnmdoe")))
                 .thenReturn(Optional.of(existingClient));
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
@@ -117,7 +118,7 @@ public class AuthenticationServiceTest {
 
     @Test
     void initiateClientAuthentication_returnsChallengeSentIfEmailAndPasswordExist() {
-        when(userRepository.findByUsername("johnmdoe@outlook.com").or(() -> userRepository.findByPersonalEmail("johnmdoe@outlook.com")))
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe@outlook.com").or(() -> userRepository.findByPersonalEmail("johnmdoe@outlook.com")))
                 .thenReturn(Optional.of(existingClient));
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);

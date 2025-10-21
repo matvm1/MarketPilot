@@ -15,6 +15,12 @@ public class UserEmployeeDTO extends UserAbstractDTO {
     }
 
     public String getEmployeeId() { return employeeId; }
-
     public String getEmail() { return email; }
+    public boolean isValid() {
+        return super.isValid() &&
+                employeeId != null &&
+                !employeeId.isBlank() &&
+                email != null &&
+                !email.isBlank();
+    }
 }

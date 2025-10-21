@@ -15,12 +15,10 @@ import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.User;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import static com.marketpilot.adapters.client.web.AuthenticationClientExample.bytesToHex;
 
 // TODO: Integration tests
 public class AuthenticationService {
@@ -28,10 +26,6 @@ public class AuthenticationService {
         AWAITING_2FA,
         SUCCESS,
         FAILURE
-    }
-
-    public enum MfaType {
-        TOTP
     }
 
     private final UserRepository userRepository;
@@ -49,8 +43,18 @@ public class AuthenticationService {
         this.sessionManager = sessionManager;
     }
 
+    public AuthenticationService(UserRepository userRepository, RoleRepository roleRepository, TwoFactorService totpService,
+                                 PasswordHasher passwordHasher) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.totpService = totpService;
+        this.passwordHasher = passwordHasher;
+        this.sessionManager = null;
+    }
+
     public Tuple<AuthenticationStatus, Optional<UUID>> initiateClientAuthentication(String usernameOrEmail, byte[] passwordLightHash, RoleName roleName) {
-        Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(identifier)
+        //TODO: pass in usertype
+        Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(null, identifier)
                 .or(() -> userRepository.findByPersonalEmail(identifier));
 
         return initiateAuthentication(usernameOrEmail, passwordLightHash, roleName,
@@ -103,7 +107,8 @@ public class AuthenticationService {
             return AuthenticationStatus.FAILURE;
 
         if (mfaType == MfaType.TOTP) {
-            Optional<User> userOptional = userRepository.findByUUID(((TotpCredential)credentials).getUserUuid());
+            //TODO: pass in userType
+            Optional<User> userOptional = userRepository.findByUUID(null, ((TotpCredential)credentials).getUserUuid());
             RoleName roleName = ((TotpCredential)credentials).getRoleName();
 
             if (userOptional.isPresent() ) {
@@ -125,7 +130,7 @@ public class AuthenticationService {
                         });
                         totpSecretOptional = Optional.empty();
                         credentials = null;
-                        if (sessionManager.createSession(new AuthenticationResult(user, userRole)).isPresent())
+                        if (sessionManager != null && sessionManager.createSession(new AuthenticationResult(user, userRole)).isPresent())
                             return AuthenticationStatus.SUCCESS;
                     }
                 }
