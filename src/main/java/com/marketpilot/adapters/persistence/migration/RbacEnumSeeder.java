@@ -10,9 +10,10 @@ import com.marketpilot.domain.entities.auth.UserType;
 // data in db serves as the source of truth for Role objects to allow configurability byb admins/ops
 public class RbacEnumSeeder {
     public static void main(String[] args) {
-        EnumSeederUtil.seed(Permission.class, "APP_PERMISSION");
-        EnumSeederUtil.seed(RoleName.class, "APP_ROLE");
-        EnumSeederUtil.seed(UserType.class, "APP_USER_TYPE");
-        EnumSeederUtil.seed(UserStatus.class, "APP_USER_STATUS");
+        // EnumSeederUtil.seed(Permission.class, "APP_PERMISSION");
+        // EnumSeederUtil.seed(RoleName.class, "APP_ROLE");
+        // EnumSeederUtil.seed(UserType.class, "APP_USER_TYPE");
+        // EnumSeederUtil.seed(UserStatus.class, "APP_USER_STATUS");
+        // EnumSeederUtil.seed(UserStatus.class, "MFATYPE");
     }
 }

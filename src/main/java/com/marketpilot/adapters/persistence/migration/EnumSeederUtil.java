@@ -14,7 +14,8 @@ public class EnumSeederUtil {
             "app_permission",
             "app_role",
             "app_user_type",
-            "app_user_status"
+            "app_user_status",
+            "mfatype"
     );
 
     protected static <E> void seed(Class<E> enumClass, String targetTableName) {
