@@ -1,9 +1,13 @@
 package com.marketpilot.domain.repo;
 
+import com.marketpilot.adapters.persistence.repo.OjdbcUserRepository;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 
+import java.sql.SQLException;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.UUID;
 
 public interface UserRepository extends BaseRepository<Long, User> {
@@ -18,4 +22,5 @@ public interface UserRepository extends BaseRepository<Long, User> {
     Optional<byte[]> getEmployeePasswordHash(UUID uuid);
     Optional<char[]> getClientTotpSecret(UUID uuid);
     Optional<char[]> getEmployeeTotpSecret(UUID uuid);
+    public Optional<Properties> getAuthProperties(UserType userType, UUID uuid) throws SQLException;
 }

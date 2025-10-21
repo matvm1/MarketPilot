@@ -3,6 +3,7 @@ package com.marketpilot.adapters.persistence.repo;
 import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
 import com.marketpilot.adapters.persistence.jdbc.Param;
 import com.marketpilot.application.dto.auth.UserStatus;
+import com.marketpilot.application.services.MfaType;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.Tuple;
 import com.marketpilot.application.services.UserFactory;
@@ -11,10 +12,12 @@ import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.domain.repo.UserRepository;
 
+import java.sql.SQLException;
 import java.util.*;
 
 import static com.marketpilot.adapters.persistence.jdbc.Param.bytesP;
 import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
+import static com.marketpilot.domain.entities.auth.UserType.CLIENT;
 import static com.marketpilot.util.UuidUtil.bytesToUUID;
 import static com.marketpilot.util.UuidUtil.uuidToBytes;
 
@@ -59,7 +62,7 @@ public class OjdbcUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findByPersonalEmail(String personalEmail) {
-        return findBy(UserType.CLIENT, "PERSONAL_EMAIL", stringP(1, personalEmail));
+        return findBy(CLIENT, "PERSONAL_EMAIL", stringP(1, personalEmail));
     }
 
     @Override
@@ -107,7 +110,7 @@ public class OjdbcUserRepository implements UserRepository {
                 .append(ENTITY_TABLE_NAME);
 
         sql.append(" WHERE ")
-                .append(userType == UserType.CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID")
+                .append(userType == CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID")
                 .append(" = ")
                 .append(UserStatus.ACTIVE.getCode());
 
@@ -199,6 +202,42 @@ public class OjdbcUserRepository implements UserRepository {
             },
             bytesP(1, uuidToBytes(uuid)
         ));
+    }
+
+    public Optional<Properties> getAuthProperties(UserType userType, UUID uuid) throws SQLException {
+        if (userType == null || uuid == null)
+            return Optional.empty();
+
+        String passwordHashCol = userType == CLIENT ? "CLIENT_PASSWORD_HASH" : "EMPLOYEE_PASSWORD_HASH";
+        String totpSecretCol = userType == CLIENT ? "CLIENT_TOTP_SECRET" : "EMPLOYEE_TOTP_SECRET";
+        Param[] params = new Param[] { bytesP(1, uuidToBytes(uuid)) };
+        String columns = passwordHashCol + ", " + totpSecretCol + ", MFATYPE_ID";
+        Properties p = JdbcExecutor.fetchRecordToObject(String.format("""
+                SELECT %s
+                FROM APP_USER
+                WHERE %S = 2
+                AND UUID = ?
+                """, columns, userType == CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID"),
+                params,
+                (o) -> {
+                    Properties res = new Properties(3);
+                    String passwordHash = (String) o.getFirst().getFirst();
+                    if (passwordHash != null)
+                        res.put("PASSWORD_HASH", passwordHash);
+                    String totpSecret = (String) o.getFirst().get(1);
+                    if (totpSecret != null)
+                        res.put("TOTP_SECRET", totpSecret);
+                    int mfaTypeId = (int) o.getFirst().getLast();
+                    if (mfaTypeId != 0)
+                        res.put("MFATYPE", MfaType.fromCode(mfaTypeId));
+                    return res;
+                },
+                rs -> rs.getString(passwordHashCol),
+                rs -> rs.getString(totpSecretCol),
+                rs -> rs.getInt("MFATYPE_ID")
+                ).orElse(null);
+
+        return Optional.ofNullable(p);
     }
 
     @Override
