@@ -5,6 +5,7 @@ import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
 import com.marketpilot.adapters.persistence.jdbc.Param;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Set;
 
 import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
@@ -51,6 +52,16 @@ public class EnumSeederUtil {
         if(!allowedTables.contains(targetTableName.toLowerCase()))
             return;
 
+        try {
+            JdbcExecutor.executeUpdate(String.format("""
+                DELETE FROM %s
+                """, targetTableName));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        resetIdSequence(targetTableName);
+
         E[] enumConstants = enumClass.getEnumConstants();
         String tableNameUpper = targetTableName.toUpperCase();
 
@@ -70,21 +81,12 @@ public class EnumSeederUtil {
         }
 
         JdbcExecutor.executeUpdateBatch(insertSql, batches);
+    }
 
-
-        StringBuilder deleteSql = new StringBuilder("DELETE FROM " + tableNameUpper + " WHERE NAME NOT IN (");
-        Param[] params = new Param[enumConstants.length];
-        for (int i = 0; i < enumConstants.length; i++) {
-            deleteSql.append("?");
-            params[i] = stringP(i + 1, enumConstants[i].toString());
-            if (i < enumConstants.length - 1) {
-                deleteSql.append(", ");
-            }
-        }
-        deleteSql.append(")");
-
+    private static void resetIdSequence(String targetTableName) {
         try {
-            JdbcExecutor.executeUpdate(deleteSql.toString(), params);
+            JdbcExecutor.executeUpdateProc("reset_identity_seq", false,
+                    stringP(1, targetTableName), stringP(2, "ID"));
         } catch (SQLException e) {
             e.printStackTrace();
         }
