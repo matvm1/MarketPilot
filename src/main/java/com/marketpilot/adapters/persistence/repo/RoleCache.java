@@ -26,7 +26,7 @@ public class RoleCache {
             Set<Role.RoleName> roleNameSet = Arrays.stream(Role.RoleName.values()).collect(Collectors.toSet());
             Set<Role> roles = roleRepository.findByRoleNames(roleNameSet).orElseThrow();
             roleCache = roles.stream().collect(Collectors.toMap(Role::getRoleName, role -> role));
-            idCache = JdbcExecutor.executeQueryToMap("""
+            idCache = JdbcExecutor.fetchToMap("""
                     SELECT ID, NAME
                     FROM APP_ROLE
                     """,
