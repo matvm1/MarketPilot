@@ -21,7 +21,7 @@ public class OjdbcRoleRepository implements RoleRepository {
         if (roleName == null)
             return Optional.empty();
         String roleNameStr = roleName.toString();
-        Optional<Set<Permission>> permissionsOptional = JdbcExecutor.executeQueryToSet("""
+        Optional<Set<Permission>> permissionsOptional = JdbcExecutor.fetchToSet("""
                     SELECT P.NAME AS PERMISSION_NAME
                     FROM APP_ROLE R
                     JOIN APP_ROLE_PERMISSION ARP ON R.ID = ARP.ROLE_ID
@@ -59,7 +59,7 @@ public class OjdbcRoleRepository implements RoleRepository {
                 binders.append("?, ");
             params[i] = stringP(++i, roleName.toString());
         }
-        Optional<Map<Long, Set<Permission>>> permissionsMapOptional = JdbcExecutor.executeQueryToMultiMap(String.format("""
+        Optional<Map<Long, Set<Permission>>> permissionsMapOptional = JdbcExecutor.fetchToMultiMap(String.format("""
                     SELECT R.ID AS ROLE_ID, P.NAME AS PERMISSION_NAME
                     FROM APP_ROLE R
                     JOIN APP_ROLE_PERMISSION ARP ON R.ID = ARP.ROLE_ID
@@ -71,7 +71,7 @@ public class OjdbcRoleRepository implements RoleRepository {
                 params);
 
         if (permissionsMapOptional.isPresent()) {
-            Optional<Map<Long, Tuple<RoleName, UserType>>> userTypeMapOptional = JdbcExecutor.executeQueryToMap(String.format("""
+            Optional<Map<Long, Tuple<RoleName, UserType>>> userTypeMapOptional = JdbcExecutor.fetchToMap(String.format("""
                         SELECT R.ID AS ROLE_ID, R.NAME AS ROLE_NAME, UT.NAME AS USER_TYPE_NAME
                         FROM APP_ROLE R
                         JOIN APP_USER_TYPE UT ON R.USER_TYPE_ID = UT.ID
@@ -99,7 +99,7 @@ public class OjdbcRoleRepository implements RoleRepository {
     @Override
     public Optional<Set<Role>> getRolesForUser(long userId) {
        // Optional<List<DataRecord<RoleName>>>
-        Optional<Map<Long, Set<Permission>>> permissionsOptional = JdbcExecutor.executeQueryToMultiMap(
+        Optional<Map<Long, Set<Permission>>> permissionsOptional = JdbcExecutor.fetchToMultiMap(
             """
                     SELECT ARP.ROLE_ID AS ROLE_ID, P.NAME AS PERMISSION_NAME
                     FROM APP_USER U
@@ -114,7 +114,7 @@ public class OjdbcRoleRepository implements RoleRepository {
         if (permissionsOptional.isPresent()) {
             Map<Long, Set<Permission>> rolePermissions = permissionsOptional.get();
             Optional<Map<Long, Tuple<RoleName, UserType>>> roleAttributesOptional =
-                JdbcExecutor.executeQueryToMap("""
+                JdbcExecutor.fetchToMap("""
                     SELECT R.ID AS ROLE_ID, R.NAME AS ROLE_NAME, AUT.NAME AS USER_TYPE
                     FROM APP_USER U
                     JOIN APP_USER_ROLE AUR ON U.ID = ? AND U.ID = AUR.USER_ID

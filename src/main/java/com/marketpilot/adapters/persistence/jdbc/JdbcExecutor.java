@@ -1,6 +1,5 @@
 package com.marketpilot.adapters.persistence.jdbc;
 
-import com.marketpilot.util.Tuple;
 import oracle.jdbc.OracleResultSet;
 import oracle.sql.NUMBER;
 import oracle.ucp.jdbc.PoolDataSource;
@@ -36,7 +35,7 @@ public class JdbcExecutor {
     }
 
     // prepares a PreparedStatement, executes, and returns cached queried data in a List
-    public static <T> Optional<Set<T>> executeQueryToSet(String sql, ResultSetToValue<T> resultSetToSet, Param... params) {
+    public static <T> Optional<Set<T>> fetchToSet(String sql, ResultSetToValue<T> resultSetToSet, Param... params) {
         try (Connection conn = pool.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             setParameters(ps, params);
@@ -118,10 +117,10 @@ public class JdbcExecutor {
     }*/
 
     // prepares a PreparedStatement, executes, and returns cached queried data in a Map
-    public static <T, U> Optional<Map<T, U>> executeQueryToMap(String sql,
-       ResultSetToValue<T> resultSetToValueT,
-       ResultSetToValue<U> resultSetToValueU,
-       Param... params) {
+    public static <T, U> Optional<Map<T, U>> fetchToMap(String sql,
+                                                        ResultSetToValue<T> resultSetToValueT,
+                                                        ResultSetToValue<U> resultSetToValueU,
+                                                        Param... params) {
         try (Connection conn = pool.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             setParameters(ps, params);
@@ -143,7 +142,7 @@ public class JdbcExecutor {
     }
 
     // prepares a PreparedStatement, executes, and returns cached queried data in a multi-map
-    public static <ID, T> Optional<Map<ID, Set<T>>> executeQueryToMultiMap(
+    public static <ID, T> Optional<Map<ID, Set<T>>> fetchToMultiMap(
             String sql,
             ResultSetToValue<ID> keyMapper,
             ResultSetToValue<T> valueMapper,
