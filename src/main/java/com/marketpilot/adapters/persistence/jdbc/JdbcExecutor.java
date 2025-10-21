@@ -6,6 +6,8 @@ import oracle.ucp.jdbc.PoolDataSource;
 
 import java.sql.*;
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 // Do not expose outside MarketPilot project
 //TODO: validate incoming sql
@@ -94,19 +96,29 @@ public class JdbcExecutor {
         }
     }
 
-    // prepares a PreparedStatement, executes, and returns cached queried data cached in a Tuple
-    /*public static <T, U> Optional<Tuple<T, U>> executeQueryToTuple(String sql,
-           ResultSetToValue<T> resultSetToValueT,
-           ResultSetToValue<U> resultSetToValueU,
-           Param... params) {
+    // prepares a PreparedStatement, executes, and returns cached queried data cached in an Object[]
+    @SafeVarargs
+    public static <T, U> Optional<U> fetchRecordToObject(String sql, Param[] params, Function<List<List<Object>>, U> resultCache,
+                                                         ResultSetToValue<T>... resultSetToValue) throws SQLException {
         try (Connection conn = pool.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             setParameters(ps, params);
 
             ResultSet rs = ps.executeQuery();
+            if (rs.isBeforeFirst()) {
+                List<List<Object>> cache = new LinkedList<>();
+                while (rs.next()) {
+                    List<Object> row = new ArrayList<>(resultSetToValue.length);
+                    for (ResultSetToValue<T> tResultSetToValue : resultSetToValue) {
+                        row.add(tResultSetToValue.map(rs));
+                    }
+                    cache.add(row);
+                }
+                U dataCache = resultCache.apply(cache);
 
-            Tuple<T, U> dataCache = new Tuple<T, U>(resultSetToValueT.map(rs), resultSetToValueU.map(rs));
-            return Optional.of(dataCache);
+                return Optional.ofNullable(dataCache);
+            }
+            return Optional.empty();
         }
         catch (SQLException e) {
             //TODO: Rollback? Commit?
@@ -114,7 +126,7 @@ public class JdbcExecutor {
             e.printStackTrace();
             throw new RuntimeException("Could not execute query:\n" + sql);
         }
-    }*/
+    }
 
     // prepares a PreparedStatement, executes, and returns cached queried data in a Map
     public static <T, U> Optional<Map<T, U>> fetchToMap(String sql,
