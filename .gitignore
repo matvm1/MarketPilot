@@ -35,3 +35,7 @@ target/
 ### secrets ###
 secrets/
 src/main/resources/db/migration/oraclecloud/INSERT_APP_USER_ADMIN.sql
+
+# Ignore example client files
+/src/main/java/com/marketpilot/client/RegistrationClientExample.java
+/src/main/java/com/marketpilot/client/AuthenticationClientExample.java
