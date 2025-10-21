@@ -15,8 +15,7 @@ import com.marketpilot.domain.repo.UserRepository;
 import java.sql.SQLException;
 import java.util.*;
 
-import static com.marketpilot.adapters.persistence.jdbc.Param.bytesP;
-import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
+import static com.marketpilot.adapters.persistence.jdbc.Param.*;
 import static com.marketpilot.domain.entities.auth.UserType.CLIENT;
 import static com.marketpilot.util.UuidUtil.bytesToUUID;
 import static com.marketpilot.util.UuidUtil.uuidToBytes;
@@ -204,18 +203,35 @@ public class OjdbcUserRepository implements UserRepository {
         ));
     }
 
+    @Override
+    public Optional<MfaType> getMfaType(UUID uuid) {
+        if (uuid == null)
+            return Optional.empty();
+
+        Optional<Integer> mfaTypeIdOptional = JdbcExecutor.fetchRecord("""
+                SELECT MFATYPE_ID
+                FROM APP_USER
+                WHERE UUID = ?
+                """,
+                rs -> rs.getInt(1),
+                bytesP(1, uuidToBytes(uuid)));
+
+        return mfaTypeIdOptional.map(MfaType::fromCode);
+    }
+
+    // TODO: Added USER_STATUS ids
     public Optional<Properties> getAuthProperties(UserType userType, UUID uuid) throws SQLException {
         if (userType == null || uuid == null)
             return Optional.empty();
 
         String passwordHashCol = userType == CLIENT ? "CLIENT_PASSWORD_HASH" : "EMPLOYEE_PASSWORD_HASH";
         String totpSecretCol = userType == CLIENT ? "CLIENT_TOTP_SECRET" : "EMPLOYEE_TOTP_SECRET";
-        Param[] params = new Param[] { bytesP(1, uuidToBytes(uuid)) };
+        Param[] params = new Param[] { intP(1, UserStatus.ACTIVE.getCode()), bytesP(2, uuidToBytes(uuid)) };
         String columns = passwordHashCol + ", " + totpSecretCol + ", MFATYPE_ID";
         Properties p = JdbcExecutor.fetchRecordToObject(String.format("""
                 SELECT %s
                 FROM APP_USER
-                WHERE %S = 2
+                WHERE %S = ?
                 AND UUID = ?
                 """, columns, userType == CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID"),
                 params,
