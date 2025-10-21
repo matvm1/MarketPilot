@@ -28,10 +28,6 @@ public class AuthenticationService {
         FAILURE
     }
 
-    public enum MfaType {
-        TOTP
-    }
-
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final TwoFactorService totpService;
