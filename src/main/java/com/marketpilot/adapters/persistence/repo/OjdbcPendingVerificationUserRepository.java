@@ -5,18 +5,16 @@ import com.marketpilot.adapters.persistence.jdbc.Param;
 import com.marketpilot.application.dto.auth.UserStatus;
 import com.marketpilot.application.services.UserFactory;
 import com.marketpilot.domain.entities.auth.Role;
-import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.util.Tuple;
-import com.marketpilot.util.UuidUtil;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static com.marketpilot.adapters.persistence.jdbc.Param.*;
 import static com.marketpilot.util.UuidUtil.bytesToUUID;
@@ -39,6 +37,14 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
             "IS_CLIENT",
             "IS_EMPLOYEE"
     };
+    private final String[] CLIENT_REGISTRATION_PROPERTIES = {
+            "CLIENT_REGISTRATION_CODE",
+            "CLIENT_REGISTRATION_EXPIRATION"
+    };
+    private final String[] EMPLOYEE_REGISTRATION_PROPERTIES = {
+            "EMPLOYEE_REGISTRATION_CODE",
+            "EMPLOYEE_REGISTRATION_EXPIRATION"
+    };
 
     public OjdbcPendingVerificationUserRepository(RoleCache roleCache) {
         this.userFactory = new UserFactory();
@@ -46,7 +52,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
     }
 
     @Override
-    public Optional<User> findByUsername(UserType userType, String username) {
+    public Optional<Tuple<User, Map<String, Object>>> findByUsername(UserType userType, String username) {
         return findBy(userType, "USERNAME", stringP(1, username));
     }
 
@@ -55,45 +61,52 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
         return Optional.empty();
     }
 
-    private Optional<User> findBy(UserType userType, String filterByColumn, Param filterBy) {
+    private Optional<Tuple<User, Map<String, Object>>> findBy(UserType userType, String filterByColumn, Param filterBy) {
         if (filterByColumn == null || filterBy == null || filterBy.value() == null)
             return Optional.empty();
 
-        String fetchSql = buildEntityFetchSql(userType, filterByColumn);
-        Optional<Tuple<Integer, User>> entityRecordOptional = JdbcExecutor.fetchRecord(fetchSql,
-                rs ->
-                        new Tuple<>(rs.getInt("ID"),
-                                userFactory.hydrate(
-                                        bytesToUUID(rs.getBytes("UUID")),
-                                        rs.getString("EMPLOYEE_ID"),
-                                        rs.getString("USERNAME"),
-                                        rs.getString("PERSONAL_EMAIL"),
-                                        rs.getString("EMPLOYEE_EMAIL"),
-                                        rs.getString("FIRST_NAME"),
-                                        rs.getString("MIDDLE_NAME"),
-                                        rs.getString("LAST_NAME"),
-                                        rs.getBoolean("IS_CLIENT"),
-                                        rs.getBoolean("IS_EMPLOYEE")
-                                )
-                        ), filterBy);
-        if (entityRecordOptional.isPresent())
-        {
-            Tuple<Integer, User> entityRecord = entityRecordOptional.get();
-            //int userId = entityRecord.t();
-            User user = entityRecord.u();
-            // No need to hydrate with roles as a session won't be created after registration
-            //Optional<Set<Role>> rolesOptional = roleRepository.getRolesForUser(userId);
-            //rolesOptional.ifPresent(roles -> userFactory.hydrateWithRoles(user, roles));*/
-            return Optional.of(user);
+        String[] registrationPropertyColumns = userType == UserType.CLIENT ? CLIENT_REGISTRATION_PROPERTIES : EMPLOYEE_REGISTRATION_PROPERTIES;
+        String fetchSql = buildEntityFetchSql(userType, filterByColumn, registrationPropertyColumns);
+        Optional<Tuple<User, Map<String, Object>>> entityRecordOptional = null;
+        try {
+            entityRecordOptional = JdbcExecutor.fetchToObject(fetchSql,
+                    rs -> {
+                        rs.next();
+                        if (rs.isFirst()) {
+                            User user = userFactory.hydrate(
+                                    bytesToUUID(rs.getBytes("UUID")),
+                                    rs.getString("EMPLOYEE_ID"),
+                                    rs.getString("USERNAME"),
+                                    rs.getString("PERSONAL_EMAIL"),
+                                    rs.getString("EMPLOYEE_EMAIL"),
+                                    rs.getString("FIRST_NAME"),
+                                    rs.getString("MIDDLE_NAME"),
+                                    rs.getString("LAST_NAME"),
+                                    rs.getBoolean("IS_CLIENT"),
+                                    rs.getBoolean("IS_EMPLOYEE"));
+                            Map<String, Object> registrationProperties = new HashMap<>();
+                            for (String column : registrationPropertyColumns)
+                                registrationProperties.put(column, rs.getObject(column));
+                            return new Tuple<>(user, registrationProperties);
+                        }
+                        else
+                            return null;
+                    },
+            filterBy);
+        } catch (SQLException e) {
+            return Optional.empty();
         }
-        return Optional.empty();
+        // No need to hydrate with roles as a session won't be created after registration
+        return entityRecordOptional;
     }
 
-    private String buildEntityFetchSql(UserType userType, String filterByColumn) {
+    private String buildEntityFetchSql(UserType userType, String filterByColumn, String[] registrationPropertyColumns) {
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(String.join(", ", ENTITY_COLUMN_NAMES))
-                .append(" FROM ")
-                .append(ENTITY_TABLE_NAME);
+        sql.append(String.join(", ", ENTITY_COLUMN_NAMES));
+        if (registrationPropertyColumns != null)
+            sql.append(", ").append(String.join(", ", registrationPropertyColumns));
+
+        sql.append(" FROM ").append(ENTITY_TABLE_NAME);
 
         sql.append(" WHERE ")
                 .append(userType == UserType.CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID")

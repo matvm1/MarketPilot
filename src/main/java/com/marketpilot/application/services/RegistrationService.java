@@ -15,6 +15,7 @@ import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.BufferedConverter;
+import com.marketpilot.util.Tuple;
 
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -257,18 +258,21 @@ public class RegistrationService {
         if (registrationUserType == null)
             return RegistrationStatus.FAILURE;
 
-        Optional<User> userOptional = pendingVerificationUserRepository.findByUsername(registrationUserType, username);
-        User user = userOptional.orElse(null);
+        Optional<Tuple<User, Map<String, Object>>> userWithPropsOptional = pendingVerificationUserRepository.findByUsername(registrationUserType, username);
+        Tuple<User, Map<String, Object>> userWithProps = userWithPropsOptional.orElse(null);
+        System.out.println(userWithProps);
+        User user = userWithProps != null ? userWithProps.t() : null;
+        Map<String, Object> registrationProperties = userWithProps != null ? userWithProps.u() : null;
         UUID uuid = user != null ? user.getUUID() : null;
 
-        Optional<String> verificationCode = uuid == null ? Optional.of("dummyverificationstring34789623123213554129345") :
+        String verificationCode = registrationProperties == null ? "dummyverificationstring34789623123213554129345" :
             switch (registrationUserType) {
-                case CLIENT -> pendingVerificationUserRepository.getClientRegistrationVerificationCode(uuid);
-                case EMPLOYEE -> pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(uuid);
-                default -> Optional.empty();
+                case CLIENT -> (String) registrationProperties.get("CLIENT_REGISTRATION_CODE");
+                case EMPLOYEE -> (String) registrationProperties.get("EMPLOYEE_REGISTRATION_CODE");
+                default -> null;
         };
 
-        if (uuid != null && verificationCode.isPresent() && verificationCode.get().equals(verificationCodeAttempt)) {
+        if (uuid != null && verificationCode != null && verificationCode.equals(verificationCodeAttempt)) {
             try {
                 if (pendingVerificationUserRepository.completeRegistration(registrationUserType, user.getUUID())) {
                         String recipientAddress = switch(registrationUserType) {
