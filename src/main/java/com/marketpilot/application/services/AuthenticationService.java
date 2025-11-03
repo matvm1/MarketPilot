@@ -53,8 +53,7 @@ public class AuthenticationService {
     }
 
     public Tuple<AuthenticationStatus, Optional<UUID>> initiateClientAuthentication(String usernameOrEmail, byte[] passwordLightHash, RoleName roleName) {
-        //TODO: pass in usertype
-        Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(null, identifier)
+        Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(UserType.CLIENT, identifier)
                 .or(() -> userRepository.findByPersonalEmail(identifier));
 
         return initiateAuthentication(usernameOrEmail, passwordLightHash, roleName,
@@ -100,39 +99,34 @@ public class AuthenticationService {
         return new Tuple<>(AuthenticationStatus.FAILURE, Optional.empty());
     }
 
-    public AuthenticationStatus completeAuthentication(MfaType mfaType, MfaCredential credentials) {
-        if (mfaType == null)
+    public AuthenticationStatus completeAuthentication(MfaCredential credentials) {
+        if (credentials == null || credentials.getUserUuid() == null)
             return AuthenticationStatus.FAILURE;
-        if (credentials == null)
-            return AuthenticationStatus.FAILURE;
+
+        UUID userUuid = credentials.getUserUuid();
+        MfaType mfaType = userRepository.getMfaType(userUuid).orElse(null);
+        Optional<User> userOptional = userRepository.findByUUID(credentials.getUserType(), userUuid);
+        RoleName roleName = credentials.getRoleName();
+        User user = userOptional.orElse(null);
+        Role userRole = user == null ? null :  user.getRole(roleName);
 
         if (mfaType == MfaType.TOTP) {
-            //TODO: pass in userType
-            Optional<User> userOptional = userRepository.findByUUID(null, ((TotpCredential)credentials).getUserUuid());
-            RoleName roleName = ((TotpCredential)credentials).getRoleName();
-
-            if (userOptional.isPresent() ) {
-                User user = userOptional.get();
-                Role userRole = user.getRole(roleName);
-                UUID userUuid = ((TotpCredential) credentials).getUserUuid();
-
-                if (userRole != null) {
-                    Optional<char[]> totpSecretOptional =
-                        switch (userRole.getUserType()) {
-                            case CLIENT -> userRepository.getClientTotpSecret(userUuid);
-                            case EMPLOYEE -> userRepository.getEmployeeTotpSecret(userUuid);
-                        };
-                    ((TotpCredential) credentials).setSecret(totpSecretOptional.orElse(null));
-                    if (totpService.verify(credentials)) {
-                        totpSecretOptional.ifPresent(secret -> {
-                            fillZero(secret);
-                            secret = null;
-                        });
-                        totpSecretOptional = Optional.empty();
-                        credentials = null;
-                        if (sessionManager != null && sessionManager.createSession(new AuthenticationResult(user, userRole)).isPresent())
-                            return AuthenticationStatus.SUCCESS;
-                    }
+            if (user != null && userRole != null) {
+                Optional<char[]> totpSecretOptional =
+                    switch (userRole.getUserType()) {
+                        case CLIENT -> userRepository.getClientTotpSecret(userUuid);
+                        case EMPLOYEE -> userRepository.getEmployeeTotpSecret(userUuid);
+                    };
+                ((TotpCredential) credentials).setSecret(totpSecretOptional.orElse(null));
+                if (totpService.verify(credentials)) {
+                    totpSecretOptional.ifPresent(secret -> {
+                        fillZero(secret);
+                        secret = null;
+                    });
+                    totpSecretOptional = Optional.empty();
+                    credentials = null;
+                    if (sessionManager != null && sessionManager.createSession(new AuthenticationResult(user, userRole)).isPresent())
+                        return AuthenticationStatus.SUCCESS;
                 }
             }
         }
