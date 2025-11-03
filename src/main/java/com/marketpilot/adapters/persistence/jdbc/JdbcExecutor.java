@@ -95,7 +95,7 @@ public class JdbcExecutor {
     }
 
     // prepares a PreparedStatement, executes, and returns cached queried data cached in an Object[]
-    public static <T> Optional<T> fetchToObject(String sql, Param[] params, ResultSetToValue<T> resultSetToValue) throws SQLException {
+    public static <T> Optional<T> fetchToObject(String sql, ResultSetToValue<T> resultSetToValue, Param... params) throws SQLException {
         try (Connection conn = pool.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             setParameters(ps, params);
