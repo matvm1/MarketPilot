@@ -2,7 +2,8 @@ package com.marketpilot.application.services;
 
 
 public enum MfaType {
-    TOTP(1);
+    NONE(1),
+    TOTP(2);
 
     private final int code;
     MfaType(int code) {
