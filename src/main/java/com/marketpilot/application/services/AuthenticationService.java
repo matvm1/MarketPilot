@@ -110,7 +110,13 @@ public class AuthenticationService {
         User user = userOptional.orElse(null);
         Role userRole = user == null ? null :  user.getRole(roleName);
 
-        if (mfaType == MfaType.TOTP) {
+        boolean isAuthenticated = false;
+
+        if (mfaType == MfaType.NONE) {
+            credentials = null;
+            isAuthenticated = true;
+        }
+        else if (mfaType == MfaType.TOTP) {
             if (user != null && userRole != null) {
                 Optional<char[]> totpSecretOptional =
                     switch (userRole.getUserType()) {
@@ -125,10 +131,14 @@ public class AuthenticationService {
                     });
                     totpSecretOptional = Optional.empty();
                     credentials = null;
-                    if (sessionManager != null && sessionManager.createSession(new AuthenticationResult(user, userRole)).isPresent())
-                        return AuthenticationStatus.SUCCESS;
+                    isAuthenticated = true;
                 }
             }
+        }
+
+        if (isAuthenticated) {
+            if (sessionManager == null || sessionManager.createSession(new AuthenticationResult(user, userRole)).isPresent())
+                return AuthenticationStatus.SUCCESS;
         }
 
         return AuthenticationStatus.FAILURE;
