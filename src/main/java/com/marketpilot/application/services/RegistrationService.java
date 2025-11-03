@@ -80,10 +80,10 @@ public class RegistrationService {
                 CLIENT_VERIFICATION_EMAIL_SUBJECT);
     }
 
+    // assumes employee has been authenticated
     public RegistrationStatus initiateClientRegistrationForExistingEmployee(String username, byte[] passwordLightHash, Role.RoleName[] clientRoleNames,
                                                                             String personalEmail) {
 
-        //TODO: Authenticate the employee
         Optional<User> existingEmployeeOptional = userRepository.findByUsername(UserType.EMPLOYEE, username);
         if (existingEmployeeOptional.isPresent()) {
             User existingEmployee = existingEmployeeOptional.get();
@@ -128,9 +128,9 @@ public class RegistrationService {
                 EMPLOYEE_VERIFICATION_EMAIL_SUBJECT);
     }
 
+    // assumes client has been authenticated
     public RegistrationStatus initiateEmployeeRegistrationForExistingClient(String employeeId, String username, byte[] passwordLightHash,
                                                                             Role.RoleName[] employeeRoleNames, String employeeEmail) {
-        //TODO: Authenticate the client
         Optional<User> existingClientOptional = userRepository.findByUsername(UserType.EMPLOYEE, username);
         if (existingClientOptional.isPresent()) {
             User existingClient = existingClientOptional.get();
