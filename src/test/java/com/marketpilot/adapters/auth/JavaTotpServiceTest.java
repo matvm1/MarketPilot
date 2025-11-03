@@ -3,6 +3,7 @@ package com.marketpilot.adapters.auth;
 import com.marketpilot.application.dto.auth.credentials.MfaCredential;
 import com.marketpilot.application.dto.auth.credentials.TotpCredential;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
+import com.marketpilot.domain.entities.auth.UserType;
 import dev.samstevens.totp.code.*;
 import dev.samstevens.totp.exceptions.CodeGenerationException;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +47,7 @@ class JavaTotpServiceTest {
     void verify_returnsFalse_forInvalidCode() {
         long fixedTime = 1_700_000_000_000L;
         when(mockTimeProvider.getTime()).thenReturn(fixedTime);
-        TotpCredential credential = new TotpCredential(UUID.randomUUID(), RoleName.PersonalInvestor,  "012345");
+        TotpCredential credential = new TotpCredential(UUID.randomUUID(), UserType.CLIENT, RoleName.PersonalInvestor,  "012345");
         credential.setSecret(dummySecret);
 
         assertFalse(javaTotpService.verify(credential));
@@ -57,7 +58,7 @@ class JavaTotpServiceTest {
     void verify_returnsTrue_forValidCodeInFixedTime() {
         long fixedTime = 1_700_000_000_000L;
         when(mockTimeProvider.getTime()).thenReturn(fixedTime);
-        TotpCredential credential = new TotpCredential(UUID.randomUUID(), RoleName.PersonalInvestor, "416039");
+        TotpCredential credential = new TotpCredential(UUID.randomUUID(), UserType.CLIENT, RoleName.PersonalInvestor, "416039");
         credential.setSecret(dummySecret);
 
         assertTrue(javaTotpService.verify(credential));
@@ -77,7 +78,7 @@ class JavaTotpServiceTest {
             throw new RuntimeException(e);
         }
 
-        TotpCredential credential = new TotpCredential(UUID.randomUUID(), RoleName.PersonalInvestor, validCode);
+        TotpCredential credential = new TotpCredential(UUID.randomUUID(), UserType.CLIENT, RoleName.PersonalInvestor, validCode);
         credential.setSecret(dummySecret);
 
         assertTrue(javaTotpService.verify(credential));
