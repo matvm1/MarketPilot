@@ -6,14 +6,12 @@ import java.util.Arrays;
 import java.util.UUID;
 
 public class TotpCredential extends MfaCredential {
-    private final UUID userUuid;
     private final RoleName roleName;
     private char[] secret;
     private final String code;
 
     public TotpCredential(UUID userUuid, RoleName roleName, String code) {
-        if (userUuid == null)
-            throw new IllegalArgumentException("userUuid cannot be null");
+        super(userUuid);
         if (roleName == null)
             throw new IllegalArgumentException("roleName cannot be null");
         if (code == null)
@@ -21,12 +19,10 @@ public class TotpCredential extends MfaCredential {
         if (code.isBlank())
             throw new IllegalArgumentException("code cannot be blank");
 
-        this.userUuid = userUuid;
         this.roleName = roleName;
         this.code = code;
     }
 
-    public UUID getUserUuid() { return userUuid; }
     public RoleName getRoleName() { return roleName; }
     public char[] getSecret() { return secret; }
     public String getCode() { return code; }
