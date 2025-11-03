@@ -258,23 +258,17 @@ public class RegistrationService {
             return RegistrationStatus.FAILURE;
 
         Optional<User> userOptional = pendingVerificationUserRepository.findByUsername(registrationUserType, username);
-        if (userOptional.isEmpty())
-            return RegistrationStatus.FAILURE;
+        User user = userOptional.orElse(null);
+        UUID uuid = user != null ? user.getUUID() : null;
 
-        User user = userOptional.get();
-        UUID uuid;
-        try {
-            uuid = user.getUUID();
-        } catch (IllegalStateException e) {
-            return RegistrationStatus.FAILURE;
-        }
-
-        Optional<String> verificationCode = switch (registrationUserType) {
-            case CLIENT -> pendingVerificationUserRepository.getClientRegistrationVerificationCode(uuid);
-            case EMPLOYEE -> pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(uuid);
-            default -> Optional.empty();
+        Optional<String> verificationCode = uuid == null ? Optional.of("dummyverificationstring34789623123213554129345") :
+            switch (registrationUserType) {
+                case CLIENT -> pendingVerificationUserRepository.getClientRegistrationVerificationCode(uuid);
+                case EMPLOYEE -> pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(uuid);
+                default -> Optional.empty();
         };
-        if (verificationCode.isPresent() && verificationCode.get().equals(verificationCodeAttempt)) {
+
+        if (uuid != null && verificationCode.isPresent() && verificationCode.get().equals(verificationCodeAttempt)) {
             try {
                 if (pendingVerificationUserRepository.completeRegistration(registrationUserType, user.getUUID())) {
                         String recipientAddress = switch(registrationUserType) {
