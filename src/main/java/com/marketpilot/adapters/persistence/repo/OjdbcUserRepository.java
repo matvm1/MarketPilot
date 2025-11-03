@@ -219,7 +219,7 @@ public class OjdbcUserRepository implements UserRepository {
         return mfaTypeIdOptional.map(MfaType::fromCode);
     }
 
-    // TODO: Added USER_STATUS ids
+    // TODO: Add USER_STATUS ids
     public Optional<Properties> getAuthProperties(UserType userType, UUID uuid) throws SQLException {
         if (userType == null || uuid == null)
             return Optional.empty();

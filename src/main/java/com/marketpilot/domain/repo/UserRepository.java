@@ -1,6 +1,7 @@
 package com.marketpilot.domain.repo;
 
 import com.marketpilot.adapters.persistence.repo.OjdbcUserRepository;
+import com.marketpilot.application.services.MfaType;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 
@@ -22,5 +23,6 @@ public interface UserRepository extends BaseRepository<Long, User> {
     Optional<byte[]> getEmployeePasswordHash(UUID uuid);
     Optional<char[]> getClientTotpSecret(UUID uuid);
     Optional<char[]> getEmployeeTotpSecret(UUID uuid);
+    Optional<MfaType> getMfaType(UUID uuid);
     public Optional<Properties> getAuthProperties(UserType userType, UUID uuid) throws SQLException;
 }
