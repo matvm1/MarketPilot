@@ -228,29 +228,31 @@ public class OjdbcUserRepository implements UserRepository {
         String totpSecretCol = userType == CLIENT ? "CLIENT_TOTP_SECRET" : "EMPLOYEE_TOTP_SECRET";
         Param[] params = new Param[] { intP(1, UserStatus.ACTIVE.getCode()), bytesP(2, uuidToBytes(uuid)) };
         String columns = passwordHashCol + ", " + totpSecretCol + ", MFATYPE_ID";
-        Properties p = JdbcExecutor.fetchRecordToObject(String.format("""
+        Properties p = JdbcExecutor.fetchToObject(String.format("""
                 SELECT %s
                 FROM APP_USER
                 WHERE %S = ?
                 AND UUID = ?
                 """, columns, userType == CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID"),
                 params,
-                (o) -> {
-                    Properties res = new Properties(3);
-                    String passwordHash = (String) o.getFirst().getFirst();
-                    if (passwordHash != null)
-                        res.put("PASSWORD_HASH", passwordHash);
-                    String totpSecret = (String) o.getFirst().get(1);
-                    if (totpSecret != null)
-                        res.put("TOTP_SECRET", totpSecret);
-                    int mfaTypeId = (int) o.getFirst().getLast();
-                    if (mfaTypeId != 0)
-                        res.put("MFATYPE", MfaType.fromCode(mfaTypeId));
-                    return res;
-                },
-                rs -> rs.getString(passwordHashCol),
-                rs -> rs.getString(totpSecretCol),
-                rs -> rs.getInt("MFATYPE_ID")
+                (rs) -> {
+                    rs.next();
+                    if (rs.isFirst()) {
+                        Properties res = new Properties(3);
+                        String passwordHash = rs.getString(passwordHashCol);
+                        if (passwordHash != null)
+                            res.put("PASSWORD_HASH", passwordHash);
+                        String totpSecret = rs.getString(totpSecretCol);
+                        if (totpSecret != null)
+                            res.put("TOTP_SECRET", totpSecret);
+                        int mfaTypeId = rs.getInt("MFATYPE_ID");
+                        if (mfaTypeId != 0)
+                            res.put("MFATYPE", MfaType.fromCode(mfaTypeId));
+                        return res;
+                    }
+                    else
+                        return null;
+                }
                 ).orElse(null);
 
         return Optional.ofNullable(p);

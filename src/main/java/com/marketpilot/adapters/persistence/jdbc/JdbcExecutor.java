@@ -6,8 +6,6 @@ import oracle.ucp.jdbc.PoolDataSource;
 
 import java.sql.*;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 // Do not expose outside MarketPilot project
 //TODO: validate incoming sql
@@ -97,26 +95,15 @@ public class JdbcExecutor {
     }
 
     // prepares a PreparedStatement, executes, and returns cached queried data cached in an Object[]
-    @SafeVarargs
-    public static <T, U> Optional<U> fetchRecordToObject(String sql, Param[] params, Function<List<List<Object>>, U> resultCache,
-                                                         ResultSetToValue<T>... resultSetToValue) throws SQLException {
+    public static <T> Optional<T> fetchToObject(String sql, Param[] params, ResultSetToValue<T> resultSetToValue) throws SQLException {
         try (Connection conn = pool.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             setParameters(ps, params);
 
             ResultSet rs = ps.executeQuery();
             if (rs.isBeforeFirst()) {
-                List<List<Object>> cache = new LinkedList<>();
-                while (rs.next()) {
-                    List<Object> row = new ArrayList<>(resultSetToValue.length);
-                    for (ResultSetToValue<T> tResultSetToValue : resultSetToValue) {
-                        row.add(tResultSetToValue.map(rs));
-                    }
-                    cache.add(row);
-                }
-                U dataCache = resultCache.apply(cache);
-
-                return Optional.ofNullable(dataCache);
+                T cache = resultSetToValue.map(rs);
+                return Optional.ofNullable(cache);
             }
             return Optional.empty();
         }
