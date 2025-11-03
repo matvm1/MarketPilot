@@ -226,7 +226,6 @@ public class OjdbcUserRepository implements UserRepository {
 
         String passwordHashCol = userType == CLIENT ? "CLIENT_PASSWORD_HASH" : "EMPLOYEE_PASSWORD_HASH";
         String totpSecretCol = userType == CLIENT ? "CLIENT_TOTP_SECRET" : "EMPLOYEE_TOTP_SECRET";
-        Param[] params = new Param[] { intP(1, UserStatus.ACTIVE.getCode()), bytesP(2, uuidToBytes(uuid)) };
         String columns = passwordHashCol + ", " + totpSecretCol + ", MFATYPE_ID";
         Properties p = JdbcExecutor.fetchToObject(String.format("""
                 SELECT %s
@@ -234,7 +233,6 @@ public class OjdbcUserRepository implements UserRepository {
                 WHERE %S = ?
                 AND UUID = ?
                 """, columns, userType == CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID"),
-                params,
                 (rs) -> {
                     rs.next();
                     if (rs.isFirst()) {
@@ -252,8 +250,8 @@ public class OjdbcUserRepository implements UserRepository {
                     }
                     else
                         return null;
-                }
-                ).orElse(null);
+                }, intP(1, UserStatus.ACTIVE.getCode()), bytesP(2, uuidToBytes(uuid))
+        ).orElse(null);
 
         return Optional.ofNullable(p);
     }
