@@ -19,6 +19,8 @@ import com.marketpilot.util.Tuple;
 
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -29,7 +31,8 @@ public class RegistrationService {
         SUCCESS,
         FAILURE,
         ALREADY_REGISTERED,
-        PENDING_VERIFICATION
+        PENDING_VERIFICATION,
+        EXPIRED
     }
 
     private final UserRepository userRepository;
@@ -171,6 +174,7 @@ public class RegistrationService {
                                                     String verificationEmail,
                                                     String verificationEmailSubject)
     {
+        Instant requestTime = Instant.now();
         boolean isEmployeeIdFoundForEmployeeRegistration = registrationUserType == UserType.CLIENT ||
                 (registrationUserType == UserType.EMPLOYEE && employeeIdFinder.test(((UserEmployeeDTO)userAbstractDTO).getEmployeeId()));
 
@@ -186,6 +190,12 @@ public class RegistrationService {
                     identifier2));
         else
             userOptional = Optional.of(existingUser);
+
+        Optional<Tuple<User, Map<String, Object>>> existingPendingVerificationOptional = pendingVerificationUserRepository.findByUsername(registrationUserType,
+                userAbstractDTO.getUsername());
+
+        String expirationColumn = registrationUserType == UserType.CLIENT ? "CLIENT_REGISTRATION_EXPIRATION" : "EMPLOYEE_REGISTRATION_EXPIRATION";
+        Tuple<User, Map<String, Object>> existingPendingVerification = existingPendingVerificationOptional.orElse(null);
 
         boolean userExists = userOptional.isPresent();
         User user = userOptional.orElse(null);
@@ -217,6 +227,13 @@ public class RegistrationService {
                 return RegistrationStatus.FAILURE;
         }
 
+        if (existingPendingVerification != null) {
+            if (((Instant) existingPendingVerification.u().get(expirationColumn)).isBefore(requestTime))
+                return RegistrationStatus.EXPIRED;
+            else
+                return RegistrationStatus.PENDING_VERIFICATION;
+        }
+
         if (userAbstractDTO.isValid() && identifiersAreValid && (existingUser == null || !isRegistrationType.test(user))) {
             try {
                 user = userFactoryAction.apply(user, userAbstractDTO);
@@ -231,13 +248,6 @@ public class RegistrationService {
                         passwordHash = null;
                         return RegistrationStatus.PENDING_VERIFICATION;
                     }
-                }
-                catch (SQLIntegrityConstraintViolationException e) {
-                    // should ideally be caught by application code
-                    // message may be vendor specific
-                    if (e.getMessage().contains("unique constraint"))
-                        return RegistrationStatus.PENDING_VERIFICATION;
-                    return RegistrationStatus.FAILURE;
                 }
                 catch (SQLException e) {
                     e.printStackTrace();
@@ -255,12 +265,15 @@ public class RegistrationService {
     // expired
     public RegistrationStatus completeRegistration(String username, UserType registrationUserType,
                                                    String verificationCodeAttempt) {
+        Instant requestTime = Instant.now();
         if (registrationUserType == null)
             return RegistrationStatus.FAILURE;
 
+        String expirationColumn = registrationUserType == UserType.CLIENT ? "CLIENT_REGISTRATION_EXPIRATION" :
+                "EMPLOYEE_REGISTRATION_EXPIRATION";
+
         Optional<Tuple<User, Map<String, Object>>> userWithPropsOptional = pendingVerificationUserRepository.findByUsername(registrationUserType, username);
         Tuple<User, Map<String, Object>> userWithProps = userWithPropsOptional.orElse(null);
-        System.out.println(userWithProps);
         User user = userWithProps != null ? userWithProps.t() : null;
         Map<String, Object> registrationProperties = userWithProps != null ? userWithProps.u() : null;
         UUID uuid = user != null ? user.getUUID() : null;
@@ -272,7 +285,10 @@ public class RegistrationService {
                 default -> null;
         };
 
-        if (uuid != null && verificationCode != null && verificationCode.equals(verificationCodeAttempt)) {
+        boolean isRegistrationExpired = registrationProperties != null &&
+                ((Instant)registrationProperties.get(expirationColumn)).isBefore(requestTime);
+
+        if (!isRegistrationExpired && uuid != null && verificationCode != null && verificationCode.equals(verificationCodeAttempt)) {
             try {
                 if (pendingVerificationUserRepository.completeRegistration(registrationUserType, user.getUUID())) {
                         String recipientAddress = switch(registrationUserType) {
@@ -289,6 +305,8 @@ public class RegistrationService {
             }
         }
 
+        if (isRegistrationExpired)
+            return RegistrationStatus.EXPIRED;
         return RegistrationStatus.FAILURE;
     }
 
