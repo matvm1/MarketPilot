@@ -95,6 +95,13 @@
       <artifactId>password4j</artifactId>
       <version>1.8.4</version>
     </dependency>
+
+    <!-- Simple Java Mail -->
+    <dependency>
+      <groupId>org.simplejavamail</groupId>
+      <artifactId>simple-java-mail</artifactId>
+      <version>8.12.6</version>
+    </dependency>
   </dependencies>
 
   <build>
