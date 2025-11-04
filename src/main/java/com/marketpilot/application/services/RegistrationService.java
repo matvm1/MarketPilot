@@ -16,6 +16,7 @@ import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
+import com.marketpilot.util.VerificationCodeGenerator;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -42,6 +43,7 @@ public class RegistrationService {
     private final UserFactory userFactory;
     private final RoleCache roleCache;
 
+    private final int VERIFICATION_CODE_LENGTH = 8;
     private final String CLIENT_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Account";
     private final String EMPLOYEE_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Employee Account";
     private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email.html";
@@ -239,10 +241,11 @@ public class RegistrationService {
             catch (IllegalArgumentException e) {
                 return RegistrationStatus.FAILURE;
             }
+            String verificationCode = VerificationCodeGenerator.generateAlphanumericCode(VERIFICATION_CODE_LENGTH);
             if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE)) {
                 try {
-                    boolean registered = existingUser == null ? pendingVerificationUserRepository.registerNewUser(registrationUserType, user, userAbstractDTO.getRoles(), passwordHash, "123456")
-                            : pendingVerificationUserRepository.crossRegister(registrationUserType, user, userAbstractDTO.getRoles(), passwordHash, "123456");
+                    boolean registered = existingUser == null ? pendingVerificationUserRepository.registerNewUser(registrationUserType, user, userAbstractDTO.getRoles(), passwordHash, verificationCode)
+                            : pendingVerificationUserRepository.crossRegister(registrationUserType, user, userAbstractDTO.getRoles(), passwordHash, verificationCode);
                     if (registered) {
                         fillZero(passwordHash);
                         passwordHash = null;
