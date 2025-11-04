@@ -5,6 +5,6 @@ import java.util.Map;
 public record EmailMessage(
         String recipient,
         String subject,
-        String htmlBody,
+        String body,
         Map<String, Object> vars
 ) {}
