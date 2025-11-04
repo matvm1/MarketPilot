@@ -133,7 +133,7 @@ public class RegistrationService {
     // assumes client has been authenticated
     public RegistrationStatus initiateEmployeeRegistrationForExistingClient(String employeeId, String username, byte[] passwordLightHash,
                                                                             Role.RoleName[] employeeRoleNames, String employeeEmail) {
-        Optional<User> existingClientOptional = userRepository.findByUsername(UserType.EMPLOYEE, username);
+        Optional<User> existingClientOptional = userRepository.findByUsername(UserType.CLIENT, username);
         if (existingClientOptional.isPresent()) {
             User existingClient = existingClientOptional.get();
             UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, roleCache.fetch(employeeRoleNames), employeeEmail,
