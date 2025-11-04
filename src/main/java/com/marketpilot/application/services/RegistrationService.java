@@ -243,7 +243,7 @@ public class RegistrationService {
             }
             if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE)) {
                 try {
-                    if (pendingVerificationUserRepository.register(registrationUserType, user, passwordHash, "123456")) {
+                    if (pendingVerificationUserRepository.register(registrationUserType, user, userAbstractDTO.getRoles(), passwordHash, "123456")) {
                         fillZero(passwordHash);
                         passwordHash = null;
                         return RegistrationStatus.PENDING_VERIFICATION;

@@ -128,7 +128,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
 
     // registers a new user
     @Override
-    public boolean register(UserType userType, User user, byte[] passwordHash, String verificationCode) throws SQLException {
+    public boolean register(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException {
         if (userType == null)
             return false;
 
@@ -188,7 +188,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
 
             Param[] params = new Param[user.getRoles().size() * 3];
             int i = 0;
-            for (Role role : user.getRoles()) {
+            for (Role role : roles) {
                 params[i] = longP(i + 1, userId);
                 params[i + 1] = intP(i + 2, roleCache.getId(role.getRoleName()));
                 params[i + 2] = timestampP(i + 3, expiration);
@@ -205,7 +205,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
                     """ + binders,
                     params);
         }
-        return generatedKeys.length == 1 && rolesInserted == user.getRoles().size();
+        return generatedKeys.length == 1 && rolesInserted == roles.size();
     }
 
     @Override
