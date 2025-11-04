@@ -85,8 +85,12 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
                                     rs.getBoolean("IS_CLIENT"),
                                     rs.getBoolean("IS_EMPLOYEE"));
                             Map<String, Object> registrationProperties = new HashMap<>();
-                            for (String column : registrationPropertyColumns)
-                                registrationProperties.put(column, rs.getObject(column));
+                            for (String column : registrationPropertyColumns) {
+                                if (column.endsWith("CODE"))
+                                    registrationProperties.put(column, rs.getString(column));
+                                else
+                                    registrationProperties.put(column, rs.getTimestamp(column).toInstant());
+                            }
                             return new Tuple<>(user, registrationProperties);
                         }
                         else
