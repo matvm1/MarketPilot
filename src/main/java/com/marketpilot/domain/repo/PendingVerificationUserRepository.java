@@ -10,7 +10,8 @@ import java.util.*;
 
 public interface PendingVerificationUserRepository extends BaseRepository<Long, User> {
     Optional<Tuple<User, Map<String, Object>>> findByUsername(UserType userType, String username);
-    boolean register(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException;
+    boolean registerNewUser(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException;
+    boolean crossRegister(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException;
     boolean completeRegistration(UserType userType, UUID userUUID) throws SQLException;
     // Returns the verification code for the User entity that is pending client account verification
     Optional<String> getClientRegistrationVerificationCode(UUID userUUID);

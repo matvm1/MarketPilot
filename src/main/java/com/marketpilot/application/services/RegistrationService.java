@@ -18,8 +18,6 @@ import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
 
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -243,7 +241,9 @@ public class RegistrationService {
             }
             if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE)) {
                 try {
-                    if (pendingVerificationUserRepository.register(registrationUserType, user, userAbstractDTO.getRoles(), passwordHash, "123456")) {
+                    boolean registered = existingUser == null ? pendingVerificationUserRepository.registerNewUser(registrationUserType, user, userAbstractDTO.getRoles(), passwordHash, "123456")
+                            : pendingVerificationUserRepository.crossRegister(registrationUserType, user, userAbstractDTO.getRoles(), passwordHash, "123456");
+                    if (registered) {
                         fillZero(passwordHash);
                         passwordHash = null;
                         return RegistrationStatus.PENDING_VERIFICATION;

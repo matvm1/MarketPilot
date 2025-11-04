@@ -128,7 +128,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
 
     // registers a new user
     @Override
-    public boolean register(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException {
+    public boolean registerNewUser(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException {
         if (userType == null)
             return false;
 
@@ -182,20 +182,88 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
         int rolesInserted = 0;
         if (generatedKeys.length == 1) {
             long userId = generatedKeys[0];
-            StringBuilder binders = new StringBuilder();
-            binders.append("(?, ?, ?),".repeat(Math.max(0, user.getRoles().size() - 1)));
-            binders.append("(?, ?, ?);");
+            rolesInserted = insertRoles(userId, expiration, roles);
+        }
+        return generatedKeys.length == 1 && rolesInserted == roles.size();
+    }
 
-            Param[] params = new Param[user.getRoles().size() * 3];
-            int i = 0;
-            for (Role role : roles) {
-                params[i] = longP(i + 1, userId);
-                params[i + 1] = intP(i + 2, roleCache.getId(role.getRoleName()));
-                params[i + 2] = timestampP(i + 3, expiration);
-                i += 3;
-            }
+    @Override
+    public boolean crossRegister(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException {
+        if (userType == null)
+            return false;
 
-            rolesInserted = JdbcExecutor.executeUpdate("""
+        int EXPIRATION_PERIOD_MINUTES = 30;
+        Timestamp expiration = Timestamp.from(Instant.now().plusSeconds(60 * EXPIRATION_PERIOD_MINUTES));
+        long[] generatedKeys = userType == UserType.CLIENT ? registerEmployeeAsClient(user, passwordHash, verificationCode, expiration)
+                : registerClientAsEmployee(user, passwordHash, verificationCode, expiration);
+
+        int rolesInserted = 0;
+        if (generatedKeys.length == 1) {
+            long userId = generatedKeys[0];
+            rolesInserted = insertRoles(userId, expiration, roles);
+        }
+        return generatedKeys.length == 1 && rolesInserted == roles.size();
+    }
+
+    private long[] registerClientAsEmployee(User user, byte[] passwordHash, String verificationCode, Timestamp expiration) throws SQLException {
+        return JdbcExecutor.executeInsert("""
+                UPDATE APP_USER
+                SET EMPLOYEE_ID = ?,
+                    EMPLOYEE_EMAIL = ?,
+                    EMPLOYEE_PASSWORD_HASH = ?,
+                    IS_EMPLOYEE = ?,
+                    EMPLOYEE_REGISTRATION_CODE = ?,
+                    EMPLOYEE_USER_STATUS_ID = ?,
+                    EMPLOYEE_REGISTRATION_EXPIRATION = ?
+                WHERE UUID = ?
+                """,
+                stringP(1, user.getEmployeeId()),
+                stringP(2, user.getEmployeeEmail()),
+                bytesP(3, passwordHash),
+                booleanP(4, user.isEmployee()),
+                stringP(5, verificationCode),
+                intP(6, UserStatus.PENDING.getCode()),
+                timestampP(7, expiration),
+                bytesP(8, uuidToBytes(user.getUUID()))
+        );
+    }
+
+    private long[] registerEmployeeAsClient(User user, byte[] passwordHash, String verificationCode, Timestamp expiration) throws SQLException {
+        return JdbcExecutor.executeInsert("""
+                UPDATE APP_USER
+                SET PERSONAL_EMAIL = ?,
+                   CLIENT_PASSWORD_HASH = ?,
+                   IS_CLIENT = ?,
+                   CLIENT_REGISTRATION_CODE = ?,
+                   CLIENT_USER_STATUS_ID = ?,
+                   CLIENT_REGISTRATION_EXPIRATION = ?
+                WHERE UUID = ?
+                """,
+                stringP(1, user.getPersonalEmail()),
+                bytesP(2, passwordHash),
+                booleanP(3, user.isClient()),
+                stringP(4, verificationCode),
+                intP(5, UserStatus.PENDING.getCode()),
+                timestampP(6, expiration),
+                bytesP(7, uuidToBytes(user.getUUID()))
+        );
+    }
+
+        private int insertRoles(long userId, Timestamp expiration, Set<Role> roles) throws SQLException {
+        StringBuilder binders = new StringBuilder();
+        binders.append("(?, ?, ?),".repeat(Math.max(0, roles.size() - 1)));
+        binders.append("(?, ?, ?);");
+
+        Param[] params = new Param[roles.size() * 3];
+        int i = 0;
+        for (Role role : roles) {
+            params[i] = longP(i + 1, userId);
+            params[i + 1] = intP(i + 2, roleCache.getId(role.getRoleName()));
+            params[i + 2] = timestampP(i + 3, expiration);
+            i += 3;
+        }
+
+        return JdbcExecutor.executeUpdate("""
                     INSERT INTO APP_USER_ROLE (
                         USER_ID,
                         ROLE_ID,
@@ -203,9 +271,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
                     )
                     VALUES
                     """ + binders,
-                    params);
-        }
-        return generatedKeys.length == 1 && rolesInserted == roles.size();
+                params);
     }
 
     @Override
