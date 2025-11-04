@@ -9,6 +9,7 @@ import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.util.Tuple;
+import oracle.jdbc.internal.OracleTimestamp;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -281,16 +282,21 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
 
         String statusColumn = userType == UserType.CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID";
         String expirationColumn = userType == UserType.CLIENT ? "CLIENT_REGISTRATION_EXPIRATION" : "EMPLOYEE_REGISTRATION_EXPIRATION";
+        String verificationCodeColumn = userType == UserType.CLIENT ? "CLIENT_REGISTRATION_CODE" : "EMPLOYEE_REGISTRATION_CODE";
         int result = JdbcExecutor.executeUpdate(String.format("""
                 UPDATE APP_USER
-                SET %s = ?
+                SET %s = ?,
+                    %s = ?,
+                    %s = ?
                 WHERE %s = ?
                 AND UUID = ?
                 AND SYSTIMESTAMP <= %s
-                """, statusColumn, statusColumn, expirationColumn),
+                """, statusColumn, expirationColumn, verificationCodeColumn, statusColumn, expirationColumn),
                 intP(1, UserStatus.ACTIVE.getCode()),
-                intP(2, UserStatus.PENDING.getCode()),
-                bytesP(3, uuidToBytes(userUUID)));
+                nullP(2),
+                nullP(3),
+                intP(4, UserStatus.PENDING.getCode()),
+                bytesP(5, uuidToBytes(userUUID)));
 
         return result == 1;
     }
