@@ -218,7 +218,7 @@ public class RegistrationService {
         passwordLightHash = null;
         passwordHashStored = null;
 
-        if (identifiersAreValid && existingUser == null && userExists) {
+        if (identifiersAreValid && ((existingUser == null && userExists) || (existingUser != null && isRegistrationType.test(existingUser)))) {
             if (passwordMatches)
                 return RegistrationStatus.ALREADY_REGISTERED;
             else
