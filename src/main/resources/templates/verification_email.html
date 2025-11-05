@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to MarketPilot</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
+<table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+        <td align="center" style="padding: 40px 0;">
+            <table role="presentation" style="width: 600px; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <!-- Header -->
+                <tr>
+                    <td style="padding: 40px 40px 30px 40px; text-align: center; background: linear-gradient(135deg, {% if userType == 'EMPLOYEE' %}#667eea 0%, #764ba2 100%{% else %}#4facfe 0%, #00f2fe 100%{% endif %}); border-radius: 8px 8px 0 0;">
+                        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">Welcome to MarketPilot</h1>
+                    </td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                    <td style="padding: 40px 40px 30px 40px;">
+                        <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                            Hello <strong>{{ fullName }}</strong>,
+                        </p>
+
+                        <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                            Thank you for registering with MarketPilot as a <strong>{{ userType }}</strong>! We're excited to have you on board.
+                        </p>
+
+                        <!-- Account Details Box -->
+                        <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 0 0 30px 0; background-color: #f8f9fa; border-radius: 6px; border-left: 4px solid {% if userType == 'EMPLOYEE' %}#667eea{% else %}#4facfe{% endif %};">
+                            <tr>
+                                <td style="padding: 20px;">
+                                    <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Account Details
+                                    </p>
+                                    <p style="margin: 0 0 8px 0; color: #333333; font-size: 15px;">
+                                        <strong>Username:</strong> {{ username }}
+                                    </p>
+                                    <p style="margin: 0 0 8px 0; color: #333333; font-size: 15px;">
+                                        <strong>Account Type:</strong> {{ userType }}
+                                    </p>
+                                    <p style="margin: 0; color: #333333; font-size: 15px;">
+                                        <strong>Role(s):</strong> {{ roles }}
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin: 0 0 30px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                            To complete your registration and verify your email address, please use the verification code below:
+                        </p>
+
+                        <!-- Verification Code Box -->
+                        <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 0 0 30px 0;">
+                            <tr>
+                                <td align="center" style="padding: 25px; background-color: #f8f9fa; border-radius: 6px; border: 2px dashed {% if userType == 'EMPLOYEE' %}#667eea{% else %}#4facfe{% endif %};">
+                                    <div style="font-size: 32px; font-weight: 700; color: {% if userType == 'EMPLOYEE' %}#667eea{% else %}#4facfe{% endif %}; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                                        {{ verificationCode }}
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin: 0 0 20px 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                            This verification code will expire in <strong>24 hours</strong>. If you didn't create an account with MarketPilot, please ignore this email.
+                        </p>
+
+                        {% if userType == 'EMPLOYEE' %}
+                        <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                            As an employee, you'll have access to internal tools and resources based on your assigned roles. Please contact your administrator if you have any questions about your permissions.
+                        </p>
+                        {% else %}
+                        <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                            As a client, you'll have access to our platform features tailored to your needs. We're here to help you succeed!
+                        </p>
+                        {% endif %}
+
+                        <p style="margin: 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                            If you have any questions, feel free to reach out to our support team.
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="padding: 30px 40px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center;">
+                        <p style="margin: 0 0 10px 0; color: #999999; font-size: 14px;">
+                            &copy; 2024 MarketPilot. All rights reserved.
+                        </p>
+                        <p style="margin: 0; color: #999999; font-size: 12px;">
+                            This is an automated email. Please do not reply to this message.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

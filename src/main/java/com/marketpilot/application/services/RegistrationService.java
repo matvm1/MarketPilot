@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class RegistrationService {
     public enum RegistrationStatus {
@@ -46,7 +47,7 @@ public class RegistrationService {
     private final int VERIFICATION_CODE_LENGTH = 8;
     private final String CLIENT_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Account";
     private final String EMPLOYEE_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Employee Account";
-    private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email.html";
+    private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email";
 
     public RegistrationService(UserRepository userRepository,
                                PendingVerificationUserRepository pendingVerificationUserRepository,
@@ -233,7 +234,6 @@ public class RegistrationService {
             else
                 return RegistrationStatus.PENDING_VERIFICATION;
         }
-
         if (userAbstractDTO.isValid() && identifiersAreValid && (existingUser == null || !isRegistrationType.test(user))) {
             try {
                 user = userFactoryAction.apply(user, userAbstractDTO);
@@ -242,7 +242,15 @@ public class RegistrationService {
                 return RegistrationStatus.FAILURE;
             }
             String verificationCode = VerificationCodeGenerator.generateAlphanumericCode(VERIFICATION_CODE_LENGTH);
-            if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, null),VERIFICATION_EMAIL_TEMPLATE)) {
+            Map<String, Object> emailVars = new HashMap<>();
+            emailVars.put("username", user.getUsername());
+            emailVars.put("fullName", user.getFullName());
+            emailVars.put("userType", registrationUserType);
+            emailVars.put("roles", userAbstractDTO.getRoles().stream()
+                    .map(role -> role.getRoleName().toString())
+                    .collect(Collectors.joining(", ")));
+            emailVars.put("verificationCode", verificationCode);
+            if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, emailVars),VERIFICATION_EMAIL_TEMPLATE)) {
                 try {
                     boolean registered = existingUser == null ? pendingVerificationUserRepository.registerNewUser(registrationUserType, user, userAbstractDTO.getRoles(), passwordHash, verificationCode)
                             : pendingVerificationUserRepository.crossRegister(registrationUserType, user, userAbstractDTO.getRoles(), passwordHash, verificationCode);
