@@ -25,7 +25,6 @@ public class PebbleHtmlTemplateEngine implements HtmlTemplateEngine {
 
     @Override
     public String render(String templateName, Map<String, Object> vars) throws IOException {
-        System.out.println(((FileLoader)pebbleEngine.getLoader()).getPrefix());
         PebbleTemplate template = pebbleEngine.getTemplate(templateName);
         Writer writer = new StringWriter();
         template.evaluate(writer, vars);
