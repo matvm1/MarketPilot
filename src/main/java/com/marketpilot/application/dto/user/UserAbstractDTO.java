@@ -31,7 +31,6 @@ public abstract class UserAbstractDTO {
                 !roles.isEmpty() &&
                 firstName != null &&
                 !firstName.isBlank() &&
-                middleName != null &&
                 lastName != null &&
                 !lastName.isBlank();
     }
