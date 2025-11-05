@@ -102,6 +102,13 @@
       <artifactId>simple-java-mail</artifactId>
       <version>8.12.6</version>
     </dependency>
+
+    <!-- Html Template Engine -->
+    <dependency>
+      <groupId>io.pebbletemplates</groupId>
+      <artifactId>pebble</artifactId>
+      <version>3.2.4</version>
+    </dependency>
   </dependencies>
 
   <build>
