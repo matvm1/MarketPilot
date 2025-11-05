@@ -283,7 +283,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
         String statusColumn = userType == UserType.CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID";
         String expirationColumn = userType == UserType.CLIENT ? "CLIENT_REGISTRATION_EXPIRATION" : "EMPLOYEE_REGISTRATION_EXPIRATION";
         String verificationCodeColumn = userType == UserType.CLIENT ? "CLIENT_REGISTRATION_CODE" : "EMPLOYEE_REGISTRATION_CODE";
-        int result = JdbcExecutor.executeUpdate(String.format("""
+        int result1 = JdbcExecutor.executeUpdate(String.format("""
                 UPDATE APP_USER
                 SET %s = ?,
                     %s = ?,
@@ -298,7 +298,19 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
                 intP(4, UserStatus.PENDING.getCode()),
                 bytesP(5, uuidToBytes(userUUID)));
 
-        return result == 1;
+        int result2 = JdbcExecutor.executeUpdate("""
+                UPDATE APP_USER_ROLE AUR
+                SET AUR.REGISTRATION_EXPIRATION = NULL
+                WHERE AUR.USER_ID = (SELECT ID FROM APP_USER WHERE UUID = ?)
+                  AND AUR.ROLE_ID IN (
+                        SELECT ID FROM APP_ROLE
+                        WHERE USER_TYPE_ID = ?
+                  );
+                """,
+                bytesP(1, uuidToBytes(userUUID)),
+                intP(2, userType.getCode()));
+
+        return result1 == 1 && result2 > 0;
     }
 
     private Param paramElseNull(UserType supplied, UserType expected, Param forUserType) {
