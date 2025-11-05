@@ -5,6 +5,9 @@ import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.loader.FileLoader;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Map;
 
 public class PebbleHtmlTemplateEngine implements HtmlTemplateEngine {
@@ -14,15 +17,19 @@ public class PebbleHtmlTemplateEngine implements HtmlTemplateEngine {
     private PebbleHtmlTemplateEngine() {
         FileLoader loader = new FileLoader();
         loader.setPrefix(System.getenv("TEMPLATES_PATH"));
+        loader.setSuffix(".html");
         pebbleEngine = new PebbleEngine.Builder()
-                .loader(new FileLoader())
+                .loader(loader)
                 .build();
     }
 
     @Override
-    public String render(String templateName, Map<String, Object> vars) {
-        PebbleTemplate pebbleTemplate = pebbleEngine.getTemplate(templateName);
-        return "";
+    public String render(String templateName, Map<String, Object> vars) throws IOException {
+        System.out.println(((FileLoader)pebbleEngine.getLoader()).getPrefix());
+        PebbleTemplate template = pebbleEngine.getTemplate(templateName);
+        Writer writer = new StringWriter();
+        template.evaluate(writer, vars);
+        return writer.toString();
     }
 
     public static PebbleHtmlTemplateEngine getInstance() {
