@@ -1,5 +1,6 @@
 package com.marketpilot.adapters;
 
+import com.marketpilot.adapters.persistence.PebbleHtmlTemplateEngine;
 import com.marketpilot.application.dto.EmailMessage;
 import com.marketpilot.application.ports.EmailEngine;
 import org.simplejavamail.api.email.Email;
@@ -51,7 +52,23 @@ public class SjmEmailEngine implements EmailEngine {
 
     @Override
     public boolean sendTemplatedEmail(EmailMessage message, String templateFileName) {
-        return false;
+        String htmlBody;
+        try {
+            htmlBody = PebbleHtmlTemplateEngine.getInstance().render(templateFileName, message.vars());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        Email email = EmailBuilder.startingBlank()
+                .from(smtpEmail)
+                .to(message.recipient())
+                .withSubject(message.subject())
+                .withHTMLText(htmlBody)
+                .buildEmail();
+
+        mailer.sendMail(email);
+        return true;
     }
 
     private static void readCredentials() {
