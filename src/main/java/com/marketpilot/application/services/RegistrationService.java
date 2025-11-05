@@ -48,6 +48,7 @@ public class RegistrationService {
     private final String CLIENT_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Account";
     private final String EMPLOYEE_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Employee Account";
     private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email";
+    private final String WELCOME_LETTER_TEMPLATE = "welcome_letter";
 
     public RegistrationService(UserRepository userRepository,
                                PendingVerificationUserRepository pendingVerificationUserRepository,
@@ -306,9 +307,15 @@ public class RegistrationService {
                             case CLIENT -> user.getPersonalEmail();
                             case EMPLOYEE -> user.getEmployeeEmail();
                         };
-                        emailEngine.sendTemplatedEmail(new EmailMessage(recipientAddress, "Welcome to MarketPilot",
-                                null, null), "welcome_letter.html");
-                        return RegistrationStatus.SUCCESS;
+                        Map<String, Object> emailVars = new HashMap<>();
+                        emailVars.put("username", user.getUsername());
+                        emailVars.put("fullName", user.getFullName());
+                        emailVars.put("userType", registrationUserType);
+                        // TODO: Config
+                        emailVars.put("loginUrl", "https://marketpilot.com/login");
+                        emailEngine.sendTemplatedEmail(new EmailMessage(recipientAddress, "Welcome to MarketPilot", null, emailVars),
+                                WELCOME_LETTER_TEMPLATE);
+                            return RegistrationStatus.SUCCESS;
                     }
             }
             catch (Exception e) {
