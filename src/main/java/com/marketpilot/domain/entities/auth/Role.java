@@ -8,7 +8,17 @@ public class Role {
         Admin,
         PersonalInvestor,
         Analyst,
-        Public
+        Public;
+
+        public String displayName() {
+            return switch (this) {
+                case Admin -> "Admin";
+                case PersonalInvestor -> "Personal Investor";
+                case Analyst -> "Analyst";
+                case Public -> "Public";
+                default -> name();
+            };
+        }
     }
 
     private final RoleName roleName;

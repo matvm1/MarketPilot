@@ -247,7 +247,7 @@ public class RegistrationService {
             emailVars.put("fullName", user.getFullName());
             emailVars.put("userType", registrationUserType);
             emailVars.put("roles", userAbstractDTO.getRoles().stream()
-                    .map(role -> role.getRoleName().toString())
+                    .map(role -> role.getRoleName().displayName())
                     .collect(Collectors.joining(", ")));
             emailVars.put("verificationCode", verificationCode);
             if (emailEngine.sendTemplatedEmail(new EmailMessage(verificationEmail, verificationEmailSubject, null, emailVars),VERIFICATION_EMAIL_TEMPLATE)) {
