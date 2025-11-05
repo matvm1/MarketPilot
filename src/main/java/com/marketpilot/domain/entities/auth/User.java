@@ -104,7 +104,7 @@ public class User {
 
     public String getLastName() { return lastName; }
 
-    public String getFullName() { return firstName + " " + middleName + " " + lastName; }
+    public String getFullName() { return firstName + " " + (middleName == null ? "" : middleName) + " " + lastName; }
 
     public boolean isClient() {
         if (!isClient && !isEmployee)
