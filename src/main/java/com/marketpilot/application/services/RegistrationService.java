@@ -208,16 +208,10 @@ public class RegistrationService {
         } catch (IllegalArgumentException e) {
             passwordHash = null;
         }
+        fillZero(passwordLightHash);
         byte[] dummyPasswordHashStored = BufferedConverter.toBytes("$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         byte[] passwordHashStored = userExists ? passwordHashFinder.apply(user.getUUID()).orElse(dummyPasswordHashStored) : dummyPasswordHashStored;
-        boolean passwordMatches;
-        try {
-            passwordMatches = passwordHasher.matches(passwordLightHash, passwordHashStored);
-        }
-        catch (Exception e) {
-            passwordMatches = false;
-        }
-        fillZero(passwordLightHash);
+        boolean passwordMatches = passwordHasher.matches(passwordHash, passwordHashStored);
         fillZero(passwordHashStored);
         passwordLightHash = null;
         passwordHashStored = null;
