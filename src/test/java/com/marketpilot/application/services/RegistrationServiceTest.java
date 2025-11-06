@@ -87,6 +87,10 @@ public class RegistrationServiceTest {
 
         //TODO: avoid the use of lenient()
         lenient().when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
+        lenient().when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, existingClient.getUsername())).thenReturn(Optional.of(new Tuple<>(existingClient, new HashMap<>())));
+        lenient().when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, existingClient.getUsername())).thenReturn(Optional.of(new Tuple<>(existingClient, new HashMap<>())));
+        lenient().when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, existingEmployee.getUsername())).thenReturn(Optional.of(new Tuple<>(existingEmployee, new HashMap<>())));
+        lenient().when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, existingEmployee.getUsername())).thenReturn(Optional.of(new Tuple<>(existingEmployee, new HashMap<>())));
         lenient().when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
         lenient().when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
         //TODO: separate client and employee dummy passwords and salts
