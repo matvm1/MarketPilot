@@ -14,6 +14,7 @@ import com.marketpilot.domain.entities.auth.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.BufferedConverter;
+import com.marketpilot.util.Tuple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.marketpilot.application.services.RegistrationService.RegistrationStatus;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,12 +65,18 @@ public class RegistrationServiceTest {
     @BeforeEach
     void setUp() {
         userFactory = new UserFactory();
+        Set<Role.RoleName> roleNameSet = Arrays.stream(Role.RoleName.values()).collect(Collectors.toSet());
+        when(roleRepository.findByRoleNames(roleNameSet)).thenReturn(Optional.of(TestRoles.all()));
         roleCache = new RoleCache(roleRepository);
+        roleCache.load();
         registrationService = new RegistrationService(userRepository, pendingVerificationUserRepository,
                 employeeRepository, roleRepository, emailEngine, passwordHasher, userFactory, roleCache);
 
         clientRoleNames = new RoleName[] {RoleName.PersonalInvestor};
         employeeRoleNames = new RoleName[] {RoleName.Analyst};
+
+        clientRoles = roleCache.fetch(clientRoleNames);
+        employeeRoles = roleCache.fetch(employeeRoleNames);
 
         existingClient = userFactory.createClientUser(clientRoles, "johnmdoe", "johnmdoe@outlook.com",
                 "John", "M", "Doe");
@@ -361,7 +369,7 @@ public class RegistrationServiceTest {
 
     @Test
     void completeRegistration_returnsFailureIfClientVerificationCodeDoesNotMatch() {
-        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(new Tuple<>(existingClient, new HashMap<>())));
         when(pendingVerificationUserRepository.getClientRegistrationVerificationCode(any(UUID.class)))
                 .thenReturn(Optional.of("123456"));
         assertEquals(RegistrationStatus.FAILURE, registrationService.completeRegistration("johnmdoe",
@@ -370,7 +378,7 @@ public class RegistrationServiceTest {
 
     @Test
     void completeRegistration_returnsFailureIfEmployeeVerificationCodeDoesNotMatch() {
-        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.of(existingEmployee));
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.of(new Tuple<>(existingEmployee, new HashMap<>())));
         when(pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(any(UUID.class)))
                 .thenReturn(Optional.of("123456"));
         assertEquals(RegistrationStatus.FAILURE, registrationService.completeRegistration("johnmdoe",
@@ -379,7 +387,7 @@ public class RegistrationServiceTest {
 
     @Test
     void completeRegistration_returnsSuccessIfClientVerificationCodeMatches() {
-        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(new Tuple<>(existingClient, new HashMap<>())));
         when(pendingVerificationUserRepository.getClientRegistrationVerificationCode(any(UUID.class)))
                 .thenReturn(Optional.of("123456"));
         when(pendingVerificationUserRepository.deleteByUuid(any(UUID.class))).thenReturn(true);
@@ -390,7 +398,7 @@ public class RegistrationServiceTest {
 
     @Test
     void completeRegistration_returnsSuccessIfEmployeeVerificationCodeMatches() {
-        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.of(new Tuple<>(existingClient, new HashMap<>())));
         when(pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(any(UUID.class)))
                 .thenReturn(Optional.of("123456"));
         when(pendingVerificationUserRepository.deleteByUuid(any(UUID.class))).thenReturn(true);
