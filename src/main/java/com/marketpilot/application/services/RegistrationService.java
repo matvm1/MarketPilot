@@ -207,10 +207,11 @@ public class RegistrationService {
         }
         fillZero(passwordLightHash);
         byte[] dummyPasswordHashStored = BufferedConverter.toBytes("$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-        byte[] passwordHashStored = usernameIsTaken ? passwordHashFinder.apply(existingUsernameUserOptional.get().getUUID()).orElse(dummyPasswordHashStored)
-                : identifier1IsTaken ? passwordHashFinder.apply(existingIdentifier1UserOptional.get().getUUID()).orElse(dummyPasswordHashStored)
-                : identifier2IsTaken ? passwordHashFinder.apply(existingIdentifier2UserOptional.get().getUUID()).orElse(dummyPasswordHashStored)
-                : dummyPasswordHashStored;
+        byte[] passwordHashStored = getPasswordHashForValidation(existingUsernameUserOptional,
+                existingIdentifier1UserOptional,
+                existingIdentifier2UserOptional,
+                passwordHashFinder,
+                dummyPasswordHashStored);
         boolean passwordMatches;
         try {
             passwordMatches = passwordHasher.matches(passwordHash, passwordHashStored);
@@ -275,6 +276,29 @@ public class RegistrationService {
         fillZero(passwordHash);
         passwordHash = null;
         return  RegistrationStatus.FAILURE;
+    }
+
+    private byte[] getPasswordHashForValidation(Optional<User> existingUsernameUserOptional,
+                                                Optional<User> existingIdentifier1UserOptional,
+                                                Optional<User> existingIdentifier2UserOptional,
+                                                Function<UUID, Optional<byte[]>> passwordHashFinder,
+                                                byte[] dummyPasswordHashStored) {
+        if (existingUsernameUserOptional.isPresent()) {
+            return passwordHashFinder.apply(existingUsernameUserOptional.get().getUUID())
+                    .orElse(dummyPasswordHashStored);
+        }
+
+        if (existingIdentifier1UserOptional.isPresent()) {
+            return passwordHashFinder.apply(existingIdentifier1UserOptional.get().getUUID())
+                    .orElse(dummyPasswordHashStored);
+        }
+
+        if (existingIdentifier2UserOptional.isPresent()) {
+            return passwordHashFinder.apply(existingIdentifier2UserOptional.get().getUUID())
+                    .orElse(dummyPasswordHashStored);
+        }
+
+        return dummyPasswordHashStored;
     }
 
     //TODO: Service that runs in the background and removes users from the pending repo if verification period has 
