@@ -99,7 +99,7 @@ public class RegistrationServiceTest {
         lenient().when(passwordHasher.hash(dummyPasswordLightHash)).thenReturn(dummyPasswordHash);
         lenient().when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         lenient().when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
-        lenient().when(passwordHasher.matches(dummyPasswordHash, dummyPasswordHashStored)).thenReturn(true);
+        lenient().when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
         lenient().when(emailEngine.sendTemplatedEmail(
                 eq(new EmailMessage(existingClient.getPersonalEmail(), CLIENT_VERIFICATION_EMAIL_SUBJECT, null, null)),
                 anyString()
@@ -232,7 +232,10 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_returnsAlreadyRegisteredIfEmployeeIdIsTaken() {
+        when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
+        when(userRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe1")).thenReturn(Optional.empty());
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
+        when(userRepository.findByEmployeeEmail("johnmdoe1@company.com")).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe1", dummyPasswordLightHash,
                         employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
