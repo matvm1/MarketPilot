@@ -205,7 +205,6 @@ public class RegistrationService {
         } catch (IllegalArgumentException e) {
             passwordHash = null;
         }
-        fillZero(passwordLightHash);
         byte[] dummyPasswordHashStored = BufferedConverter.toBytes("$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         byte[] passwordHashStored = getPasswordHashForValidation(existingUsernameUserOptional,
                 existingIdentifier1UserOptional,
@@ -213,12 +212,8 @@ public class RegistrationService {
                 passwordHashFinder,
                 dummyPasswordHashStored);
         boolean passwordMatches;
-        try {
-            passwordMatches = passwordHasher.matches(passwordHash, passwordHashStored);
-        }
-        catch (BadParametersException e) {
-            passwordMatches = false;
-        }
+        passwordMatches = passwordHasher.matches(passwordLightHash, passwordHashStored);
+        fillZero(passwordLightHash);
         fillZero(passwordHashStored);
         passwordLightHash = null;
         passwordHashStored = null;
