@@ -57,8 +57,6 @@ public class RegistrationServiceTest {
     private Set<Role> employeeRoles;
     private Set<Role> adminRoles;
 
-    private final String CLIENT_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Account";
-    private final String EMPLOYEE_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Employee Account";
     private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email";
 
     // use dummyPasswordLightHash as argument to all authentication calls
@@ -89,17 +87,19 @@ public class RegistrationServiceTest {
                 "John", "M", "Doe");
 
         dummyPasswordLightHash = BufferedConverter.toBytes("nc36784gfyu43vbf7623frtycwdvtyuawjcevdfyu12b367821f");
-
-        //TODO: avoid the use of lenient()
-        lenient().when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
     }
 
     private void stubDummyPasswordHashing() {
         when(passwordHasher.hash(dummyPasswordLightHash)).thenReturn(dummyPasswordHash);
     }
 
+    private void stubDummyPasswordHashMatching() {
+        when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
+    }
+
     @Test
     void initiateClientRegistration_returnsAlreadyRegisteredIfUsernameIsTaken() {
+        stubDummyPasswordHashMatching();
         when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(existingClient));
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
@@ -109,6 +109,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateClientRegistration_returnsAlreadyRegisteredIfPersonalEmailIsRegistered() {
+        stubDummyPasswordHashMatching();
         when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe1")).thenReturn(Optional.empty());
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
         when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe1")).thenReturn(Optional.empty());
@@ -176,6 +177,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateClientRegistrationForExistingEmployee_returnsAlreadyRegisteredIfPersonalEmailIsRegistered() {
+        stubDummyPasswordHashMatching();
         when(userRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
@@ -237,6 +239,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_returnsAlreadyRegisteredIfEmployeeIdIsTaken() {
+        stubDummyPasswordHashMatching();
         when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         when(userRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe1")).thenReturn(Optional.empty());
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
@@ -250,6 +253,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_returnsAlreadyRegisteredIfUsernameIsTaken() {
+        stubDummyPasswordHashMatching();
         when(employeeRepository.employeeIdExists("ab987654")).thenReturn(true);
         when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
@@ -260,6 +264,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_returnsAlreadyRegisteredIfEmployeeEmailIsTaken() {
+        stubDummyPasswordHashMatching();
         when(employeeRepository.employeeIdExists("ab987654")).thenReturn(true);
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
         when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe1")).thenReturn(Optional.empty());
