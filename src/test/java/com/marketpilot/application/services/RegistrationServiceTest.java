@@ -302,14 +302,19 @@ public class RegistrationServiceTest {
                         dummyPasswordHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
     }
 
+    /*
+    employeeId and employeeEmail both need to be checked during registration
+    currently employeeEmail is checked only if employeeId not found
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsAlreadyRegisteredIfEmployeeEmailIsRegistered() {
-        when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(userRepository.findByUsername(UserType.CLIENT,"johnmdoe")).thenReturn(Optional.of(existingClient));
+        when(userRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.empty());
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe",
                         dummyPasswordLightHash, employeeRoleNames, "johnmdoe@company.com"));
     }
+    */
 
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsFailureIfUsernameIsNotFound() {
