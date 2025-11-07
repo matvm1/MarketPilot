@@ -9,7 +9,6 @@ import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.EmailEngine;
 import com.marketpilot.domain.repo.EmployeeRepository;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
-import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.domain.repo.UserRepository;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
@@ -38,7 +37,6 @@ public class RegistrationService {
     private final UserRepository userRepository;
     private final PendingVerificationUserRepository pendingVerificationUserRepository;
     private final EmployeeRepository employeeRepository;
-    private final RoleRepository roleRepository;
     private final EmailEngine emailEngine;
     private final PasswordHasher passwordHasher;
     private final UserFactory userFactory;
@@ -53,7 +51,6 @@ public class RegistrationService {
     public RegistrationService(UserRepository userRepository,
                                PendingVerificationUserRepository pendingVerificationUserRepository,
                                EmployeeRepository employeeRepository,
-                               RoleRepository roleRepository,
                                EmailEngine emailEngine,
                                PasswordHasher passwordHasher,
                                UserFactory userFactory,
@@ -61,7 +58,6 @@ public class RegistrationService {
         this.userRepository = userRepository;
         this.pendingVerificationUserRepository = pendingVerificationUserRepository;
         this.employeeRepository = employeeRepository;
-        this.roleRepository = roleRepository;
         this.emailEngine = emailEngine;
         this.passwordHasher = passwordHasher;
         this.userFactory = userFactory;

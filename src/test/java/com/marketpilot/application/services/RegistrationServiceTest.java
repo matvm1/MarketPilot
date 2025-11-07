@@ -75,7 +75,7 @@ public class RegistrationServiceTest {
         roleCache = new RoleCache(roleRepository);
         roleCache.load();
         registrationService = new RegistrationService(userRepository, pendingVerificationUserRepository,
-                employeeRepository, roleRepository, emailEngine, passwordHasher, userFactory, roleCache);
+                employeeRepository, emailEngine, passwordHasher, userFactory, roleCache);
 
         clientRoleNames = new RoleName[] {RoleName.PersonalInvestor};
         employeeRoleNames = new RoleName[] {RoleName.Analyst};
@@ -95,8 +95,6 @@ public class RegistrationServiceTest {
         existingClientProps.put("EMPLOYEE_REGISTRATION_EXPIRATION", Instant.now().plus(Duration.ofMinutes(25)));
         lenient().when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, existingClient.getUsername())).thenReturn(Optional.of(new Tuple<>(existingClient, existingClientProps)));
         lenient().when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
-        lenient().when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
-        lenient().when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
         //TODO: separate client and employee dummy passwords and salts
         lenient().when(passwordHasher.hash(dummyPasswordLightHash)).thenReturn(dummyPasswordHash);
         lenient().when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
@@ -208,7 +206,6 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateClientRegistrationForExistingEmployee_returnsPendingVerificationWhenUserIsRegisteredAsClientAndRoleExists() {
-        when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
         when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.of(existingEmployee));
         when(pendingVerificationUserRepository.save(argThat(pendingUser ->
                 pendingUser.getUsername().equals("johnmdoe"))))
@@ -396,7 +393,6 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsPendingVerificationIfUserIsRegisteredAsEmployeeAndRoleExists() {
-        when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
         when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.of(existingClient));
         when(emailEngine.sendTemplatedEmail(
                 argThat(email -> email.recipient().equals("johnmdoe@company.com")),
