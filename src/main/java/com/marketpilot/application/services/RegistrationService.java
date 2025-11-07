@@ -92,7 +92,6 @@ public class RegistrationService {
             User existingEmployee = existingEmployeeOptional.get();
             UserClientDTO userClientDTO = new UserClientDTO(username, roleCache.fetch(clientRoleNames), personalEmail,
                     existingEmployee.getFirstName(), existingEmployee.getMiddleName(), existingEmployee.getLastName());
-            BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByPersonalEmail(identifier2);
             BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) ->
                     userFactory.assignClientAttributes(existingEmployee, (UserClientDTO) b);
 
