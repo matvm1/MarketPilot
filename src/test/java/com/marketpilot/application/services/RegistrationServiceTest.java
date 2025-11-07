@@ -417,10 +417,11 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void completeRegistration_returnsFailureIfEmployeeVerificationCodeDoesNotMatch() {
-        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.of(new Tuple<>(existingEmployee, new HashMap<>())));
-        when(pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(any(UUID.class)))
-                .thenReturn(Optional.of("123456"));
+    void completeRegistration_returnsFailureIfEmployeeVerificationCodeDoesNotMatch() throws SQLException {
+        Map<String, Object> registrationProps = new HashMap<>();
+        registrationProps.put("EMPLOYEE_REGISTRATION_EXPIRATION", Instant.now().plus(Duration.ofMinutes(15)));
+        registrationProps.put("EMPLOYEE_REGISTRATION_CODE", "123456");
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.of(new Tuple<>(existingEmployee, registrationProps)));
         assertEquals(RegistrationStatus.FAILURE, registrationService.completeRegistration("johnmdoe",
                 UserType.EMPLOYEE, "123457"));
     }
