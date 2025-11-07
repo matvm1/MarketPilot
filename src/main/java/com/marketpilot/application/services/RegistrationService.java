@@ -16,6 +16,7 @@ import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
 import com.marketpilot.util.VerificationCodeGenerator;
+import com.password4j.BadParametersException;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -67,7 +68,6 @@ public class RegistrationService {
     public RegistrationStatus initiateClientRegistration(String username, byte[] passwordLightHash, Role.RoleName[] clientRoleNames, String personalEmail,
                                                          String firstName, String middleName, String lastName) {
         UserClientDTO userClientDTO = new UserClientDTO(username, roleCache.fetch(clientRoleNames), personalEmail, firstName, middleName, lastName);
-        BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByPersonalEmail(identifier2);
         BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) -> userFactory.createClientUser((UserClientDTO) b);
 
         return initiateRegistration(UserType.CLIENT,
@@ -75,7 +75,8 @@ public class RegistrationService {
                 username, personalEmail, userClientDTO, passwordLightHash,
                 null,
                 userRepository::getClientPasswordHash,
-                userFinder,
+                null,
+                userRepository::findByPersonalEmail,
                 User::isClient,
                 userFactoryAction,
                 personalEmail,
@@ -100,7 +101,8 @@ public class RegistrationService {
                     username, personalEmail, userClientDTO, passwordLightHash,
                     null,
                     userRepository::getClientPasswordHash,
-                    userFinder,
+                    null,
+                    userRepository::findByPersonalEmail,
                     User::isClient,
                     userFactoryAction,
                     personalEmail,
@@ -114,8 +116,6 @@ public class RegistrationService {
                                                            String employeeEmail, String firstName, String middleName, String lastName) {
         UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, roleCache.fetch(employeeRoleNames), employeeEmail,
                 firstName, middleName, lastName);
-        BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByEmployeeId(employeeId)
-                .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
         BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) -> userFactory.createEmployeeUser((UserEmployeeDTO) b);
 
         return initiateRegistration(UserType.EMPLOYEE,
@@ -123,7 +123,8 @@ public class RegistrationService {
                 employeeId, employeeEmail, userEmployeeDTO, passwordLightHash,
                 employeeRepository::employeeIdExists,
                 userRepository::getEmployeePasswordHash,
-                userFinder,
+                userRepository::findByEmployeeId,
+                userRepository::findByEmployeeEmail,
                 User::isEmployee,
                 userFactoryAction,
                 employeeEmail,
@@ -148,7 +149,8 @@ public class RegistrationService {
                     employeeId, employeeEmail, userEmployeeDTO, passwordLightHash,
                     employeeRepository::employeeIdExists,
                     userRepository::getEmployeePasswordHash,
-                    userFinder,
+                    userRepository::findByEmployeeId,
+                    userRepository::findByEmployeeEmail,
                     User::isEmployee,
                     userFactoryAction,
                     employeeEmail,
@@ -166,7 +168,8 @@ public class RegistrationService {
                                                     byte[] passwordLightHash,
                                                     Predicate<String> employeeIdFinder,
                                                     Function<UUID, Optional<byte[]>> passwordHashFinder,
-                                                    BiFunction<String, String, Optional<User>> userFinder,
+                                                    Function<String, Optional<User>> userFinder1,
+                                                    Function<String, Optional<User>> userFinder2,
                                                     Predicate<User> isRegistrationType,
                                                     BiFunction<User, UserAbstractDTO, User> userFactoryAction,
                                                     String verificationEmail,
@@ -181,23 +184,20 @@ public class RegistrationService {
                         identifier1 != null && !identifier1.isBlank() &&
                         identifier2 != null && !identifier2.isBlank();
 
-        Optional<User> userOptional;
+        Optional<User> existingUsernameUserOptional = userRepository.findByUsername(registrationUserType, userAbstractDTO.getUsername());
+        Optional<User> existingIdentifier1UserOptional = userFinder1 != null ? userFinder1.apply(identifier1) : Optional.empty();
+        Optional<User> existingIdentifier2UserOptional = userFinder2 != null ? userFinder2.apply(identifier2) : Optional.empty();
+        boolean usernameIsTaken = existingUsernameUserOptional.isPresent();
+        boolean identifier1IsTaken = existingIdentifier1UserOptional.isPresent();
+        boolean identifier2IsTaken = existingIdentifier2UserOptional.isPresent();
 
-        //TODO: Lookup username, identifier1, and identifier2 separately
-        if (existingUser == null)
-            userOptional = userRepository.findByUsername(registrationUserType, userAbstractDTO.getUsername()).or(() -> userFinder.apply(identifier1,
-                    identifier2));
-        else
-            userOptional = Optional.of(existingUser);
+        boolean alreadyRegistered = usernameIsTaken || identifier1IsTaken || identifier2IsTaken;
 
         Optional<Tuple<User, Map<String, Object>>> existingPendingVerificationOptional = pendingVerificationUserRepository.findByUsername(registrationUserType,
                 userAbstractDTO.getUsername());
 
         String expirationColumn = registrationUserType == UserType.CLIENT ? "CLIENT_REGISTRATION_EXPIRATION" : "EMPLOYEE_REGISTRATION_EXPIRATION";
         Tuple<User, Map<String, Object>> existingPendingVerification = existingPendingVerificationOptional.orElse(null);
-
-        boolean userExists = userOptional.isPresent();
-        User user = userOptional.orElse(null);
 
         byte[] passwordHash;
         try {
@@ -207,13 +207,22 @@ public class RegistrationService {
         }
         fillZero(passwordLightHash);
         byte[] dummyPasswordHashStored = BufferedConverter.toBytes("$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-        byte[] passwordHashStored = userExists ? passwordHashFinder.apply(user.getUUID()).orElse(dummyPasswordHashStored) : dummyPasswordHashStored;
-        boolean passwordMatches = passwordHasher.matches(passwordHash, passwordHashStored);
+        byte[] passwordHashStored = usernameIsTaken ? passwordHashFinder.apply(existingUsernameUserOptional.get().getUUID()).orElse(dummyPasswordHashStored)
+                : identifier1IsTaken ? passwordHashFinder.apply(existingIdentifier1UserOptional.get().getUUID()).orElse(dummyPasswordHashStored)
+                : identifier2IsTaken ? passwordHashFinder.apply(existingIdentifier2UserOptional.get().getUUID()).orElse(dummyPasswordHashStored)
+                : dummyPasswordHashStored;
+        boolean passwordMatches;
+        try {
+            passwordMatches = passwordHasher.matches(passwordHash, passwordHashStored);
+        }
+        catch (BadParametersException e) {
+            passwordMatches = false;
+        }
         fillZero(passwordHashStored);
         passwordLightHash = null;
         passwordHashStored = null;
 
-        if (identifiersAreValid && ((existingUser == null && userExists) || (existingUser != null && isRegistrationType.test(existingUser)))) {
+        if (identifiersAreValid && (alreadyRegistered)){ // || (existingUser != null && isRegistrationType.test(existingUser)))) {
             if (passwordMatches)
                 return RegistrationStatus.ALREADY_REGISTERED;
             else
@@ -228,6 +237,8 @@ public class RegistrationService {
             else
                 return RegistrationStatus.PENDING_VERIFICATION;
         }
+
+        User user = existingUser;
         if (userAbstractDTO.isValid() && identifiersAreValid && (existingUser == null || !isRegistrationType.test(user))) {
             try {
                 user = userFactoryAction.apply(user, userAbstractDTO);
