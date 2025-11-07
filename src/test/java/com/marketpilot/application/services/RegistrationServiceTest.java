@@ -322,8 +322,13 @@ public class RegistrationServiceTest {
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsFailureIfUserNameIsTakenAndPasswordDoesNotMatch() {
         byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
+        when(userRepository.findByUsername(UserType.CLIENT,"johnmdoe")).thenReturn(Optional.of(existingClient));
         when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
-        when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.of(existingEmployee));
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.empty());
+        when(emailEngine.sendTemplatedEmail(
+                argThat(msg -> msg.recipient().equals("johnmdoe1@company.com")),
+                anyString()
+        )).thenReturn(true);
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123457", "johnmdoe",
                         nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe1@company.com"));
