@@ -250,6 +250,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe1")).thenReturn(Optional.empty());
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByEmployeeEmail("johnmdoe1@company.com")).thenReturn(Optional.empty());
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe1")).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe1", dummyPasswordLightHash,
                         employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
@@ -268,6 +269,7 @@ public class RegistrationServiceTest {
     void initiateEmployeeRegistration_returnsAlreadyRegisteredIfEmployeeEmailIsTaken() {
         when(employeeRepository.employeeIdExists("ab987654")).thenReturn(true);
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe1")).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab987654", "johnmdoe1",
                         dummyPasswordLightHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
@@ -278,6 +280,7 @@ public class RegistrationServiceTest {
         byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
         when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
         when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.of(existingEmployee));
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistration("ab123457", "johnmdoe",
                         nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
@@ -288,6 +291,7 @@ public class RegistrationServiceTest {
         byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
         when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe1")).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe1",
                         nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));    }
@@ -297,6 +301,7 @@ public class RegistrationServiceTest {
         byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
         when(employeeRepository.employeeIdExists("ab123457")).thenReturn(true);
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe1")).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistration("ab123457", "johnmdoe1",
                         nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
@@ -422,7 +427,6 @@ public class RegistrationServiceTest {
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsPendingVerificationIfUserIsRegisteredAsEmployeeAndRoleExists() throws SQLException {
         when(userRepository.findByUsername(UserType.CLIENT,"johnmdoe")).thenReturn(Optional.of(existingClient));
-        //TODO: Lookup username, identifier1, and identifier2 separately
         when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.empty());
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.empty());
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.empty());
