@@ -219,11 +219,22 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void initiateClientRegistrationForExistingEmployee_returnsPendingVerificationWhenUserIsRegisteredAsClientAndRoleExists() {
+    void initiateClientRegistrationForExistingEmployee_returnsPendingVerificationWhenUserIsRegisteredAsEmployeeAndRoleExists() throws SQLException {
         when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.of(existingEmployee));
-        when(pendingVerificationUserRepository.save(argThat(pendingUser ->
-                pendingUser.getUsername().equals("johnmdoe"))))
-                .thenReturn(true);
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
+        when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.empty());
+        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
+        when(pendingVerificationUserRepository.crossRegister(
+                eq(UserType.CLIENT),
+                argThat(user ->
+                        user.getUsername().equals("johnmdoe") &&
+                                user.getPersonalEmail().equals("johnmdoe@outlook.com") &&
+                                user.isClient()
+                ),
+                eq(clientRoles),
+                eq(dummyPasswordHash),
+                anyString()
+        )).thenReturn(true);
         when(emailEngine.sendTemplatedEmail(
                 argThat(email -> email.recipient().equals("johnmdoe@outlook.com")),
                 eq(VERIFICATION_EMAIL_TEMPLATE)))
