@@ -272,9 +272,9 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_throwsIfRoleNotFound() {
-        when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.empty());
-        assertThrows(NoSuchElementException.class,
-                () -> registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
+        roleCache = null;
+        assertEquals(RegistrationStatus.FAILURE,
+                registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
                         dummyPasswordHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
     }
 
