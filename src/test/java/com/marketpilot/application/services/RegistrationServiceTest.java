@@ -131,15 +131,24 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void initiateClientRegistration_returnsFailureIfUserNameOrPersonalEmailIsTakenAndPasswordDoesNotMatch() {
+    void initiateClientRegistration_returnsFailureIfUserNameIsTakenAndPasswordDoesNotMatch() {
         byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
         when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(existingClient));
-        when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
+        when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.empty());
+        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistration("johnmdoe",
-                        nonRegisteredPasswordHash, clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
+                        nonRegisteredPasswordHash, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
+    }
+
+    @Test
+    void initiateClientRegistration_returnsFailureIfPersonalEmailIsTakenAndPasswordDoesNotMatch() {
+        byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
+        when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
+        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.FAILURE,
-                registrationService.initiateClientRegistration("johnmdoe1",
+                registrationService.initiateClientRegistration("johnmdoe",
                         nonRegisteredPasswordHash, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
