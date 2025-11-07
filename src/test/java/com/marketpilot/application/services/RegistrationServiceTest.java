@@ -93,7 +93,6 @@ public class RegistrationServiceTest {
         //TODO: avoid the use of lenient()
         Map<String, Object> existingClientProps = new HashMap<>();
         existingClientProps.put("EMPLOYEE_REGISTRATION_EXPIRATION", Instant.now().plus(Duration.ofMinutes(25)));
-        lenient().when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         //TODO: separate client and employee dummy passwords and salts
         lenient().when(passwordHasher.hash(dummyPasswordLightHash)).thenReturn(dummyPasswordHash);
         lenient().when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
@@ -314,6 +313,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_returnsPendingVerificationForNewAndValidAttempt() throws SQLException {
+        when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         when(userRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.empty());
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.empty());
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.empty());
@@ -415,6 +415,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsPendingVerificationIfUserIsRegisteredAsEmployeeAndRoleExists() throws SQLException {
+        when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         when(userRepository.findByUsername(UserType.CLIENT,"johnmdoe")).thenReturn(Optional.of(existingClient));
         when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.empty());
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.empty());
