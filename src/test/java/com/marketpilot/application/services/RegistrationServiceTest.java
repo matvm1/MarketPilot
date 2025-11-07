@@ -93,7 +93,6 @@ public class RegistrationServiceTest {
         //TODO: avoid the use of lenient()
         Map<String, Object> existingClientProps = new HashMap<>();
         existingClientProps.put("EMPLOYEE_REGISTRATION_EXPIRATION", Instant.now().plus(Duration.ofMinutes(25)));
-        lenient().when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, existingClient.getUsername())).thenReturn(Optional.of(new Tuple<>(existingClient, existingClientProps)));
         lenient().when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         //TODO: separate client and employee dummy passwords and salts
         lenient().when(passwordHasher.hash(dummyPasswordLightHash)).thenReturn(dummyPasswordHash);
@@ -108,8 +107,6 @@ public class RegistrationServiceTest {
                 eq(new EmailMessage(existingEmployee.getEmployeeEmail(), EMPLOYEE_VERIFICATION_EMAIL_SUBJECT, null, null)),
                 anyString()
         )).thenReturn(true);
-        lenient().when(pendingVerificationUserRepository.save(existingClient)).thenReturn(true);
-        lenient().when(pendingVerificationUserRepository.save(existingEmployee)).thenReturn(true);
     }
 
     @Test
