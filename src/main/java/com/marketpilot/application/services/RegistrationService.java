@@ -224,6 +224,8 @@ public class RegistrationService {
         }
 
         if (existingPendingVerification != null) {
+            if (!passwordMatches)
+                return RegistrationStatus.FAILURE;
             if (((Instant) existingPendingVerification.u().get(expirationColumn)).isBefore(requestTime))
                 return RegistrationStatus.EXPIRED;
             else
