@@ -95,9 +95,6 @@ public class RegistrationServiceTest {
         existingClientProps.put("EMPLOYEE_REGISTRATION_EXPIRATION", Instant.now().plus(Duration.ofMinutes(25)));
         lenient().when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, existingClient.getUsername())).thenReturn(Optional.of(new Tuple<>(existingClient, existingClientProps)));
         lenient().when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
-        lenient().when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, existingClient.getUsername())).thenReturn(Optional.of(new Tuple<>(existingClient, new HashMap<>())));
-        lenient().when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, existingEmployee.getUsername())).thenReturn(Optional.of(new Tuple<>(existingEmployee, new HashMap<>())));
-        lenient().when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, existingEmployee.getUsername())).thenReturn(Optional.of(new Tuple<>(existingEmployee, new HashMap<>())));
         lenient().when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
         lenient().when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
         //TODO: separate client and employee dummy passwords and salts
@@ -155,15 +152,25 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void initiateClientRegistration_returnsPendingVerificationIfIdentifiersAreValidAndPasswordIsValid() {
-        when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
-        when(pendingVerificationUserRepository.save(argThat(pendingUser ->
-                pendingUser.getUsername().equals("johnmdoe"))))
-                .thenReturn(true);
+    void initiateClientRegistration_returnsPendingVerificationIfIdentifiersAreValidAndPasswordIsValid() throws SQLException {
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
+        when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.empty());
+        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
         when(emailEngine.sendTemplatedEmail(
-                argThat(email -> email.recipient().equals("johnmdoe@outlook.com")),
-                eq(VERIFICATION_EMAIL_TEMPLATE)))
-                .thenReturn(true);
+                argThat(msg -> msg.recipient().equals("johnmdoe@outlook.com")),
+                anyString()
+        )).thenReturn(true);
+        when(pendingVerificationUserRepository.registerNewUser(
+                eq(UserType.CLIENT),
+                argThat(user ->
+                        user.getUsername().equals("johnmdoe") &&
+                        user.getPersonalEmail().equals("johnmdoe@outlook.com") &&
+                        user.isClient()
+                ),
+                eq(clientRoles),
+                eq(dummyPasswordHash),
+                anyString()
+        )).thenReturn(true);
         assertEquals(RegistrationStatus.PENDING_VERIFICATION,
                 registrationService.initiateClientRegistration("johnmdoe", dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com",
                         "John", "M", "Doe"));
