@@ -2,6 +2,7 @@ package com.marketpilot.adapters.auth;
 
 
 import com.marketpilot.application.ports.auth.PasswordHasher;
+import com.password4j.BadParametersException;
 import com.password4j.Hash;
 import com.password4j.Password;
 
@@ -22,10 +23,15 @@ public class Password4JHasher implements PasswordHasher {
 
     @Override
     public boolean matches(byte[] password, byte[] hash) {
-        String PEPPER = System.getenv("MARKETPILOT_PEPPER");
+        try {
+            String PEPPER = System.getenv("MARKETPILOT_PEPPER");
 
-        return Password.check(password, hash)
-                .addPepper(PEPPER)
-                .withArgon2();
+            return Password.check(password, hash)
+                    .addPepper(PEPPER)
+                    .withArgon2();
+        }
+        catch (BadParametersException e) {
+            return false;
+        }
     }
 }
