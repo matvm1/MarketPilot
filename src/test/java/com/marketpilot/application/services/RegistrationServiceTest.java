@@ -147,10 +147,10 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void initiateClientRegistration_throwsIfRoleNotFound() {
-        when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.empty());
-        assertThrows(NoSuchElementException.class,
-                () -> registrationService.initiateClientRegistration("johnmdoe",
+    void initiateClientRegistration_returnsFailureIfRoleNotFound() {
+        roleCache = null;
+        assertEquals(RegistrationStatus.FAILURE,
+                registrationService.initiateClientRegistration("johnmdoe",
                         dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
     }
 
