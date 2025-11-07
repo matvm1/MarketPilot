@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.marketpilot.application.services.RegistrationService.RegistrationStatus;
 
 import javax.swing.text.html.Option;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -349,7 +350,7 @@ public class RegistrationServiceTest {
                 argThat(msg -> msg.recipient().equals("johnmdoe1@company.com")),
                 anyString()
         )).thenReturn(true);
-assertEquals(RegistrationStatus.FAILURE,
+        assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe",
                         nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe1@company.com"));
     }
@@ -435,12 +436,16 @@ assertEquals(RegistrationStatus.FAILURE,
     }
 
     @Test
-    void completeRegistration_returnsSuccessIfEmployeeVerificationCodeMatches() {
-        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.of(new Tuple<>(existingClient, new HashMap<>())));
-        when(pendingVerificationUserRepository.getEmployeeRegistrationVerificationCode(any(UUID.class)))
-                .thenReturn(Optional.of("123456"));
-        when(pendingVerificationUserRepository.deleteByUuid(any(UUID.class))).thenReturn(true);
-        when(userRepository.save(existingClient)).thenReturn(true);
+    void completeRegistration_returnsSuccessIfEmployeeVerificationCodeMatches() throws SQLException {
+        Map<String, Object> registrationProps = new HashMap<>();
+        registrationProps.put("EMPLOYEE_REGISTRATION_EXPIRATION", Instant.now().plus(Duration.ofMinutes(15)));
+        registrationProps.put("EMPLOYEE_REGISTRATION_CODE", "123456");
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.of(new Tuple<>(existingEmployee, registrationProps)));
+        when(pendingVerificationUserRepository.completeRegistration(UserType.EMPLOYEE, existingEmployee.getUUID())).thenReturn(true);
+        when(emailEngine.sendTemplatedEmail(
+                argThat(msg -> msg.recipient().equals("johnmdoe@company.com")),
+                anyString()
+        )).thenReturn(true);
         assertEquals(RegistrationStatus.SUCCESS, registrationService.completeRegistration("johnmdoe",
                 UserType.EMPLOYEE, "123456"));
     }
