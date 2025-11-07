@@ -91,11 +91,11 @@ public class RegistrationServiceTest {
         dummyPasswordLightHash = BufferedConverter.toBytes("nc36784gfyu43vbf7623frtycwdvtyuawjcevdfyu12b367821f");
 
         //TODO: avoid the use of lenient()
-        Map<String, Object> existingClientProps = new HashMap<>();
-        existingClientProps.put("EMPLOYEE_REGISTRATION_EXPIRATION", Instant.now().plus(Duration.ofMinutes(25)));
-        //TODO: separate client and employee dummy passwords and salts
-        lenient().when(passwordHasher.hash(dummyPasswordLightHash)).thenReturn(dummyPasswordHash);
         lenient().when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
+    }
+
+    private void stubDummyPasswordHashing() {
+        when(passwordHasher.hash(dummyPasswordLightHash)).thenReturn(dummyPasswordHash);
     }
 
     @Test
@@ -150,6 +150,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateClientRegistration_returnsPendingVerificationIfIdentifiersAreValidAndPasswordIsValid() throws SQLException {
+        stubDummyPasswordHashing();
         when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.empty());
         when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
@@ -209,6 +210,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateClientRegistrationForExistingEmployee_returnsPendingVerificationWhenUserIsRegisteredAsEmployeeAndRoleExists() throws SQLException {
+        stubDummyPasswordHashing();
         when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.empty());
@@ -317,6 +319,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_returnsPendingVerificationForNewAndValidAttempt() throws SQLException {
+        stubDummyPasswordHashing();
         when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         when(userRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.empty());
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.empty());
@@ -419,6 +422,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsPendingVerificationIfUserIsRegisteredAsEmployeeAndRoleExists() throws SQLException {
+        stubDummyPasswordHashing();
         when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         when(userRepository.findByUsername(UserType.CLIENT,"johnmdoe")).thenReturn(Optional.of(existingClient));
         when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.empty());
