@@ -183,6 +183,7 @@ public class RegistrationService {
 
         Optional<User> userOptional;
 
+        //TODO: Lookup username, identifier1, and identifier2 separately
         if (existingUser == null)
             userOptional = userRepository.findByUsername(registrationUserType, userAbstractDTO.getUsername()).or(() -> userFinder.apply(identifier1,
                     identifier2));

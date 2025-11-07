@@ -59,7 +59,7 @@ public class RegistrationServiceTest {
 
     private final String CLIENT_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Account";
     private final String EMPLOYEE_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Employee Account";
-    private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email.html";
+    private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email";
 
     // use dummyPasswordLightHash as argument to all authentication calls
     private byte[] dummyPasswordLightHash;
@@ -392,18 +392,31 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void initiateEmployeeRegistrationForExistingClient_returnsPendingVerificationIfUserIsRegisteredAsEmployeeAndRoleExists() {
-        when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.of(existingClient));
+    void initiateEmployeeRegistrationForExistingClient_returnsPendingVerificationIfUserIsRegisteredAsEmployeeAndRoleExists() throws SQLException {
+        when(userRepository.findByUsername(UserType.CLIENT,"johnmdoe")).thenReturn(Optional.of(existingClient));
+        //TODO: Lookup username, identifier1, and identifier2 separately
+        when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.empty());
+        when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.empty());
+        when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.empty());
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.empty());
         when(emailEngine.sendTemplatedEmail(
                 argThat(email -> email.recipient().equals("johnmdoe@company.com")),
                 eq(VERIFICATION_EMAIL_TEMPLATE)))
                 .thenReturn(true);
-        when(pendingVerificationUserRepository.save(argThat(pendingUser ->
-                pendingUser.getUsername().equals("johnmdoe"))))
-                .thenReturn(true);
+        when(pendingVerificationUserRepository.crossRegister(
+                eq(UserType.EMPLOYEE),
+                argThat(user ->
+                        user.getUsername().equals("johnmdoe") &&
+                        user.getEmployeeEmail().equals("johnmdoe@company.com") &&
+                        user.isEmployee()
+                ),
+                eq(employeeRoles),
+                eq(dummyPasswordHash),
+                anyString()
+        )).thenReturn(true);
         assertEquals(RegistrationStatus.PENDING_VERIFICATION,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe",
-                        dummyPasswordHash, employeeRoleNames, "johnmdoe@company.com"));
+                        dummyPasswordLightHash, employeeRoleNames, "johnmdoe@company.com"));
     }
 
     @Test
