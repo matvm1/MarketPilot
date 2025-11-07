@@ -426,12 +426,16 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void completeRegistration_returnsSuccessIfClientVerificationCodeMatches() {
-        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(new Tuple<>(existingClient, new HashMap<>())));
-        when(pendingVerificationUserRepository.getClientRegistrationVerificationCode(any(UUID.class)))
-                .thenReturn(Optional.of("123456"));
-        when(pendingVerificationUserRepository.deleteByUuid(any(UUID.class))).thenReturn(true);
-        when(userRepository.save(existingClient)).thenReturn(true);
+    void completeRegistration_returnsSuccessIfClientVerificationCodeMatches() throws SQLException {
+        Map<String, Object> registrationProps = new HashMap<>();
+        registrationProps.put("CLIENT_REGISTRATION_EXPIRATION", Instant.now().plus(Duration.ofMinutes(15)));
+        registrationProps.put("CLIENT_REGISTRATION_CODE", "123456");
+        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(new Tuple<>(existingClient, registrationProps)));
+        when(pendingVerificationUserRepository.completeRegistration(UserType.CLIENT, existingClient.getUUID())).thenReturn(true);
+        when(emailEngine.sendTemplatedEmail(
+                argThat(msg -> msg.recipient().equals("johnmdoe@outlook.com")),
+                anyString()
+        )).thenReturn(true);
         assertEquals(RegistrationStatus.SUCCESS, registrationService.completeRegistration("johnmdoe",
                 UserType.CLIENT, "123456"));
     }
