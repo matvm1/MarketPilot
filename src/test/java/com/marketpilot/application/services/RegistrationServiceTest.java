@@ -407,10 +407,11 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void completeRegistration_returnsFailureIfClientVerificationCodeDoesNotMatch() {
-        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(new Tuple<>(existingClient, new HashMap<>())));
-        when(pendingVerificationUserRepository.getClientRegistrationVerificationCode(any(UUID.class)))
-                .thenReturn(Optional.of("123456"));
+    void completeRegistration_returnsFailureIfClientVerificationCodeDoesNotMatch() throws SQLException {
+        Map<String, Object> registrationProps = new HashMap<>();
+        registrationProps.put("CLIENT_REGISTRATION_EXPIRATION", Instant.now().plus(Duration.ofMinutes(15)));
+        registrationProps.put("CLIENT_REGISTRATION_CODE", "123456");
+        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(new Tuple<>(existingClient, registrationProps)));
         assertEquals(RegistrationStatus.FAILURE, registrationService.completeRegistration("johnmdoe",
                 UserType.CLIENT, "123457"));
     }
