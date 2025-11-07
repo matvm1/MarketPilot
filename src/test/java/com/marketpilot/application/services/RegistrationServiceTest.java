@@ -294,20 +294,29 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void initiateEmployeeRegistration_doesNotThrowWhenUserIsNotYetRegisteredAndRoleExists() {
-        when(roleRepository.findByRoleName(RoleName.Analyst)).thenReturn(Optional.of(TestRoles.ANALYST_ROLE));
+    void initiateEmployeeRegistration_returnsPendingVerificationForNewAndValidAttempt() throws SQLException {
+        when(userRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.empty());
+        when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.empty());
+        when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.empty());
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.empty());
         when(emailEngine.sendTemplatedEmail(
-                argThat(email -> email.recipient().equals("johnmdoe@company.com")),
-                eq(VERIFICATION_EMAIL_TEMPLATE)))
-                .thenReturn(true);
-        when(pendingVerificationUserRepository.save(argThat(pendingUser ->
-                pendingUser.getUsername().equals("johnmdoe"))))
-                .thenReturn(true);
-        assertDoesNotThrow(() -> registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
-                dummyPasswordHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
+                argThat(msg -> msg.recipient().equals("johnmdoe@company.com")),
+                anyString()
+        )).thenReturn(true);
+        when(pendingVerificationUserRepository.registerNewUser(
+                eq(UserType.EMPLOYEE),
+                argThat(user ->
+                        user.getUsername().equals("johnmdoe") &&
+                                user.getEmployeeEmail().equals("johnmdoe@company.com") &&
+                                user.isEmployee()
+                ),
+                eq(employeeRoles),
+                eq(dummyPasswordHash),
+                anyString()
+        )).thenReturn(true);
         assertEquals(RegistrationStatus.PENDING_VERIFICATION,
                 registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
-                        dummyPasswordHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
+                        dummyPasswordLightHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
     }
 
     /*
