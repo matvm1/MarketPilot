@@ -178,6 +178,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateClientRegistrationForExistingEmployee_returnsFailureIfUsernameIsNotFound() {
+        when(userRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
                         dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com"));
@@ -312,6 +313,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsFailureIfUsernameIsNotFound() {
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe",
                         dummyPasswordHash, clientRoleNames, "johnmdoe@outlook.com"));
