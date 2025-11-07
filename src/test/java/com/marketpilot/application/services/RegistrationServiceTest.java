@@ -99,14 +99,6 @@ public class RegistrationServiceTest {
         lenient().when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         lenient().when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         lenient().when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
-        lenient().when(emailEngine.sendTemplatedEmail(
-                eq(new EmailMessage(existingClient.getPersonalEmail(), CLIENT_VERIFICATION_EMAIL_SUBJECT, null, null)),
-                anyString()
-        )).thenReturn(true);
-        lenient().when(emailEngine.sendTemplatedEmail(
-                eq(new EmailMessage(existingEmployee.getEmployeeEmail(), EMPLOYEE_VERIFICATION_EMAIL_SUBJECT, null, null)),
-                anyString()
-        )).thenReturn(true);
     }
 
     @Test
