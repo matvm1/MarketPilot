@@ -402,6 +402,7 @@ public class RegistrationServiceTest {
 
     @Test
     void completeRegistration_returnsFailureIfUserIsNotPendingVerification(){
+        when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.FAILURE, registrationService.completeRegistration("johnmdoe",
                 UserType.CLIENT, "123456"));
     }
