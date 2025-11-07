@@ -22,6 +22,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.marketpilot.application.services.RegistrationService.RegistrationStatus;
 
+import javax.swing.text.html.Option;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,9 +90,11 @@ public class RegistrationServiceTest {
         dummyPasswordLightHash = BufferedConverter.toBytes("nc36784gfyu43vbf7623frtycwdvtyuawjcevdfyu12b367821f");
 
         //TODO: avoid the use of lenient()
+        Map<String, Object> existingClientProps = new HashMap<>();
+        existingClientProps.put("EMPLOYEE_REGISTRATION_EXPIRATION", Instant.now().plus(Duration.ofMinutes(25)));
+        lenient().when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, existingClient.getUsername())).thenReturn(Optional.of(new Tuple<>(existingClient, existingClientProps)));
         lenient().when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
         lenient().when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, existingClient.getUsername())).thenReturn(Optional.of(new Tuple<>(existingClient, new HashMap<>())));
-        lenient().when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, existingClient.getUsername())).thenReturn(Optional.of(new Tuple<>(existingClient, new HashMap<>())));
         lenient().when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, existingEmployee.getUsername())).thenReturn(Optional.of(new Tuple<>(existingEmployee, new HashMap<>())));
         lenient().when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, existingEmployee.getUsername())).thenReturn(Optional.of(new Tuple<>(existingEmployee, new HashMap<>())));
         lenient().when(roleRepository.findByRoleName(RoleName.PersonalInvestor)).thenReturn(Optional.of(TestRoles.PERSONAL_INVESTOR_ROLE));
@@ -319,10 +325,15 @@ public class RegistrationServiceTest {
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsFailureIfEmployeeIdIsTakenAndPasswordDoesNotMatch() {
         byte[] nonRegisteredPasswordHash = BufferedConverter.toBytes("12345678");
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(existingClient));
         when(employeeRepository.employeeIdExists("ab123456")).thenReturn(true);
-        when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
-        assertEquals(RegistrationStatus.FAILURE,
-                registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe1",
+        when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.empty());
+        when(emailEngine.sendTemplatedEmail(
+                argThat(msg -> msg.recipient().equals("johnmdoe1@company.com")),
+                anyString()
+        )).thenReturn(true);
+assertEquals(RegistrationStatus.FAILURE,
+                registrationService.initiateEmployeeRegistrationForExistingClient("ab123456", "johnmdoe",
                         nonRegisteredPasswordHash, employeeRoleNames, "johnmdoe1@company.com"));
     }
 
