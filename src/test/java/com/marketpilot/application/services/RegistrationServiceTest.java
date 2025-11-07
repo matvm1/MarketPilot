@@ -366,6 +366,7 @@ assertEquals(RegistrationStatus.FAILURE,
 
     @Test
     void initiateEmployeeRegistrationForExistingClient_returnsFailureIfEmployeeIdNotFound() {
+        when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(existingClient));
         when(employeeRepository.employeeIdExists("ab123456")).thenReturn(false);
         assertEquals(RegistrationStatus.FAILURE, registrationService.initiateEmployeeRegistrationForExistingClient("ab123456",
                 "johnmdoe", dummyPasswordHash, employeeRoleNames, "johnmdoe@company.com"));
