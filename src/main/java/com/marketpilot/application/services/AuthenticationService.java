@@ -9,7 +9,6 @@ import com.marketpilot.application.ports.auth.TwoFactorService;
 import com.marketpilot.application.dto.auth.credentials.MfaCredential;
 import com.marketpilot.application.dto.auth.credentials.TotpCredential;
 import com.marketpilot.domain.entities.auth.UserType;
-import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.domain.repo.UserRepository;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
@@ -29,24 +28,21 @@ public class AuthenticationService {
     }
 
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final TwoFactorService totpService;
     private final PasswordHasher passwordHasher;
     private final SessionManager sessionManager;
 
-    public AuthenticationService(UserRepository userRepository, RoleRepository roleRepository, TwoFactorService totpService,
+    public AuthenticationService(UserRepository userRepository, TwoFactorService totpService,
                                  PasswordHasher passwordHasher, SessionManager sessionManager) {
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
         this.totpService = totpService;
         this.passwordHasher = passwordHasher;
         this.sessionManager = sessionManager;
     }
 
-    public AuthenticationService(UserRepository userRepository, RoleRepository roleRepository, TwoFactorService totpService,
+    public AuthenticationService(UserRepository userRepository, TwoFactorService totpService,
                                  PasswordHasher passwordHasher) {
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
         this.totpService = totpService;
         this.passwordHasher = passwordHasher;
         this.sessionManager = null;

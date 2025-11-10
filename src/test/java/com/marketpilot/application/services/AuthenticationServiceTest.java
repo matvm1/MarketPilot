@@ -4,7 +4,6 @@ import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.SessionManager;
 import com.marketpilot.application.ports.auth.TwoFactorService;
 import com.marketpilot.domain.entities.auth.UserType;
-import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.domain.repo.UserRepository;
 import com.marketpilot.application.services.AuthenticationService.AuthenticationStatus;
 import com.marketpilot.domain.entities.auth.Role;
@@ -29,7 +28,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceTest {
     @Mock private UserRepository userRepository;
-    @Mock private RoleRepository roleRepository;
     @Mock private TwoFactorService twoFactorService;
     @Mock private PasswordHasher passwordHasher;
     @Mock private SessionManager sessionManager;
@@ -51,7 +49,7 @@ public class AuthenticationServiceTest {
     @BeforeEach
     void setUp() {
         userFactory = new UserFactory();
-        authenticationService = new AuthenticationService(userRepository, roleRepository, twoFactorService, passwordHasher, sessionManager);
+        authenticationService = new AuthenticationService(userRepository, twoFactorService, passwordHasher, sessionManager);
 
         clientRoles = new HashSet<>();
         clientRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
