@@ -6,17 +6,17 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AuthenticationResultTest {
+class AuthenticationContextTest {
     @Test
     void constructor_throwsForNullPrincipal() {
         assertThrows(IllegalArgumentException.class, () ->
-                        new AuthenticationResult(null, TestRoles.PERSONAL_INVESTOR_ROLE));
+                        new AuthenticationContext(null, TestRoles.PERSONAL_INVESTOR_ROLE));
     }
 
     @Test
     void constructor_throwsForNullRole() {
         assertThrows(IllegalArgumentException.class, () ->
-                new AuthenticationResult(new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
+                new AuthenticationContext(new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
                         "johnmdoe@company.com","John", "M", "Doe"), null));
     }
 }

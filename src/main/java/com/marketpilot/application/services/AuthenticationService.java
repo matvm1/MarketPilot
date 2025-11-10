@@ -2,7 +2,7 @@ package com.marketpilot.application.services;
 
 import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
-import com.marketpilot.application.dto.auth.AuthenticationResult;
+import com.marketpilot.application.dto.auth.AuthenticationContext;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.SessionManager;
 import com.marketpilot.application.ports.auth.TwoFactorService;
@@ -48,7 +48,7 @@ public class AuthenticationService {
         this.sessionManager = null;
     }
 
-    public Tuple<AuthenticationStatus, Optional<UUID>> initiateClientAuthentication(String usernameOrEmail, byte[] passwordLightHash, RoleName roleName) {
+    public Tuple<AuthenticationStatus, Optional<AuthenticationContext>> initiateClientAuthentication(String usernameOrEmail, byte[] passwordLightHash, RoleName roleName) {
         Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(UserType.CLIENT, identifier)
                 .or(() -> userRepository.findByPersonalEmail(identifier));
 
@@ -58,17 +58,19 @@ public class AuthenticationService {
                 UserType.CLIENT);
     }
 
-    public Tuple<AuthenticationStatus, Optional<UUID>> initiateEmployeeAuthentication(String employeeId, byte[] passwordLightHash, RoleName roleName) {
+    public Tuple<AuthenticationStatus, Optional<AuthenticationContext>> initiateEmployeeAuthentication(String employeeId, byte[] passwordLightHash, RoleName roleName) {
         return initiateAuthentication(employeeId, passwordLightHash, roleName,
                 userRepository::findByEmployeeId,
                 userRepository::getEmployeePasswordHash,
                 UserType.EMPLOYEE);
     }
 
-    private Tuple<AuthenticationStatus, Optional<UUID>> initiateAuthentication(String identifier, byte[] passwordLightHash, RoleName roleName,
-                                                              Function<String, Optional<User>> userFinder,
-                                                              Function<UUID, Optional<byte[]>> passwordHashFinder,
-                                                              UserType userType) {
+    private Tuple<AuthenticationStatus, Optional<AuthenticationContext>> initiateAuthentication(
+            String identifier, byte[] passwordLightHash,
+            RoleName roleName,
+            Function<String, Optional<User>> userFinder,
+            Function<UUID, Optional<byte[]>> passwordHashFinder,
+            UserType userType) {
         boolean identifierIsValid = identifier != null && !identifier.isBlank();
 
         Optional<User> userOptional = userFinder.apply(identifier);
@@ -89,10 +91,10 @@ public class AuthenticationService {
         boolean hasRole = userExists && authRole != null && authRole.getUserType().equals(userType);
 
         if (identifierIsValid && userExists && hasRole && passwordMatches) {
-            return new Tuple<>(AuthenticationStatus.AWAITING_2FA, Optional.of(user.getUUID()));
+            return new Tuple<>(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(user, authRole)));
         }
 
-        return new Tuple<>(AuthenticationStatus.FAILURE, Optional.empty());
+        return new Tuple<>(AuthenticationStatus.FAILURE, null);
     }
 
     public AuthenticationStatus completeAuthentication(UUID userUuid, Role role, MfaCredential credentials) {
@@ -130,7 +132,7 @@ public class AuthenticationService {
         }
 
         if (isAuthenticated) {
-            if (sessionManager == null || sessionManager.createSession(new AuthenticationResult(user, role)).isPresent())
+            if (sessionManager == null || sessionManager.createSession(new AuthenticationContext(user, role)).isPresent())
                 return AuthenticationStatus.SUCCESS;
         }
 
