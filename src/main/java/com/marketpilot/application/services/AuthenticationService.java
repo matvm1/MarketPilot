@@ -99,16 +99,13 @@ public class AuthenticationService {
         return new Tuple<>(AuthenticationStatus.FAILURE, Optional.empty());
     }
 
-    public AuthenticationStatus completeAuthentication(MfaCredential credentials) {
-        if (credentials == null || credentials.getUserUuid() == null)
+    public AuthenticationStatus completeAuthentication(UUID userUuid, Role role, MfaCredential credentials) {
+        if (userUuid == null || role == null)
             return AuthenticationStatus.FAILURE;
 
-        UUID userUuid = credentials.getUserUuid();
         MfaType mfaType = userRepository.getMfaType(userUuid).orElse(null);
-        Optional<User> userOptional = userRepository.findByUUID(credentials.getUserType(), userUuid);
-        RoleName roleName = credentials.getRoleName();
+        Optional<User> userOptional = userRepository.findByUUID(role.getUserType(), userUuid);
         User user = userOptional.orElse(null);
-        Role userRole = user == null ? null :  user.getRole(roleName);
 
         boolean isAuthenticated = false;
 
@@ -117,9 +114,9 @@ public class AuthenticationService {
             isAuthenticated = true;
         }
         else if (mfaType == MfaType.TOTP) {
-            if (user != null && userRole != null) {
+            if (user != null) {
                 Optional<char[]> totpSecretOptional =
-                    switch (userRole.getUserType()) {
+                    switch (role.getUserType()) {
                         case CLIENT -> userRepository.getClientTotpSecret(userUuid);
                         case EMPLOYEE -> userRepository.getEmployeeTotpSecret(userUuid);
                     };
@@ -137,7 +134,7 @@ public class AuthenticationService {
         }
 
         if (isAuthenticated) {
-            if (sessionManager == null || sessionManager.createSession(new AuthenticationResult(user, userRole)).isPresent())
+            if (sessionManager == null || sessionManager.createSession(new AuthenticationResult(user, role)).isPresent())
                 return AuthenticationStatus.SUCCESS;
         }
 

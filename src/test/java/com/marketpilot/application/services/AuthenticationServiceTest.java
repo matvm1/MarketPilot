@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -165,7 +166,10 @@ public class AuthenticationServiceTest {
     @Test
     @Tag("noPasswordByteErasure")
     void completeAuthentication_returnsFailure_ifCredentialsIsNull() {
-        assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(null));
+        assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
+                UUID.randomUUID(),
+                TestRoles.PERSONAL_INVESTOR_ROLE,
+                null));
     }
 
     @AfterEach
