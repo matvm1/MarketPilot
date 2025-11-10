@@ -1,6 +1,6 @@
 package com.marketpilot.application.services;
 
-import com.marketpilot.application.dto.auth.AuthenticationResult;
+import com.marketpilot.application.dto.auth.AuthenticationContext;
 import com.marketpilot.domain.entities.auth.Permission;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
@@ -16,7 +16,7 @@ public class UserSession {
     //TODO: Consider a safer type for ids (UUID?)
     private int id;
 
-    public UserSession(int sessionID, AuthenticationResult auth, Instant sessionStart) {
+    public UserSession(int sessionID, AuthenticationContext auth, Instant sessionStart) {
         if (sessionID <= 0)
             throw new IllegalArgumentException("sessionId must be a positive integer");
         if (auth == null)

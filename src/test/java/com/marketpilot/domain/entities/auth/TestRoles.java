@@ -37,4 +37,14 @@ public final class TestRoles {
             ALL_PERMISSIONS,
             UserType.EMPLOYEE
     );
+
+    public static Set<Role> all() {
+        Set<Role> roles = new HashSet<>();
+        roles.add(PUBLIC_USER);
+        roles.add(PERSONAL_INVESTOR_ROLE);
+        roles.add(ADMIN_ROLE);
+        roles.add(ANALYST_ROLE);
+
+        return roles;
+    }
 }

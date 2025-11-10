@@ -1,10 +1,10 @@
 package com.marketpilot.application.services;
 
+import com.marketpilot.application.dto.auth.AuthenticationContext;
+import com.marketpilot.application.dto.auth.credentials.TotpCredential;
 import com.marketpilot.application.ports.auth.PasswordHasher;
-import com.marketpilot.application.ports.auth.SessionManager;
 import com.marketpilot.application.ports.auth.TwoFactorService;
 import com.marketpilot.domain.entities.auth.UserType;
-import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.domain.repo.UserRepository;
 import com.marketpilot.application.services.AuthenticationService.AuthenticationStatus;
 import com.marketpilot.domain.entities.auth.Role;
@@ -13,9 +13,7 @@ import com.marketpilot.domain.entities.auth.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,15 +23,14 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceTest {
     @Mock private UserRepository userRepository;
-    @Mock private RoleRepository roleRepository;
-    @Mock private TwoFactorService twoFactorService;
+    @Mock private TwoFactorService totpService;
     @Mock private PasswordHasher passwordHasher;
-    @Mock private SessionManager sessionManager;
 
     private AuthenticationService authenticationService;
 
@@ -52,7 +49,7 @@ public class AuthenticationServiceTest {
     @BeforeEach
     void setUp() {
         userFactory = new UserFactory();
-        authenticationService = new AuthenticationService(userRepository, roleRepository, twoFactorService, passwordHasher, sessionManager);
+        authenticationService = new AuthenticationService(userRepository, totpService, passwordHasher);
 
         clientRoles = new HashSet<>();
         clientRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
@@ -112,7 +109,7 @@ public class AuthenticationServiceTest {
                 .thenReturn(Optional.of(existingClient));
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
-        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(existingClient.getUUID())),
+        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(existingClient, TestRoles.PERSONAL_INVESTOR_ROLE))),
                 authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
@@ -122,7 +119,7 @@ public class AuthenticationServiceTest {
                 .thenReturn(Optional.of(existingClient));
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
-        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(existingClient.getUUID())),
+        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(existingClient, TestRoles.PERSONAL_INVESTOR_ROLE))),
                 authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
@@ -160,13 +157,80 @@ public class AuthenticationServiceTest {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
-        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(existingEmployee.getUUID())),
+        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(existingEmployee, TestRoles.ANALYST_ROLE))),
                 authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordLightHash, RoleName.Analyst));
     }
 
+    @Test
+    @Tag("noPasswordByteErasure")
+    void completeAuthentication_returnsFailure_ifUserIsNull() {
+        when(userRepository.getMfaType(null)).thenReturn(Optional.empty());
+        assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
+                null,
+                TestRoles.PERSONAL_INVESTOR_ROLE,
+                null));
+    }
+
+    @Test
+    @Tag("noPasswordByteErasure")
+    void completeAuthentication_returnsFailure_ifRoleIsNull() {
+        when(userRepository.getMfaType(existingClient.getUUID())).thenReturn(Optional.of(MfaType.NONE));
+        assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
+                existingClient,
+                null,
+                null));
+    }
+
+    @Test
+    @Tag("noPasswordByteErasure")
+    void completeAuthentication_returnsSuccess_ifUserDoesNotHaveMfa() {
+        when(userRepository.getMfaType(existingClient.getUUID())).thenReturn(Optional.of(MfaType.NONE));
+        assertEquals(AuthenticationStatus.SUCCESS, authenticationService.completeAuthentication(
+                existingClient,
+                TestRoles.PERSONAL_INVESTOR_ROLE,
+                null));
+    }
+
+    @Test
+    @Tag("noPasswordByteErasure")
+    void completeAuthentication_returnsFailure_ifCredentialsIsNullForTotpUser() {
+        when(userRepository.getMfaType(existingClient.getUUID())).thenReturn(Optional.of(MfaType.TOTP));
+        assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
+                existingClient,
+                TestRoles.PERSONAL_INVESTOR_ROLE,
+                null));
+    }
+
+    @Test
+    @Tag("noPasswordByteErasure")
+    void completeAuthentication_returnsFailure_ifTotpFailsToVerifyCode() {
+        when(userRepository.getMfaType(existingClient.getUUID())).thenReturn(Optional.of(MfaType.TOTP));
+        when(userRepository.getClientTotpSecret(existingClient.getUUID())).thenReturn(Optional.of("abcdefg12345678".toCharArray()));
+        when(totpService.verify(argThat(c -> ((TotpCredential)c).getCode().equals("123456"))))
+                .thenReturn(false);
+        assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
+                existingClient,
+                TestRoles.PERSONAL_INVESTOR_ROLE,
+                new TotpCredential("123456")));
+    }
+
+    @Test
+    @Tag("noPasswordByteErasure")
+    void completeAuthentication_returnsSuccess_forTotpUserWithValidCredentials() {
+        when(userRepository.getMfaType(existingClient.getUUID())).thenReturn(Optional.of(MfaType.TOTP));
+        when(userRepository.getClientTotpSecret(existingClient.getUUID())).thenReturn(Optional.of("abcdefg12345678".toCharArray()));
+        when(totpService.verify(argThat(c -> ((TotpCredential)c).getCode().equals("123456"))))
+                .thenReturn(true);
+        assertEquals(AuthenticationStatus.SUCCESS, authenticationService.completeAuthentication(
+                existingClient,
+                TestRoles.PERSONAL_INVESTOR_ROLE,
+                new TotpCredential("123456")));
+    }
+
     @AfterEach
-    void invariants() {
-        for (byte b: dummyPasswordLightHash)
-            assertEquals((byte) 0, b);
+    void invariants(TestInfo testInfo) {
+        if(!testInfo.getTags().contains("noPasswordByteErasure"))
+            for (byte b: dummyPasswordLightHash)
+                assertEquals((byte) 0, b);
     }
 }
