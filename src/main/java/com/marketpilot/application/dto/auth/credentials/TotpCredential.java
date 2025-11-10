@@ -1,17 +1,13 @@
 package com.marketpilot.application.dto.auth.credentials;
 
-import com.marketpilot.domain.entities.auth.Role.RoleName;
-import com.marketpilot.domain.entities.auth.UserType;
 
 import java.util.Arrays;
-import java.util.UUID;
 
 public class TotpCredential extends MfaCredential {
     private char[] secret;
     private final String code;
 
-    public TotpCredential(UUID userUuid, UserType userType, RoleName roleName, String code) {
-        super(userUuid, userType, roleName);
+    public TotpCredential(String code) {
         if (code == null)
             throw new IllegalArgumentException("code cannot be null");
         if (code.isBlank())
