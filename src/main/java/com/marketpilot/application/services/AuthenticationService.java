@@ -98,32 +98,37 @@ public class AuthenticationService {
     }
 
     public AuthenticationStatus completeAuthentication(User user, Role role, MfaCredential credentials) {
-        if (user == null || role == null)
-            return AuthenticationStatus.FAILURE;
+        boolean identifierAreValid = user != null && role != null;
 
-        MfaType mfaType = userRepository.getMfaType(user.getUUID()).orElse(null);
+        MfaType mfaType = userRepository.getMfaType(user != null ? user.getUUID() : null)
+                .orElse(null);
 
         boolean isAuthenticated = false;
 
-        if (mfaType == MfaType.NONE) {
-            credentials = null;
-            isAuthenticated = true;
-        }
-        else if (mfaType == MfaType.TOTP && credentials instanceof TotpCredential) {
-            Optional<char[]> totpSecretOptional =
-                switch (role.getUserType()) {
-                    case CLIENT -> userRepository.getClientTotpSecret(user.getUUID());
-                    case EMPLOYEE -> userRepository.getEmployeeTotpSecret(user.getUUID());
-                };
-            ((TotpCredential) credentials).setSecret(totpSecretOptional.orElse(null));
-            if (totpService.verify(credentials)) {
-                totpSecretOptional.ifPresent(secret -> {
-                    fillZero(secret);
-                    secret = null;
-                });
-                totpSecretOptional = Optional.empty();
+        if (identifierAreValid) {
+            if (mfaType == MfaType.NONE) {
                 credentials = null;
                 isAuthenticated = true;
+            } else {
+                if (credentials != null) {
+                    if (mfaType == MfaType.TOTP && credentials instanceof TotpCredential) {
+                        Optional<char[]> totpSecretOptional =
+                                switch (role.getUserType()) {
+                                    case CLIENT -> userRepository.getClientTotpSecret(user.getUUID());
+                                    case EMPLOYEE -> userRepository.getEmployeeTotpSecret(user.getUUID());
+                                };
+                        ((TotpCredential) credentials).setSecret(totpSecretOptional.orElse(null));
+                        if (totpService.verify(credentials)) {
+                            totpSecretOptional.ifPresent(secret -> {
+                                fillZero(secret);
+                                secret = null;
+                            });
+                            totpSecretOptional = Optional.empty();
+                            credentials = null;
+                            isAuthenticated = true;
+                        }
+                    }
+                }
             }
         }
 

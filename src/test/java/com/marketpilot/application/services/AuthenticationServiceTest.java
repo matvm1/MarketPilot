@@ -1,8 +1,8 @@
 package com.marketpilot.application.services;
 
 import com.marketpilot.application.dto.auth.AuthenticationContext;
+import com.marketpilot.application.dto.auth.credentials.TotpCredential;
 import com.marketpilot.application.ports.auth.PasswordHasher;
-import com.marketpilot.application.ports.auth.SessionManager;
 import com.marketpilot.application.ports.auth.TwoFactorService;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.UserRepository;
@@ -21,17 +21,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceTest {
     @Mock private UserRepository userRepository;
-    @Mock private TwoFactorService twoFactorService;
+    @Mock private TwoFactorService totpService;
     @Mock private PasswordHasher passwordHasher;
-    @Mock private SessionManager sessionManager;
 
     private AuthenticationService authenticationService;
 
@@ -50,7 +49,7 @@ public class AuthenticationServiceTest {
     @BeforeEach
     void setUp() {
         userFactory = new UserFactory();
-        authenticationService = new AuthenticationService(userRepository, twoFactorService, passwordHasher, sessionManager);
+        authenticationService = new AuthenticationService(userRepository, totpService, passwordHasher);
 
         clientRoles = new HashSet<>();
         clientRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
@@ -164,16 +163,72 @@ public class AuthenticationServiceTest {
 
     @Test
     @Tag("noPasswordByteErasure")
-    void completeAuthentication_returnsFailure_ifCredentialsIsNull() {
+    void completeAuthentication_returnsFailure_ifUserIsNull() {
+        when(userRepository.getMfaType(null)).thenReturn(Optional.empty());
+        assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
+                null,
+                TestRoles.PERSONAL_INVESTOR_ROLE,
+                null));
+    }
+
+    @Test
+    @Tag("noPasswordByteErasure")
+    void completeAuthentication_returnsFailure_ifRoleIsNull() {
+        when(userRepository.getMfaType(existingClient.getUUID())).thenReturn(Optional.of(MfaType.NONE));
+        assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
+                existingClient,
+                null,
+                null));
+    }
+
+    @Test
+    @Tag("noPasswordByteErasure")
+    void completeAuthentication_returnsSuccess_ifUserDoesNotHaveMfa() {
+        when(userRepository.getMfaType(existingClient.getUUID())).thenReturn(Optional.of(MfaType.NONE));
+        assertEquals(AuthenticationStatus.SUCCESS, authenticationService.completeAuthentication(
+                existingClient,
+                TestRoles.PERSONAL_INVESTOR_ROLE,
+                null));
+    }
+
+    @Test
+    @Tag("noPasswordByteErasure")
+    void completeAuthentication_returnsFailure_ifCredentialsIsNullForTotpUser() {
+        when(userRepository.getMfaType(existingClient.getUUID())).thenReturn(Optional.of(MfaType.TOTP));
         assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
                 existingClient,
                 TestRoles.PERSONAL_INVESTOR_ROLE,
                 null));
     }
 
+    @Test
+    @Tag("noPasswordByteErasure")
+    void completeAuthentication_returnsFailure_ifTotpFailsToVerifyCode() {
+        when(userRepository.getMfaType(existingClient.getUUID())).thenReturn(Optional.of(MfaType.TOTP));
+        when(userRepository.getClientTotpSecret(existingClient.getUUID())).thenReturn(Optional.of("abcdefg12345678".toCharArray()));
+        when(totpService.verify(argThat(c -> ((TotpCredential)c).getCode().equals("123456"))))
+                .thenReturn(false);
+        assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
+                existingClient,
+                TestRoles.PERSONAL_INVESTOR_ROLE,
+                new TotpCredential("123456")));
+    }
+
+    @Test
+    @Tag("noPasswordByteErasure")
+    void completeAuthentication_returnsSuccess_forTotpUserWithValidCredentials() {
+        when(userRepository.getMfaType(existingClient.getUUID())).thenReturn(Optional.of(MfaType.TOTP));
+        when(userRepository.getClientTotpSecret(existingClient.getUUID())).thenReturn(Optional.of("abcdefg12345678".toCharArray()));
+        when(totpService.verify(argThat(c -> ((TotpCredential)c).getCode().equals("123456"))))
+                .thenReturn(true);
+        assertEquals(AuthenticationStatus.SUCCESS, authenticationService.completeAuthentication(
+                existingClient,
+                TestRoles.PERSONAL_INVESTOR_ROLE,
+                new TotpCredential("123456")));
+    }
+
     @AfterEach
     void invariants(TestInfo testInfo) {
-        System.out.println(testInfo.getTags());
         if(!testInfo.getTags().contains("noPasswordByteErasure"))
             for (byte b: dummyPasswordLightHash)
                 assertEquals((byte) 0, b);
