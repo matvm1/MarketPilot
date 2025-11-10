@@ -198,12 +198,7 @@ public class RegistrationService {
         String expirationColumn = registrationUserType == UserType.CLIENT ? "CLIENT_REGISTRATION_EXPIRATION" : "EMPLOYEE_REGISTRATION_EXPIRATION";
         Tuple<User, Map<String, Object>> existingPendingVerification = existingPendingVerificationOptional.orElse(null);
 
-        byte[] passwordHash;
-        try {
-            passwordHash = passwordHasher.hash(passwordLightHash);
-        } catch (IllegalArgumentException e) {
-            passwordHash = null;
-        }
+        byte[] passwordHash = passwordHasher.hash(passwordLightHash);
         byte[] dummyPasswordHashStored = BufferedConverter.toBytes("$2a$10$dummyhashtopreventtimingattacksXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         byte[] passwordHashStored = getPasswordHashForValidation(existingUsernameUserOptional,
                 existingIdentifier1UserOptional,
