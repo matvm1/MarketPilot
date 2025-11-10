@@ -16,7 +16,6 @@ import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
 import com.marketpilot.util.VerificationCodeGenerator;
-import com.password4j.BadParametersException;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -138,8 +137,6 @@ public class RegistrationService {
             User existingClient = existingClientOptional.get();
             UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, roleCache.fetch(employeeRoleNames), employeeEmail,
                     existingClient.getFirstName(), existingClient.getMiddleName(), existingClient.getLastName());
-            BiFunction<String, String, Optional<User>> userFinder = (identifier1, identifier2) -> userRepository.findByEmployeeId(employeeId)
-                    .or(() -> userRepository.findByEmployeeEmail(employeeEmail));
             BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) ->
                     userFactory.assignEmployeeAttributes(existingClient, (UserEmployeeDTO) b);
 
@@ -311,7 +308,6 @@ public class RegistrationService {
             switch (registrationUserType) {
                 case CLIENT -> (String) registrationProperties.get("CLIENT_REGISTRATION_CODE");
                 case EMPLOYEE -> (String) registrationProperties.get("EMPLOYEE_REGISTRATION_CODE");
-                default -> null;
         };
 
         boolean isRegistrationExpired = registrationProperties != null &&
