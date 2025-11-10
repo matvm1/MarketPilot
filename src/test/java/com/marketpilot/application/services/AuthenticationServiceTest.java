@@ -166,7 +166,7 @@ public class AuthenticationServiceTest {
     @Tag("noPasswordByteErasure")
     void completeAuthentication_returnsFailure_ifCredentialsIsNull() {
         assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
-                UUID.randomUUID(),
+                existingClient,
                 TestRoles.PERSONAL_INVESTOR_ROLE,
                 null));
     }
