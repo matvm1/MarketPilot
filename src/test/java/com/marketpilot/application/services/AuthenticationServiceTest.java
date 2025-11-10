@@ -1,5 +1,6 @@
 package com.marketpilot.application.services;
 
+import com.marketpilot.application.dto.auth.AuthenticationContext;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.SessionManager;
 import com.marketpilot.application.ports.auth.TwoFactorService;
@@ -109,7 +110,7 @@ public class AuthenticationServiceTest {
                 .thenReturn(Optional.of(existingClient));
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
-        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(existingClient.getUUID())),
+        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(existingClient, TestRoles.PERSONAL_INVESTOR_ROLE))),
                 authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
@@ -119,7 +120,7 @@ public class AuthenticationServiceTest {
                 .thenReturn(Optional.of(existingClient));
         when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
-        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(existingClient.getUUID())),
+        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(existingClient, TestRoles.PERSONAL_INVESTOR_ROLE))),
                 authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
@@ -157,7 +158,7 @@ public class AuthenticationServiceTest {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
-        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(existingEmployee.getUUID())),
+        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(existingEmployee, TestRoles.ANALYST_ROLE))),
                 authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordLightHash, RoleName.Analyst));
     }
 

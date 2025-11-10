@@ -94,7 +94,7 @@ public class AuthenticationService {
             return new Tuple<>(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(user, authRole)));
         }
 
-        return new Tuple<>(AuthenticationStatus.FAILURE, null);
+        return new Tuple<>(AuthenticationStatus.FAILURE, Optional.empty());
     }
 
     public AuthenticationStatus completeAuthentication(UUID userUuid, Role role, MfaCredential credentials) {
