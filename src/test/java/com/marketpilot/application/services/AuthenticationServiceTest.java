@@ -13,9 +13,7 @@ import com.marketpilot.domain.entities.auth.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -164,9 +162,17 @@ public class AuthenticationServiceTest {
                 authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordLightHash, RoleName.Analyst));
     }
 
+    @Test
+    @Tag("noPasswordByteErasure")
+    void completeAuthentication_returnsFailure_ifCredentialsIsNull() {
+        assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(null));
+    }
+
     @AfterEach
-    void invariants() {
-        for (byte b: dummyPasswordLightHash)
-            assertEquals((byte) 0, b);
+    void invariants(TestInfo testInfo) {
+        System.out.println(testInfo.getTags());
+        if(!testInfo.getTags().contains("noPasswordByteErasure"))
+            for (byte b: dummyPasswordLightHash)
+                assertEquals((byte) 0, b);
     }
 }
