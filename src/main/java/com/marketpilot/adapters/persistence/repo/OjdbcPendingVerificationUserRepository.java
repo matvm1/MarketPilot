@@ -22,7 +22,6 @@ import static com.marketpilot.util.UuidUtil.uuidToBytes;
 public class OjdbcPendingVerificationUserRepository implements PendingVerificationUserRepository {
     private final UserFactory userFactory;
     private final OjdbcRoleCache roleCache;
-    private final String ENTITY_TABLE_NAME = "APP_USER";
     private final String[] ENTITY_COLUMN_NAMES = {
             "ID",
             "UUID",
@@ -66,7 +65,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
 
         String[] registrationPropertyColumns = userType == UserType.CLIENT ? CLIENT_REGISTRATION_PROPERTIES : EMPLOYEE_REGISTRATION_PROPERTIES;
         String fetchSql = buildEntityFetchSql(userType, filterByColumn, registrationPropertyColumns);
-        Optional<Tuple<User, Map<String, Object>>> entityRecordOptional = null;
+        Optional<Tuple<User, Map<String, Object>>> entityRecordOptional;
         try {
             entityRecordOptional = JdbcExecutor.fetchToObject(fetchSql,
                     rs -> {
@@ -109,6 +108,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
         if (registrationPropertyColumns != null)
             sql.append(", ").append(String.join(", ", registrationPropertyColumns));
 
+        String ENTITY_TABLE_NAME = "APP_USER";
         sql.append(" FROM ").append(ENTITY_TABLE_NAME);
 
         sql.append(" WHERE ")

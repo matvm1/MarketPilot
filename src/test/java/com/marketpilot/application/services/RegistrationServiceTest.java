@@ -1,12 +1,10 @@
 package com.marketpilot.application.services;
 
-import com.marketpilot.adapters.persistence.repo.OjdbcRoleCache;
 import com.marketpilot.application.ports.EmailEngine;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.RoleCache;
 import com.marketpilot.domain.repo.EmployeeRepository;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
-import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.domain.repo.UserRepository;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
@@ -26,11 +24,9 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,7 +35,6 @@ public class RegistrationServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private PendingVerificationUserRepository pendingVerificationUserRepository;
     @Mock private EmployeeRepository employeeRepository;
-    @Mock private RoleRepository roleRepository;
     @Mock private EmailEngine emailEngine;
     @Mock private PasswordHasher passwordHasher;
     @Mock private RoleCache roleCache;
@@ -58,14 +53,12 @@ public class RegistrationServiceTest {
 
     // use dummyPasswordLightHash as argument to all authentication calls
     private byte[] dummyPasswordLightHash;
-    private final byte[] dummySalt = BufferedConverter.toBytes("b234vhnosd9021bhj23vsdb#nkjb$bnjk32!mjkhn*msdhjb3493bn");
     private final byte[] dummyPasswordHash = BufferedConverter.toBytes("xcusdhfgvasj@#njkhbf@nmdsejkhf%jnkjkbhjsd!!@$%bn1sdasd2n19xvds71ns3");
     private final byte[] dummyPasswordHashStored = dummyPasswordHash.clone();
 
     @BeforeEach
     void setUp() {
         userFactory = new UserFactory();
-        Set<Role.RoleName> roleNameSet = Arrays.stream(Role.RoleName.values()).collect(Collectors.toSet());
         registrationService = new RegistrationService(userRepository, pendingVerificationUserRepository,
                 employeeRepository, emailEngine, passwordHasher, userFactory, roleCache);
 
@@ -465,7 +458,7 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void completeRegistration_returnsFailureIfClientVerificationCodeDoesNotMatch() throws SQLException {
+    void completeRegistration_returnsFailureIfClientVerificationCodeDoesNotMatch() {
         Map<String, Object> registrationProps = new HashMap<>();
         registrationProps.put("CLIENT_REGISTRATION_EXPIRATION", Instant.now().plus(Duration.ofMinutes(15)));
         registrationProps.put("CLIENT_REGISTRATION_CODE", "123456");
@@ -475,7 +468,7 @@ public class RegistrationServiceTest {
     }
 
     @Test
-    void completeRegistration_returnsFailureIfEmployeeVerificationCodeDoesNotMatch() throws SQLException {
+    void completeRegistration_returnsFailureIfEmployeeVerificationCodeDoesNotMatch() {
         Map<String, Object> registrationProps = new HashMap<>();
         registrationProps.put("EMPLOYEE_REGISTRATION_EXPIRATION", Instant.now().plus(Duration.ofMinutes(15)));
         registrationProps.put("EMPLOYEE_REGISTRATION_CODE", "123456");
