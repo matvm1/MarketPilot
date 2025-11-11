@@ -1,9 +1,9 @@
 package com.marketpilot.application.services;
 
-import com.marketpilot.adapters.persistence.repo.RoleCache;
-import com.marketpilot.application.dto.EmailMessage;
+import com.marketpilot.adapters.persistence.repo.OjdbcRoleCache;
 import com.marketpilot.application.ports.EmailEngine;
 import com.marketpilot.application.ports.auth.PasswordHasher;
+import com.marketpilot.application.ports.auth.RoleCache;
 import com.marketpilot.domain.repo.EmployeeRepository;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.domain.repo.RoleRepository;
@@ -22,15 +22,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.marketpilot.application.services.RegistrationService.RegistrationStatus;
 
-import javax.swing.text.html.Option;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.lenient;
@@ -45,7 +42,7 @@ public class RegistrationServiceTest {
     @Mock private RoleRepository roleRepository;
     @Mock private EmailEngine emailEngine;
     @Mock private PasswordHasher passwordHasher;
-    private RoleCache roleCache;
+    @Mock private RoleCache roleCache;
 
     private RegistrationService registrationService;
 
@@ -69,14 +66,14 @@ public class RegistrationServiceTest {
     void setUp() {
         userFactory = new UserFactory();
         Set<Role.RoleName> roleNameSet = Arrays.stream(Role.RoleName.values()).collect(Collectors.toSet());
-        when(roleRepository.findByRoleNames(roleNameSet)).thenReturn(Optional.of(TestRoles.all()));
-        roleCache = new RoleCache(roleRepository);
-        roleCache.load();
         registrationService = new RegistrationService(userRepository, pendingVerificationUserRepository,
                 employeeRepository, emailEngine, passwordHasher, userFactory, roleCache);
 
         clientRoleNames = new RoleName[] {RoleName.PersonalInvestor};
         employeeRoleNames = new RoleName[] {RoleName.Analyst};
+
+        when(roleCache.fetch(clientRoleNames)).thenReturn(TestRoles.allClient());
+        when(roleCache.fetch(employeeRoleNames)).thenReturn(TestRoles.allEmployee());
 
         clientRoles = roleCache.fetch(clientRoleNames);
         employeeRoles = roleCache.fetch(employeeRoleNames);

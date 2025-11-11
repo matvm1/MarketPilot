@@ -9,13 +9,11 @@ import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.util.Tuple;
-import oracle.jdbc.internal.OracleTimestamp;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static com.marketpilot.adapters.persistence.jdbc.Param.*;
 import static com.marketpilot.util.UuidUtil.bytesToUUID;
@@ -23,7 +21,7 @@ import static com.marketpilot.util.UuidUtil.uuidToBytes;
 
 public class OjdbcPendingVerificationUserRepository implements PendingVerificationUserRepository {
     private final UserFactory userFactory;
-    private final RoleCache roleCache;
+    private final OjdbcRoleCache roleCache;
     private final String ENTITY_TABLE_NAME = "APP_USER";
     private final String[] ENTITY_COLUMN_NAMES = {
             "ID",
@@ -47,7 +45,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
             "EMPLOYEE_REGISTRATION_EXPIRATION"
     };
 
-    public OjdbcPendingVerificationUserRepository(RoleCache roleCache) {
+    public OjdbcPendingVerificationUserRepository(OjdbcRoleCache roleCache) {
         this.userFactory = new UserFactory();
         this.roleCache = roleCache;
     }

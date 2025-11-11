@@ -1,12 +1,12 @@
 package com.marketpilot.application.services;
 
-import com.marketpilot.adapters.persistence.repo.RoleCache;
 import com.marketpilot.application.dto.EmailMessage;
 import com.marketpilot.application.dto.user.UserAbstractDTO;
 import com.marketpilot.application.dto.user.UserClientDTO;
 import com.marketpilot.application.dto.user.UserEmployeeDTO;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.EmailEngine;
+import com.marketpilot.application.ports.auth.RoleCache;
 import com.marketpilot.domain.repo.EmployeeRepository;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.domain.repo.UserRepository;
