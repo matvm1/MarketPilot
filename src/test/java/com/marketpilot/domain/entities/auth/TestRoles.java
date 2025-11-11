@@ -47,4 +47,19 @@ public final class TestRoles {
 
         return roles;
     }
+
+    public static Set<Role> allClient() {
+        Set<Role> roles = new HashSet<>();
+        roles.add(PUBLIC_USER);
+        roles.add(PERSONAL_INVESTOR_ROLE);
+
+        return roles;
+    }
+    public static Set<Role> allEmployee() {
+        Set<Role> roles = new HashSet<>();
+        roles.add(ADMIN_ROLE);
+        roles.add(ANALYST_ROLE);
+
+        return roles;
+    }
 }
