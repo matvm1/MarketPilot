@@ -1,4 +1,4 @@
-package com.marketpilot.application.services;
+package com.marketpilot.domain.entities.auth;
 
 
 public enum MfaType {

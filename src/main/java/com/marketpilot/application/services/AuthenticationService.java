@@ -1,5 +1,6 @@
 package com.marketpilot.application.services;
 
+import com.marketpilot.domain.entities.auth.MfaType;
 import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
 import com.marketpilot.application.dto.auth.AuthenticationContext;

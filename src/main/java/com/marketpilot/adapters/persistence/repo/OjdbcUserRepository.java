@@ -3,7 +3,7 @@ package com.marketpilot.adapters.persistence.repo;
 import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
 import com.marketpilot.adapters.persistence.jdbc.Param;
 import com.marketpilot.application.dto.auth.UserStatus;
-import com.marketpilot.application.services.MfaType;
+import com.marketpilot.domain.entities.auth.MfaType;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.Tuple;
 import com.marketpilot.application.services.UserFactory;
