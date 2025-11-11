@@ -1,6 +1,7 @@
 package com.marketpilot.application.services;
 
 import com.marketpilot.application.ports.EmailEngine;
+import com.marketpilot.application.ports.VerificationCodeGenerator;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.RoleCache;
 import com.marketpilot.domain.repo.EmployeeRepository;
@@ -38,6 +39,7 @@ public class RegistrationServiceTest {
     @Mock private EmailEngine emailEngine;
     @Mock private PasswordHasher passwordHasher;
     @Mock private RoleCache roleCache;
+    @Mock private VerificationCodeGenerator verificationCodeGenerator;
 
     private RegistrationService registrationService;
 
@@ -50,6 +52,7 @@ public class RegistrationServiceTest {
     private Set<Role> adminRoles;
 
     private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email";
+    private final int VERIFICATION_CODE_LENGTH = 8;
 
     // use dummyPasswordLightHash as argument to all authentication calls
     private byte[] dummyPasswordLightHash;
@@ -60,7 +63,7 @@ public class RegistrationServiceTest {
     void setUp() {
         userFactory = new UserFactory();
         registrationService = new RegistrationService(userRepository, pendingVerificationUserRepository,
-                employeeRepository, emailEngine, passwordHasher, userFactory, roleCache);
+                employeeRepository, emailEngine, passwordHasher, userFactory, roleCache, verificationCodeGenerator);
 
         clientRoleNames = new RoleName[] {RoleName.PersonalInvestor};
         employeeRoleNames = new RoleName[] {RoleName.Analyst};
@@ -145,6 +148,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.empty());
         when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
+        when(verificationCodeGenerator.generateAlphanumericCode(VERIFICATION_CODE_LENGTH)).thenReturn("a".repeat(VERIFICATION_CODE_LENGTH));
         when(emailEngine.sendTemplatedEmail(
                 argThat(msg -> msg.recipient().equals("johnmdoe@outlook.com")),
                 anyString()
@@ -218,6 +222,7 @@ public class RegistrationServiceTest {
                 eq(dummyPasswordHash),
                 anyString()
         )).thenReturn(true);
+        when(verificationCodeGenerator.generateAlphanumericCode(VERIFICATION_CODE_LENGTH)).thenReturn("a".repeat(VERIFICATION_CODE_LENGTH));
         when(emailEngine.sendTemplatedEmail(
                 argThat(email -> email.recipient().equals("johnmdoe@outlook.com")),
                 eq(VERIFICATION_EMAIL_TEMPLATE)))
@@ -320,6 +325,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.empty());
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.empty());
         when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.empty());
+        when(verificationCodeGenerator.generateAlphanumericCode(VERIFICATION_CODE_LENGTH)).thenReturn("a".repeat(VERIFICATION_CODE_LENGTH));
         when(emailEngine.sendTemplatedEmail(
                 argThat(msg -> msg.recipient().equals("johnmdoe@company.com")),
                 anyString()
@@ -424,6 +430,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.empty());
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.empty());
         when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe")).thenReturn(Optional.empty());
+        when(verificationCodeGenerator.generateAlphanumericCode(VERIFICATION_CODE_LENGTH)).thenReturn("a".repeat(VERIFICATION_CODE_LENGTH));
         when(emailEngine.sendTemplatedEmail(
                 argThat(email -> email.recipient().equals("johnmdoe@company.com")),
                 eq(VERIFICATION_EMAIL_TEMPLATE)))

@@ -1,10 +1,15 @@
 package com.marketpilot.util;
 
+import com.marketpilot.application.ports.VerificationCodeGenerator;
+
 import java.security.SecureRandom;
 
-public class VerificationCodeGenerator {
+public class SecureRandomVerificationCodeGenerator implements VerificationCodeGenerator {
     private static final SecureRandom secureRandom = new SecureRandom();
-    public static String generateAlphanumericCode(int length) {
+
+    @Override
+    public String generateAlphanumericCode(int length) {
+
         if (length < 1) {
             throw new IllegalArgumentException("length must be at least 1");
         }
@@ -14,7 +19,7 @@ public class VerificationCodeGenerator {
         StringBuilder code = new StringBuilder(length);
 
         for (int i = 0; i < length; i++) {
-            int index = secureRandom.nextInt(chars.length());
+            int index = SecureRandomVerificationCodeGenerator.secureRandom.nextInt(chars.length());
             code.append(chars.charAt(index));
         }
 

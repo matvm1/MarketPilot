@@ -4,6 +4,7 @@ import com.marketpilot.application.dto.EmailMessage;
 import com.marketpilot.application.dto.user.UserAbstractDTO;
 import com.marketpilot.application.dto.user.UserClientDTO;
 import com.marketpilot.application.dto.user.UserEmployeeDTO;
+import com.marketpilot.application.ports.VerificationCodeGenerator;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.EmailEngine;
 import com.marketpilot.application.ports.auth.RoleCache;
@@ -15,7 +16,6 @@ import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
-import com.marketpilot.util.VerificationCodeGenerator;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -41,6 +41,7 @@ public class RegistrationService {
     private final PasswordHasher passwordHasher;
     private final UserFactory userFactory;
     private final RoleCache roleCache;
+    private final VerificationCodeGenerator verificationCodeGenerator;
 
     private final int VERIFICATION_CODE_LENGTH = 8;
     private final String CLIENT_VERIFICATION_EMAIL_SUBJECT = "Welcome to MarketPilot! Verify Your Email to Activate Your Account";
@@ -54,7 +55,8 @@ public class RegistrationService {
                                EmailEngine emailEngine,
                                PasswordHasher passwordHasher,
                                UserFactory userFactory,
-                               RoleCache roleCache) {
+                               RoleCache roleCache,
+                               VerificationCodeGenerator verificationCodeGenerator) {
         this.userRepository = userRepository;
         this.pendingVerificationUserRepository = pendingVerificationUserRepository;
         this.employeeRepository = employeeRepository;
@@ -62,6 +64,7 @@ public class RegistrationService {
         this.passwordHasher = passwordHasher;
         this.userFactory = userFactory;
         this.roleCache = roleCache;
+        this.verificationCodeGenerator = verificationCodeGenerator;
     }
 
     public RegistrationStatus initiateClientRegistration(String username, byte[] passwordLightHash, Role.RoleName[] clientRoleNames, String personalEmail,
@@ -233,7 +236,7 @@ public class RegistrationService {
             catch (IllegalArgumentException e) {
                 return RegistrationStatus.FAILURE;
             }
-            String verificationCode = VerificationCodeGenerator.generateAlphanumericCode(VERIFICATION_CODE_LENGTH);
+            String verificationCode = verificationCodeGenerator.generateAlphanumericCode(VERIFICATION_CODE_LENGTH);
             Map<String, Object> emailVars = new HashMap<>();
             emailVars.put("username", user.getUsername());
             emailVars.put("fullName", user.getFullName());
