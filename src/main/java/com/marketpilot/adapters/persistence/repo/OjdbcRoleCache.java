@@ -33,7 +33,6 @@ public class OjdbcRoleCache implements RoleCache {
         try {
             Set<Role.RoleName> roleNameSet = Arrays.stream(Role.RoleName.values()).collect(Collectors.toSet());
             Set<Role> roles = roleRepository.findByRoleNames(roleNameSet).orElseThrow();
-            System.out.println(roles);
             roleCache = roles.stream().collect(Collectors.toMap(Role::getRoleName, role -> role));
             idCache = JdbcExecutor.fetchToMap("""
                 SELECT ID, NAME
