@@ -2,6 +2,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.0.0</version>
+  </parent>
+
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.marketpilot</groupId>
@@ -10,12 +16,6 @@
   <packaging>jar</packaging>
   <name>MarketPilot</name>
   <url>http://maven.apache.org</url>
-
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.0</version>
-  </parent>
 
   <!-- DO NOT REMOVE - required by Surefire to locate mockito-core JAR -->
   <properties>
@@ -43,6 +43,11 @@
   </dependencyManagement>
 
   <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
     <!-- JUnit 5 dependency (version comes from BOM) -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
