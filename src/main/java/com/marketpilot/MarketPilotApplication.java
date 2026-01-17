@@ -1,6 +1,7 @@
 package com.marketpilot;
 
 import com.marketpilot.application.ports.auth.TotpService;
+import com.marketpilot.application.services.AuthenticationService;
 import config.AppConfig;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -13,8 +14,10 @@ public class MarketPilotApplication {
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
         ctx.registerShutdownHook();
 
-        TotpService totpService = ctx.getBean(TotpService.class);
-        System.out.println(totpService.generateSecret());
+        AuthenticationService authenticationService = ctx.getBean(AuthenticationService.class);
+        System.out.println(authenticationService.initiateClientAuthentication("abc", null, null));
+
+        Thread.currentThread().join();
     }
 }
     
