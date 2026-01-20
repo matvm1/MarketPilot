@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+// TODO: Let component managers handle singleton behavior
 public class OjdbcRoleCache implements RoleCache {
     private static OjdbcRoleCache instance;
     private final RoleRepository roleRepository;
@@ -47,6 +48,9 @@ public class OjdbcRoleCache implements RoleCache {
     }
 
     public Set<Role> fetch(Role.RoleName[] roleNames) {
+        if (roleNames == null)
+            return new HashSet<>();
+
         Set<Role> roles = new HashSet<>();
         for (Role.RoleName roleName : roleNames)
             roles.add(roleCache.get(roleName));

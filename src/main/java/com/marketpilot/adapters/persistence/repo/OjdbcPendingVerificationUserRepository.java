@@ -44,6 +44,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
             "EMPLOYEE_REGISTRATION_EXPIRATION"
     };
 
+    // TODO: Loosely couple with interface
     public OjdbcPendingVerificationUserRepository(OjdbcRoleCache roleCache) {
         this.userFactory = new UserFactory();
         this.roleCache = roleCache;

@@ -2,7 +2,9 @@ package config;
 
 import org.springframework.context.annotation.Import;
 
-@Import({AuthServiceConfig.class, RepositoryConfig.class})
+@Import({AuthServiceConfig.class,
+        RegistrationServiceConfig.class,
+        RepositoryConfig.class})
 public class AppConfig {
     
 }

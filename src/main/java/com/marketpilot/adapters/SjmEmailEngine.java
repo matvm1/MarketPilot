@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 // Simple Java Mail
+// TODO: Let component manager handle singleton behavior
 public class SjmEmailEngine implements EmailEngine {
     private static SjmEmailEngine instance;
     private static Mailer mailer;

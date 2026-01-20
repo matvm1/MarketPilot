@@ -2,6 +2,7 @@ package com.marketpilot;
 
 import com.marketpilot.application.ports.auth.TotpService;
 import com.marketpilot.application.services.AuthenticationService;
+import com.marketpilot.application.services.RegistrationService;
 import config.AppConfig;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -16,6 +17,10 @@ public class MarketPilotApplication {
 
         AuthenticationService authenticationService = ctx.getBean(AuthenticationService.class);
         System.out.println(authenticationService.initiateClientAuthentication("abc", null, null));
+
+        RegistrationService registrationService = ctx.getBean(RegistrationService.class);
+        System.out.println(registrationService.initiateClientRegistration("user", null, null,
+                "user@marketpilot.com", "user", "", "1"));
 
         Thread.currentThread().join();
     }
