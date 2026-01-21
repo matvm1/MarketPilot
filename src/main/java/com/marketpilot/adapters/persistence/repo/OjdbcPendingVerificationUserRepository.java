@@ -3,6 +3,7 @@ package com.marketpilot.adapters.persistence.repo;
 import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
 import com.marketpilot.adapters.persistence.jdbc.Param;
 import com.marketpilot.application.dto.auth.UserStatus;
+import com.marketpilot.application.ports.auth.RoleCache;
 import com.marketpilot.application.services.UserFactory;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
@@ -21,7 +22,7 @@ import static com.marketpilot.util.UuidUtil.uuidToBytes;
 
 public class OjdbcPendingVerificationUserRepository implements PendingVerificationUserRepository {
     private final UserFactory userFactory;
-    private final OjdbcRoleCache roleCache;
+    private final RoleCache roleCache;
     private final String[] ENTITY_COLUMN_NAMES = {
             "ID",
             "UUID",
@@ -44,8 +45,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
             "EMPLOYEE_REGISTRATION_EXPIRATION"
     };
 
-    // TODO: Loosely couple with interface
-    public OjdbcPendingVerificationUserRepository(OjdbcRoleCache roleCache) {
+    public OjdbcPendingVerificationUserRepository(RoleCache roleCache) {
         this.userFactory = new UserFactory();
         this.roleCache = roleCache;
     }

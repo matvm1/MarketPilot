@@ -1,6 +1,7 @@
 package config;
 
 import com.marketpilot.adapters.persistence.repo.*;
+import com.marketpilot.application.ports.auth.RoleCache;
 import com.marketpilot.domain.repo.EmployeeRepository;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.domain.repo.RoleRepository;
@@ -21,7 +22,7 @@ public class RepositoryConfig {
     }
 
     @Bean
-    public PendingVerificationUserRepository pendingVerificationUserRepository(OjdbcRoleCache roleCache) {
+    public PendingVerificationUserRepository pendingVerificationUserRepository(RoleCache roleCache) {
         return new OjdbcPendingVerificationUserRepository(roleCache);
     }
 

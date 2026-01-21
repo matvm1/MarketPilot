@@ -13,21 +13,13 @@ import java.util.stream.Collectors;
 
 // TODO: Let component managers handle singleton behavior
 public class OjdbcRoleCache implements RoleCache {
-    private static OjdbcRoleCache instance;
     private final RoleRepository roleRepository;
     private Map<Role.RoleName, Role> roleCache;
     private Map<Role.RoleName, Integer> idCache;
 
-    private OjdbcRoleCache() {
-        this.roleRepository = new OjdbcRoleRepository();
-    }
-
-    public static OjdbcRoleCache getInstance() {
-        if (instance == null) {
-            instance = new OjdbcRoleCache();
-            instance.load();
-        }
-        return instance;
+    public OjdbcRoleCache(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
+        this.load();
     }
 
     private void load() {

@@ -12,6 +12,7 @@ import com.marketpilot.application.services.RegistrationService;
 import com.marketpilot.application.services.UserFactory;
 import com.marketpilot.domain.repo.EmployeeRepository;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
+import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.domain.repo.UserRepository;
 import com.marketpilot.util.SecureRandomVerificationCodeGenerator;
 import org.springframework.context.annotation.Bean;
@@ -48,11 +49,9 @@ public class RegistrationServiceConfig {
         return new UserFactory();
     }
 
-
-    // TODO: Abstract as RoleCache
     @Bean
-    public OjdbcRoleCache roleCache() {
-        return OjdbcRoleCache.getInstance();
+    public RoleCache roleCache(RoleRepository roleRepository) {
+        return new OjdbcRoleCache(roleRepository);
     }
 
     @Bean
