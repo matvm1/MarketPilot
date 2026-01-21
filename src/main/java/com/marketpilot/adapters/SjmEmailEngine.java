@@ -1,6 +1,5 @@
 package com.marketpilot.adapters;
 
-import com.marketpilot.adapters.persistence.PebbleHtmlTemplateEngine;
 import com.marketpilot.application.dto.EmailMessage;
 import com.marketpilot.application.ports.EmailEngine;
 import org.simplejavamail.api.email.Email;
@@ -15,7 +14,6 @@ import java.util.Properties;
 
 // Simple Java Mail
 public class SjmEmailEngine implements EmailEngine {
-    private static SjmEmailEngine instance;
     private static Mailer mailer;
     private static String smtpHost;
     private static String smtpEmail;

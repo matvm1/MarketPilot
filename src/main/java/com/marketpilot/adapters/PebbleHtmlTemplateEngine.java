@@ -1,4 +1,4 @@
-package com.marketpilot.adapters.persistence;
+package com.marketpilot.adapters;
 
 import com.marketpilot.application.ports.HtmlTemplateEngine;
 import io.pebbletemplates.pebble.PebbleEngine;
