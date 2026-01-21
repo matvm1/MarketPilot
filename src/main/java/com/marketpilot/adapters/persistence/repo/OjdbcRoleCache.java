@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-// TODO: Let component managers handle singleton behavior
 public class OjdbcRoleCache implements RoleCache {
     private final RoleRepository roleRepository;
     private Map<Role.RoleName, Role> roleCache;
