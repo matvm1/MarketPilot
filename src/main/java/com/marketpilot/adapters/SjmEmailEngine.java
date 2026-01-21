@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 // Simple Java Mail
-// TODO: Let component manager handle singleton behavior
 public class SjmEmailEngine implements EmailEngine {
     private static SjmEmailEngine instance;
     private static Mailer mailer;
@@ -22,20 +21,13 @@ public class SjmEmailEngine implements EmailEngine {
     private static String smtpEmail;
     private static String smtpPassword;
 
-    private SjmEmailEngine() {
+    public SjmEmailEngine() {
         readCredentials();
 
         mailer = MailerBuilder
                 .withSMTPServer(smtpHost, 587, smtpEmail, smtpPassword)
                 .withTransportStrategy(TransportStrategy.SMTP_TLS)
                 .buildMailer();
-    }
-
-    public static SjmEmailEngine getInstance() {
-        if (instance == null)
-            instance = new SjmEmailEngine();
-
-        return instance;
     }
 
     @Override

@@ -34,8 +34,8 @@ public class RegistrationServiceConfig {
     }
 
     @Bean
-    public SjmEmailEngine emailEngine() {
-        return SjmEmailEngine.getInstance();
+    public EmailEngine emailEngine() {
+        return new SjmEmailEngine();
     }
 
     @Bean
