@@ -10,6 +10,7 @@ import java.util.*;
 // Do not expose outside MarketPilot project
 //TODO: validate incoming sql
 //TODO: unit tests, integration tests
+//TODO: Spring-managed connections
 public class JdbcExecutor {
     private static final PoolDataSource pool = ConnectionPool.getPool();
 
