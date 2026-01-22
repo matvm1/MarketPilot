@@ -11,10 +11,9 @@ import java.io.Writer;
 import java.util.Map;
 
 public class PebbleHtmlTemplateEngine implements HtmlTemplateEngine {
-    private static PebbleHtmlTemplateEngine instance;
     private static PebbleEngine pebbleEngine;
 
-    private PebbleHtmlTemplateEngine() {
+    public PebbleHtmlTemplateEngine() {
         FileLoader loader = new FileLoader();
         loader.setPrefix(System.getenv("TEMPLATES_PATH"));
         loader.setSuffix(".html");
@@ -29,11 +28,5 @@ public class PebbleHtmlTemplateEngine implements HtmlTemplateEngine {
         Writer writer = new StringWriter();
         template.evaluate(writer, vars);
         return writer.toString();
-    }
-
-    public static PebbleHtmlTemplateEngine getInstance() {
-        if (instance == null)
-            instance = new PebbleHtmlTemplateEngine();
-        return instance;
     }
 }

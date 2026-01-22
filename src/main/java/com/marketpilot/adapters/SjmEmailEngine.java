@@ -2,6 +2,7 @@ package com.marketpilot.adapters;
 
 import com.marketpilot.application.dto.EmailMessage;
 import com.marketpilot.application.ports.EmailEngine;
+import com.marketpilot.application.ports.HtmlTemplateEngine;
 import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.api.mailer.config.TransportStrategy;
@@ -14,18 +15,23 @@ import java.util.Properties;
 
 // Simple Java Mail
 public class SjmEmailEngine implements EmailEngine {
-    private static Mailer mailer;
-    private static String smtpHost;
-    private static String smtpEmail;
-    private static String smtpPassword;
+    private HtmlTemplateEngine htmlTemplateEngine;
+    private Mailer mailer;
+    private String smtpHost;
+    private String smtpEmail;
+    private String smtpPassword;
 
-    public SjmEmailEngine() {
-        readCredentials();
+    public SjmEmailEngine(HtmlTemplateEngine htmlTemplateEngine, String smtpHost, String smtpEmail, String smtpPassword) {
+        this.smtpHost = smtpHost;
+        this.smtpEmail = smtpEmail;
+        this.smtpPassword = smtpPassword;
 
         mailer = MailerBuilder
                 .withSMTPServer(smtpHost, 587, smtpEmail, smtpPassword)
                 .withTransportStrategy(TransportStrategy.SMTP_TLS)
                 .buildMailer();
+
+        this.htmlTemplateEngine = htmlTemplateEngine;
     }
 
     @Override
@@ -45,7 +51,7 @@ public class SjmEmailEngine implements EmailEngine {
     public boolean sendTemplatedEmail(EmailMessage message, String templateFileName) {
         String htmlBody;
         try {
-            htmlBody = PebbleHtmlTemplateEngine.getInstance().render(templateFileName, message.vars());
+            htmlBody = htmlTemplateEngine.render(templateFileName, message.vars());
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -60,25 +66,5 @@ public class SjmEmailEngine implements EmailEngine {
 
         mailer.sendMail(email);
         return true;
-    }
-
-    private static void readCredentials() {
-        String propsPath = System.getenv("SMTP_PROPERTIES_PATH");
-
-        if (propsPath == null) {
-            throw new IllegalArgumentException("SMTP_PROPERTIES_PATH environment variable is not set");
-        }
-
-        Properties props = new Properties();
-        try(FileInputStream fis = new FileInputStream(propsPath)) {
-            props.load(fis);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        smtpHost = props.getProperty("SMTP_HOST");
-        smtpEmail = props.getProperty("SMTP_EMAIL");
-        smtpPassword = props.getProperty("SMTP_PASSWORD");
     }
 }

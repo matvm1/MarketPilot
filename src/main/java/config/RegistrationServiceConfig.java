@@ -1,10 +1,12 @@
 package config;
 
+import com.marketpilot.adapters.PebbleHtmlTemplateEngine;
 import com.marketpilot.adapters.SjmEmailEngine;
 import com.marketpilot.adapters.auth.Password4JHasher;
 import com.marketpilot.adapters.persistence.repo.OjdbcPendingVerificationUserRepository;
 import com.marketpilot.adapters.persistence.repo.OjdbcRoleCache;
 import com.marketpilot.application.ports.EmailEngine;
+import com.marketpilot.application.ports.HtmlTemplateEngine;
 import com.marketpilot.application.ports.VerificationCodeGenerator;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.RoleCache;
@@ -17,6 +19,10 @@ import com.marketpilot.domain.repo.UserRepository;
 import com.marketpilot.util.SecureRandomVerificationCodeGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 @Configuration
 public class RegistrationServiceConfig {
@@ -34,8 +40,29 @@ public class RegistrationServiceConfig {
     }
 
     @Bean
-    public EmailEngine emailEngine() {
-        return new SjmEmailEngine();
+    public EmailEngine emailEngine(HtmlTemplateEngine htmlTemplateEngine) {
+        String propsPath = System.getenv("SMTP_PROPERTIES_PATH");
+        if (propsPath == null) {
+            throw new IllegalArgumentException("SMTP_PROPERTIES_PATH environment variable is not set");
+        }
+
+        Properties props = new Properties();
+        try(FileInputStream fis = new FileInputStream(propsPath)) {
+            props.load(fis);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return new SjmEmailEngine(htmlTemplateEngine,
+                props.getProperty("SMTP_HOST"),
+                props.getProperty("SMTP_EMAIL"),
+                props.getProperty("SMTP_PASSWORD"));
+    }
+
+    @Bean
+    public HtmlTemplateEngine htmlTemplateEngine() {
+        return new PebbleHtmlTemplateEngine();
     }
 
     @Bean

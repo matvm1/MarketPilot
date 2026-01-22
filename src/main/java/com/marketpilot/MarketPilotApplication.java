@@ -3,6 +3,8 @@ package com.marketpilot;
 import com.marketpilot.application.ports.auth.TotpService;
 import com.marketpilot.application.services.AuthenticationService;
 import com.marketpilot.application.services.RegistrationService;
+import com.marketpilot.domain.entities.auth.Role;
+import com.marketpilot.util.BufferedConverter;
 import config.AppConfig;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
