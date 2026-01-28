@@ -27,7 +27,7 @@ import java.util.Properties;
 @Configuration
 public class RegistrationServiceConfig {
     @Bean
-    public RegistrationService RegistrationService(UserRepository userRepository,
+    public RegistrationService registrationService(UserRepository userRepository,
                                                    PendingVerificationUserRepository pendingVerificationUserRepository,
                                                    EmployeeRepository employeeRepository,
                                                    EmailEngine emailEngine,

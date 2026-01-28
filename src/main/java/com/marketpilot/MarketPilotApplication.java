@@ -11,6 +11,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 
+import java.util.Arrays;
+
 @SpringBootApplication
 public class MarketPilotApplication {
     public static void main(String[] args) throws InterruptedException {
@@ -23,6 +25,10 @@ public class MarketPilotApplication {
         RegistrationService registrationService = ctx.getBean(RegistrationService.class);
         System.out.println(registrationService.initiateClientRegistration("user", null, null,
                 "user@marketpilot.com", "user", "", "1"));
+
+        Arrays.stream(ctx.getBeanDefinitionNames())
+                .sorted()
+                .forEach(System.out::println);
 
         Thread.currentThread().join();
     }
