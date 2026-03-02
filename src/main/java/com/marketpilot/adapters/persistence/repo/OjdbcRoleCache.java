@@ -18,7 +18,8 @@ public class OjdbcRoleCache implements RoleCache {
 
     public OjdbcRoleCache(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
-        this.load();
+        // TODO
+        //this.load();
     }
 
     private void load() {
