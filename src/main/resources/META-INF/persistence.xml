@@ -1,0 +1,10 @@
+<persistence>
+    <!-- Define persistence unit -->
+    <persistence-unit name="mp-core-persistence-unit">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect"/>
+        </properties>
+    </persistence-unit>
+</persistence>

@@ -2,6 +2,8 @@ package config;
 
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
+
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -46,5 +48,12 @@ public class DataAccessConfig {
             e.printStackTrace();
             throw new RuntimeException("Failed to initialize UCP pool\n");
         }
+    }
+
+    @Bean
+    LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
+        LocalContainerEntityManagerFactoryBean lcemfb = new LocalContainerEntityManagerFactoryBean();
+        lcemfb.setDataSource(dataSource);
+        return lcemfb;
     }
 }

@@ -6,6 +6,8 @@ import com.marketpilot.application.services.RegistrationService;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.util.BufferedConverter;
 import config.AppConfig;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -30,6 +32,22 @@ public class MarketPilotApplication {
          */
         DataSource dataSource = ctx.getBean(DataSource.class);
         System.out.println(dataSource.getConnection().getMetaData());
+
+        EntityManagerFactory emf = ctx.getBean(EntityManagerFactory.class);
+        EntityManager em = emf.createEntityManager();
+        try {
+            // Example 1: Use a simple native query that returns a single result
+            // The exact SQL depends on the database (e.g., "SELECT 1" for many DBs)
+            System.out.println(em.createNativeQuery("SELECT * FROM APP_ROLE").getResultList());
+            System.out.println("Database connection successful!");
+        } catch (Exception e) {
+            System.err.println("Database connection failed: " + e.getMessage());
+            // Handle the exception (e.g., log it, throw a custom exception)
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
+        }
 
         Arrays.stream(ctx.getBeanDefinitionNames())
                 .sorted()
