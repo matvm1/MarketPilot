@@ -49,6 +49,10 @@ public class Role {
         this.userType = userType;
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public RoleName getRoleName() { return roleName; }
 
     public Set<Permission> getPermissions() {
