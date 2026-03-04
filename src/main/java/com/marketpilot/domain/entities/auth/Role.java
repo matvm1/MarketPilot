@@ -1,12 +1,13 @@
 package com.marketpilot.domain.entities.auth;
 
+import com.marketpilot.domain.entities.PersistentEntity;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity(name = "jpa_APP_ROLE")
-public class Role {
+public class Role extends PersistentEntity {
     public enum RoleName {
         Admin,
         PersonalInvestor,
@@ -24,15 +25,9 @@ public class Role {
         }
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Enumerated(EnumType.ORDINAL) private RoleName roleName;
     @Transient private Set<Permission> permissions;
     @Enumerated(EnumType.ORDINAL) private UserType userType;
-
-    protected Role() {}
 
     public Role(RoleName roleName, Set<Permission> permissions, UserType userType) {
         if (roleName == null)
@@ -47,10 +42,6 @@ public class Role {
         this.roleName = roleName;
         this.permissions = new HashSet<>(permissions);
         this.userType = userType;
-    }
-
-    public Long getId() {
-        return id;
     }
 
     public RoleName getRoleName() { return roleName; }
