@@ -84,7 +84,6 @@ public class DataAccessConfig {
     @Bean(name = "entityManagerFactory")
     @Profile("dev")
     LocalContainerEntityManagerFactoryBean emfDev(DataSource dataSource) {
-        System.out.println(">>> authEntityManagerFactory - DEV profile active");
         return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", "update", true);
     }
 
