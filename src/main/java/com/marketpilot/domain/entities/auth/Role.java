@@ -26,8 +26,13 @@ public class Role extends PersistentEntity {
     }
 
     @Enumerated(EnumType.ORDINAL) private RoleName roleName;
-    @Transient private Set<Permission> permissions;
     @Enumerated(EnumType.ORDINAL) private UserType userType;
+    @ElementCollection
+    @CollectionTable(
+            name = "jpa_APP_ROLE_PERMISSION",
+            joinColumns = @JoinColumn(name = "role_id")
+    )
+    @Enumerated(EnumType.ORDINAL) private Set<Permission> permissions;
 
     public Role(RoleName roleName, Set<Permission> permissions, UserType userType) {
         if (roleName == null)
