@@ -6,6 +6,8 @@ import oracle.ucp.jdbc.PoolDataSourceFactory;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.orm.jpa.vendor.Database;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
 import javax.sql.DataSource;
 import java.io.FileInputStream;
@@ -54,6 +56,12 @@ public class DataAccessConfig {
     LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean lcemfb = new LocalContainerEntityManagerFactoryBean();
         lcemfb.setDataSource(dataSource);
+        lcemfb.setPackagesToScan("com.marketpilot.domain");
+
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setDatabase(Database.ORACLE);
+        lcemfb.setJpaVendorAdapter(vendorAdapter);
+
         return lcemfb;
     }
 }

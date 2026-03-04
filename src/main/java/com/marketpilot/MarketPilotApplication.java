@@ -35,24 +35,25 @@ public class MarketPilotApplication {
 
         EntityManagerFactory emf = ctx.getBean(EntityManagerFactory.class);
         EntityManager em = emf.createEntityManager();
+
+        emf.getMetamodel().getEntities()
+                .forEach(entityType -> System.out.println(entityType.getName()));
+
         try {
-            // Example 1: Use a simple native query that returns a single result
-            // The exact SQL depends on the database (e.g., "SELECT 1" for many DBs)
             System.out.println(em.createNativeQuery("SELECT * FROM APP_ROLE").getResultList());
             System.out.println("Database connection successful!");
         } catch (Exception e) {
             System.err.println("Database connection failed: " + e.getMessage());
-            // Handle the exception (e.g., log it, throw a custom exception)
         } finally {
             if (em != null && em.isOpen()) {
                 em.close();
             }
         }
 
-        Arrays.stream(ctx.getBeanDefinitionNames())
+        /* Arrays.stream(ctx.getBeanDefinitionNames())
                 .sorted()
                 .forEach(System.out::println);
-
+        */
         Thread.currentThread().join();
     }
 }

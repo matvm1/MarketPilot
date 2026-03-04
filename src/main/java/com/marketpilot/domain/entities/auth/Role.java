@@ -1,8 +1,11 @@
 package com.marketpilot.domain.entities.auth;
 
+import jakarta.persistence.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
+@Entity(name = "jpa_APP_ROLE")
 public class Role {
     public enum RoleName {
         Admin,
@@ -21,9 +24,15 @@ public class Role {
         }
     }
 
-    private final RoleName roleName;
-    private final Set<Permission> permissions;
-    private final UserType userType;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Enumerated(EnumType.ORDINAL) private RoleName roleName;
+    @Transient private Set<Permission> permissions;
+    @Enumerated(EnumType.ORDINAL) private UserType userType;
+
+    protected Role() {}
 
     public Role(RoleName roleName, Set<Permission> permissions, UserType userType) {
         if (roleName == null)
