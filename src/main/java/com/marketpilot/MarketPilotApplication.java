@@ -3,7 +3,9 @@ package com.marketpilot;
 import com.marketpilot.application.ports.auth.TotpService;
 import com.marketpilot.application.services.AuthenticationService;
 import com.marketpilot.application.services.RegistrationService;
+import com.marketpilot.domain.entities.auth.Permission;
 import com.marketpilot.domain.entities.auth.Role;
+import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.BufferedConverter;
 import config.AppConfig;
 import jakarta.persistence.EntityManager;
@@ -16,6 +18,9 @@ import org.springframework.context.annotation.Bean;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @SpringBootApplication
 public class MarketPilotApplication {
@@ -46,18 +51,49 @@ public class MarketPilotApplication {
         emf.getMetamodel().getEntities()
                 .forEach(entityType -> System.out.println(entityType.getName()));
 
-        try {
-            System.out.println(em.createNativeQuery("SELECT * FROM APP_ROLE").getResultList());
-            System.out.println("Database connection successful!");
-        } catch (Exception e) {
-            System.err.println("Database connection failed: " + e.getMessage());
-        } finally {
-            if (em != null && em.isOpen()) {
-                em.close();
-            }
-        }
+        testJpaPersistence(em);
 
         Thread.currentThread().join();
+    }
+
+    private static void testJpaPersistence(EntityManager em) {
+        final Set<Permission> AUTHENTICATED_BASE_PERMISSIONS = Set.of(
+                Permission.VIEW_QUOTE,
+                Permission.VIEW_ARTICLE,
+                Permission.VIEW_SECURITY_RATING,
+                Permission.CREATE_WATCHLIST,
+                Permission.DELETE_WATCHLIST
+        );
+
+        final Set<Permission> INVESTOR_TRANSACTION_PERMISSIONS = Set.of(
+                Permission.CREATE_BROKERAGE_ACCOUNT,
+                Permission.CLOSE_BROKERAGE_ACCOUNT,
+                Permission.LINK_BROKERAGE_ACCOUNT_TO_EXTERNAL,
+                Permission.TRANSFER_FUNDS,
+                Permission.PLACE_TRADE,
+                Permission.VIEW_PORTFOLIO
+        );
+
+        final Role PERSONAL_INVESTOR_ROLE = new Role(
+                Role.RoleName.Analyst,
+                Collections.unmodifiableSet(new HashSet<>() {{
+                    addAll(AUTHENTICATED_BASE_PERMISSIONS);
+                    addAll(INVESTOR_TRANSACTION_PERMISSIONS);
+                }}),
+                UserType.CLIENT
+        );
+
+        em.getTransaction().begin();
+        try {
+            em.persist(PERSONAL_INVESTOR_ROLE);
+            em.getTransaction().commit();
+            System.out.println("Persisted with id: " + PERSONAL_INVESTOR_ROLE.getId());
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            throw e;
+        } finally {
+            em.close();
+        }
     }
 }
     

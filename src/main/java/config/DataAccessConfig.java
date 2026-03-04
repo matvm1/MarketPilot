@@ -1,14 +1,17 @@
 package config;
 
+import jakarta.persistence.EntityManagerFactory;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 
 import org.springframework.context.annotation.Profile;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.io.FileInputStream;
@@ -89,5 +92,10 @@ public class DataAccessConfig {
     @Profile("test")
     LocalContainerEntityManagerFactoryBean emfTest(DataSource dataSource) {
         return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", "create-drop", true);
+    }
+
+    @Bean
+    PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
+        return new JpaTransactionManager(emf);
     }
 }
