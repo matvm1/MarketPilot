@@ -20,8 +20,15 @@ import java.util.Arrays;
 @SpringBootApplication
 public class MarketPilotApplication {
     public static void main(String[] args) throws InterruptedException, SQLException {
-        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+        ctx.getEnvironment().setActiveProfiles("dev");
+        ctx.register(AppConfig.class);
+        ctx.refresh();
         ctx.registerShutdownHook();
+
+        Arrays.stream(ctx.getBeanDefinitionNames())
+                .sorted()
+                .forEach(System.out::println);
 
         /*AuthenticationService authenticationService = ctx.getBean(AuthenticationService.class);
         System.out.println(authenticationService.initiateClientAuthentication("abc", null, null));
@@ -33,7 +40,7 @@ public class MarketPilotApplication {
         DataSource dataSource = ctx.getBean(DataSource.class);
         System.out.println(dataSource.getConnection().getMetaData());
 
-        EntityManagerFactory emf = ctx.getBean(EntityManagerFactory.class);
+        EntityManagerFactory emf = (EntityManagerFactory) ctx.getBean("entityManagerFactory");
         EntityManager em = emf.createEntityManager();
 
         emf.getMetamodel().getEntities()
@@ -50,10 +57,6 @@ public class MarketPilotApplication {
             }
         }
 
-        /* Arrays.stream(ctx.getBeanDefinitionNames())
-                .sorted()
-                .forEach(System.out::println);
-        */
         Thread.currentThread().join();
     }
 }
