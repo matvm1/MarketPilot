@@ -3,9 +3,13 @@ package com.marketpilot.application.dto.auth;
 import com.marketpilot.domain.entities.auth.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 class AuthenticationContextTest {
     @Test
     void constructor_throwsForNullPrincipal() {
@@ -16,7 +20,6 @@ class AuthenticationContextTest {
     @Test
     void constructor_throwsForNullRole() {
         assertThrows(IllegalArgumentException.class, () ->
-                new AuthenticationContext(new User("ab123456", "johnmdoe", "johnmdoe@outlook.com",
-                        "johnmdoe@company.com","John", "M", "Doe"), null));
+                new AuthenticationContext(Mockito.mock(User.class), null));
     }
 }

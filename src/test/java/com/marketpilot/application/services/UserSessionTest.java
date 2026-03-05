@@ -16,8 +16,6 @@ public class UserSessionTest {
     private User investorAndAnalystUser;
     private UserSession investorSession;
     private UserSession analystSession;
-    private UserRoleAssignment userInvestorRoleAssignment;
-    private UserRoleAssignment userAnalystRoleAssignment;
     private Instant investorSessionStart;
     private Instant analystSessionStart;
 
@@ -32,11 +30,9 @@ public class UserSessionTest {
                 "John", "M", "Doe");
 
         investorSessionStart = Instant.parse("2025-01-01T10:00:00Z");
-        userInvestorRoleAssignment = new UserRoleAssignment(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE);
         investorSession = new UserSession(1, new AuthenticationContext(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), investorSessionStart);
         // TODO: session state management - can't have a personal and employee session running at once
         analystSessionStart = Instant.parse("2025-01-02T10:00:00Z");
-        userAnalystRoleAssignment = new UserRoleAssignment(investorAndAnalystUser, TestRoles.ANALYST_ROLE);
         analystSession = new UserSession(2, new AuthenticationContext(investorAndAnalystUser, TestRoles.ANALYST_ROLE), analystSessionStart);
     }
 
