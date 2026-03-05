@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity(name = "jpa_APP_ROLE")
+@Entity(name = "APP_ROLE")
 public class Role extends PersistentEntity {
     public enum RoleName {
         Admin,
@@ -29,7 +29,7 @@ public class Role extends PersistentEntity {
     @Enumerated(EnumType.ORDINAL) private UserType userType;
     @ElementCollection
     @CollectionTable(
-            name = "jpa_APP_ROLE_PERMISSION",
+            name = "APP_ROLE_PERMISSION",
             joinColumns = @JoinColumn(name = "role_id")
     )
     @Enumerated(EnumType.ORDINAL) private Set<Permission> permissions;

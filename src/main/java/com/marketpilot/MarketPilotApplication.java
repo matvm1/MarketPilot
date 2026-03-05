@@ -97,7 +97,7 @@ public class MarketPilotApplication {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
         List<Map<String,Object>> rows =
-                jdbcTemplate.queryForList("SELECT * FROM JPA_APP_ROLE");
+                jdbcTemplate.queryForList("SELECT * FROM APP_ROLE_PERMISSION");
 
         rows.forEach(System.out::println);
     }
