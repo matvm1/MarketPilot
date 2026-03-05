@@ -126,6 +126,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
     }
 
     // registers a new user
+    // TODO: Test
     @Override
     public boolean registerNewUser(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException {
         if (userType == null)
@@ -159,10 +160,10 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
                 )
                 """,
             bytesP(1, uuidToBytes(user.getUUID())),
-            stringP(2, user.getEmployeeId()),
+            paramElseNull(userType, UserType.EMPLOYEE, stringP(2, user.getEmployeeProfile().getEmployeeId())),
             stringP(3, user.getUsername()),
-            stringP(4, user.getPersonalEmail()),
-            stringP(5, user.getEmployeeEmail()),
+            paramElseNull(userType, UserType.CLIENT, stringP(4, user.getClientProfile().getEmail())),
+            paramElseNull(userType, UserType.EMPLOYEE, stringP(5, user.getEmployeeProfile().getEmail())),
             stringP(6, user.getFirstName()),
             stringP(7, user.getMiddleName()),
             stringP(8, user.getLastName()),
@@ -204,6 +205,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
         return generatedKeys.length == 1 && rolesInserted == roles.size();
     }
 
+    // TODO: Test
     private long[] registerClientAsEmployee(User user, byte[] passwordHash, String verificationCode, Timestamp expiration) throws SQLException {
         return JdbcExecutor.executeInsert("""
                 UPDATE APP_USER
@@ -216,8 +218,8 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
                     EMPLOYEE_REGISTRATION_EXPIRATION = ?
                 WHERE UUID = ?
                 """,
-                stringP(1, user.getEmployeeId()),
-                stringP(2, user.getEmployeeEmail()),
+                stringP(1, user.getEmployeeProfile().getEmployeeId()),
+                stringP(2, user.getEmployeeProfile().getEmail()),
                 bytesP(3, passwordHash),
                 booleanP(4, user.isEmployee()),
                 stringP(5, verificationCode),
@@ -227,6 +229,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
         );
     }
 
+    // TODO: Test
     private long[] registerEmployeeAsClient(User user, byte[] passwordHash, String verificationCode, Timestamp expiration) throws SQLException {
         return JdbcExecutor.executeInsert("""
                 UPDATE APP_USER
@@ -238,7 +241,7 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
                    CLIENT_REGISTRATION_EXPIRATION = ?
                 WHERE UUID = ?
                 """,
-                stringP(1, user.getPersonalEmail()),
+                stringP(1, user.getClientProfile().getEmail()),
                 bytesP(2, passwordHash),
                 booleanP(3, user.isClient()),
                 stringP(4, verificationCode),
