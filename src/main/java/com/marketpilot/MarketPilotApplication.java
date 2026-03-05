@@ -11,16 +11,12 @@ import config.AppConfig;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @SpringBootApplication
 public class MarketPilotApplication {
@@ -51,7 +47,8 @@ public class MarketPilotApplication {
         emf.getMetamodel().getEntities()
                 .forEach(entityType -> System.out.println(entityType.getName()));
 
-        testJpaPersistence(em);
+        //testJpaPersistence(em);
+        testPersistedEntity(dataSource);
 
         Thread.currentThread().join();
     }
@@ -94,6 +91,15 @@ public class MarketPilotApplication {
         } finally {
             em.close();
         }
+    }
+
+    private static void testPersistedEntity(DataSource dataSource) {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+
+        List<Map<String,Object>> rows =
+                jdbcTemplate.queryForList("SELECT * FROM JPA_APP_ROLE");
+
+        rows.forEach(System.out::println);
     }
 }
     

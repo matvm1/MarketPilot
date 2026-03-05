@@ -1,9 +1,10 @@
 package config;
 
-import jakarta.persistence.EntityManagerFactory;
+import  jakarta.persistence.EntityManagerFactory;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 
+import org.h2.jdbcx.JdbcDataSource;
 import org.springframework.context.annotation.Profile;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -21,8 +22,33 @@ import java.util.Properties;
 
 @Configuration
 public class DataAccessConfig {
-    @Bean
-    DataSource dataSource() {
+    @Bean(name = "dataSource")
+    @Profile("dev")
+    DataSource devDataSource() {
+        JdbcDataSource ds = new JdbcDataSource();
+
+        ds.setURL("jdbc:h2:~/devdb;DB_CLOSE_DELAY=-1;MODE=Oracle");
+        ds.setUser("sa");
+        ds.setPassword("");
+
+        return ds;
+    }
+
+    @Bean(name = "dataSource")
+    @Profile("test")
+    DataSource testDataSource() {
+        JdbcDataSource ds = new JdbcDataSource();
+
+        ds.setURL("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=Oracle");
+        ds.setUser("sa");
+        ds.setPassword("");
+
+        return ds;
+    }
+
+    @Bean(name = "dataSource")
+    @Profile("prod")
+    DataSource prodDataSource() {
         try {
             String propsPath = System.getenv("DB_PROPERTIES_PATH");
             if (propsPath == null) {
@@ -60,6 +86,7 @@ public class DataAccessConfig {
             DataSource dataSource,
             String packagesToScan,
             String persistenceUnitName,
+            Database database,
             String ddlAuto,
             boolean showSql) {
 
@@ -69,7 +96,7 @@ public class DataAccessConfig {
         em.setPersistenceUnitName(persistenceUnitName);
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        vendorAdapter.setDatabase(Database.ORACLE);
+        vendorAdapter.setDatabase(database);
         em.setJpaVendorAdapter(vendorAdapter);
 
         Properties props = new Properties();
@@ -84,13 +111,13 @@ public class DataAccessConfig {
     @Bean(name = "entityManagerFactory")
     @Profile("dev")
     LocalContainerEntityManagerFactoryBean emfDev(DataSource dataSource) {
-        return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", "update", true);
+        return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", Database.H2, "update", true);
     }
 
     @Bean(name = "entityManagerFactory")
     @Profile("test")
     LocalContainerEntityManagerFactoryBean emfTest(DataSource dataSource) {
-        return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", "create-drop", true);
+        return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", Database.H2, "create-drop", true);
     }
 
     @Bean
