@@ -71,6 +71,12 @@ class UserTest {
     }
 
     @Test
+    void constructor_throwsIfAllProfilesAreNull() {
+        assertThrows(IllegalArgumentException.class, () ->
+                new User("johnmdoe", "John", "M", "Doe", null, null));
+    }
+
+    @Test
     void getUUID_doesNotThrowIfUUIDIsNotNull() {
         testUser.setUUID(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
         assertDoesNotThrow(() -> testUser.getUUID());
@@ -78,13 +84,15 @@ class UserTest {
 
     @Test
     void isClient_throwsIfUserIsNotAClientAndIsNotAnEmployee() {
-        User user = new User("ab123456", "John", "M", "Doe", null, null);
+        User user = new User("ab123456", "John", "M", "Doe", dummyClientProfile, null);
+        user.setClientProfile(null);
         assertThrows(IllegalStateException.class, user::isClient);
     }
 
     @Test
     void isEmployee_throwsIfUserIsNotAClientAndIsNotAnEmployee() {
-        User user = new User("ab123456", "John", "M", "Doe", null, null);
+        User user = new User("ab123456", "John", "M", "Doe", dummyClientProfile, null);
+        user.setClientProfile(null);
         assertThrows(IllegalStateException.class, user::isEmployee);
     }
 

@@ -23,6 +23,8 @@ public class User {
     private EmployeeProfile employeeProfile;
 
     public User(String username, String firstName, String middleName, String lastName, ClientProfile clientProfile, EmployeeProfile employeeProfile) {
+        if (allNull(clientProfile, employeeProfile))
+            throw new IllegalArgumentException("at least one profile must be provided");
         if (username == null)
             throw new IllegalArgumentException("username cannot be null");
         if (username.isBlank())
