@@ -157,7 +157,7 @@ public class RegistrationServiceTest {
                 eq(UserType.CLIENT),
                 argThat(user ->
                         user.getUsername().equals("johnmdoe") &&
-                        user.getPersonalEmail().equals("johnmdoe@outlook.com") &&
+                        user.getClientProfile().getEmail().equals("johnmdoe@outlook.com") &&
                         user.isClient()
                 ),
                 eq(clientRoles),
@@ -215,7 +215,7 @@ public class RegistrationServiceTest {
                 eq(UserType.CLIENT),
                 argThat(user ->
                         user.getUsername().equals("johnmdoe") &&
-                                user.getPersonalEmail().equals("johnmdoe@outlook.com") &&
+                                user.getClientProfile().getEmail().equals("johnmdoe@outlook.com") &&
                                 user.isClient()
                 ),
                 eq(clientRoles),
@@ -334,7 +334,7 @@ public class RegistrationServiceTest {
                 eq(UserType.EMPLOYEE),
                 argThat(user ->
                         user.getUsername().equals("johnmdoe") &&
-                                user.getEmployeeEmail().equals("johnmdoe@company.com") &&
+                                user.getEmployeeProfile().getEmail().equals("johnmdoe@company.com") &&
                                 user.isEmployee()
                 ),
                 eq(employeeRoles),
@@ -439,7 +439,7 @@ public class RegistrationServiceTest {
                 eq(UserType.EMPLOYEE),
                 argThat(user ->
                         user.getUsername().equals("johnmdoe") &&
-                        user.getEmployeeEmail().equals("johnmdoe@company.com") &&
+                        user.getEmployeeProfile().getEmail().equals("johnmdoe@company.com") &&
                         user.isEmployee()
                 ),
                 eq(employeeRoles),

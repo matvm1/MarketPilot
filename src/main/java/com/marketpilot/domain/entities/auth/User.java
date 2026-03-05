@@ -1,48 +1,32 @@
 package com.marketpilot.domain.entities.auth;
 
+import com.marketpilot.domain.entities.auth.profile.ClientProfile;
+import com.marketpilot.domain.entities.auth.profile.EmployeeProfile;
 import org.apache.commons.validator.routines.EmailValidator;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.marketpilot.util.EqualityUtil.noneNull;
+import static com.marketpilot.util.EqualityUtil.allNull;
+
 public class User {
     private UUID uuid;
-    private String employeeId;
     private Set<Role> roles;
     private final String username;
-    private String personalEmail;
-    private String employeeEmail;
     private String firstName;
     private String middleName;
     private String lastName;
 
-    private boolean isClient;
-    private boolean isEmployee;
+    private ClientProfile clientProfile;
+    private EmployeeProfile employeeProfile;
 
-    public User(String employeeId, String username, String personalEmail, String employeeEmail,
-                String firstName, String middleName, String lastName) {
-        EmailValidator emailValidator = EmailValidator.getInstance();
-        if (employeeId == null && employeeEmail != null)
-            throw new IllegalArgumentException("employeeId cannot be null when employeeEmail is not null");
-        if (employeeId != null && employeeEmail == null)
-            throw new IllegalArgumentException("employeeEmail cannot be null when employeeId is not null");
-        if (employeeId != null && employeeId.isBlank())
-            throw new IllegalArgumentException("employeeId cannot be blank");
+    public User(String username, String firstName, String middleName, String lastName, ClientProfile clientProfile, EmployeeProfile employeeProfile) {
         if (username == null)
             throw new IllegalArgumentException("username cannot be null");
         if (username.isBlank())
             throw new IllegalArgumentException("username cannot be blank");
-        if (personalEmail == null && employeeEmail == null)
-            throw new IllegalArgumentException("personalEmail and employeeEmail cannot both be null");
-        if (personalEmail != null && personalEmail.isBlank())
-            throw new IllegalArgumentException("personalEmail cannot be blank");
-        if (employeeEmail != null && employeeEmail.isBlank())
-            throw new IllegalArgumentException("employeeEmail cannot be blank");
-        if (personalEmail != null && !emailValidator.isValid(personalEmail))
-            throw new IllegalArgumentException("personalEmail '" + personalEmail + "' is not in a valid email format");
-        if (employeeEmail != null && !emailValidator.isValid(employeeEmail))
-            throw new IllegalArgumentException("employeeEmail '" + employeeEmail + "' is not in a valid email format");
         if (firstName == null)
             throw new IllegalArgumentException("firstName cannot be null");
         if (firstName.isBlank())
@@ -52,17 +36,14 @@ public class User {
         if (lastName.isBlank())
             throw new IllegalArgumentException("lastName cannot be empty");
 
-        this.employeeId = employeeId;
         this.username = username;
         this.roles = new HashSet<>();
-        this.personalEmail = personalEmail;
-        this.employeeEmail = employeeEmail;
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
 
-        this.isClient = false;
-        this.isEmployee = false;
+        this.clientProfile = clientProfile;
+        this.employeeProfile = employeeProfile;
     }
 
     public UUID getUUID() {
@@ -71,8 +52,6 @@ public class User {
 
         return uuid;
     }
-
-    public String getEmployeeId() { return employeeId; }
 
     public String getUsername() { return username; }
 
@@ -94,10 +73,6 @@ public class User {
         return false;
     }
 
-    public String getPersonalEmail() { return personalEmail; }
-
-    public String getEmployeeEmail() { return employeeEmail; }
-
     public String getFirstName() { return firstName; }
 
     public String getMiddleName() { return middleName; }
@@ -107,15 +82,15 @@ public class User {
     public String getFullName() { return firstName + " " + (middleName == null ? "" : middleName) + " " + lastName; }
 
     public boolean isClient() {
-        if (!isClient && !isEmployee)
+        if (clientProfile == null && employeeProfile == null)
             throw new IllegalStateException("user must be a client and/or employee prior to accessing isClient()");
-        return isClient;
+        return clientProfile != null;
     }
 
     public boolean isEmployee() {
-        if (!isClient && !isEmployee)
+        if (clientProfile == null && employeeProfile == null)
             throw new IllegalStateException("user must be a client and/or employee prior to accessing isEmployee()");
-        return isEmployee;
+        return employeeProfile != null;
     }
 
     public void setUUID(UUID uuid) {
@@ -128,36 +103,11 @@ public class User {
         this.uuid = uuid;
     }
 
-    public void setEmployeeId(String employeeId) {
-        if (employeeId == null)
-            throw new IllegalArgumentException("employeeId cannot be null");
-        if (employeeId.isBlank())
-            throw new IllegalArgumentException("employeeId cannot be blank");
-
-        this.employeeId = employeeId;
-    }
-
     public void grantRole(Role role) {
         if (role == null)
             throw new IllegalArgumentException("role cannot be null");
 
         this.roles.add(role);
-    }
-
-    public void setPersonalEmail(String personalEmail) {
-        if (personalEmail == null)
-            throw new IllegalArgumentException("personalEmail cannot be null");
-        if (personalEmail.isBlank())
-            throw new IllegalArgumentException("personalEmail cannot be blank");
-        this.personalEmail = personalEmail;
-    }
-
-    public void setEmployeeEmail(String employeeEmail) {
-        if (employeeEmail == null)
-            throw new IllegalArgumentException("employeeEmail cannot be null");
-        if (employeeEmail.isBlank())
-            throw new IllegalArgumentException("employeeEmail cannot be blank");
-        this.employeeEmail = employeeEmail;
     }
 
     public void setFirstName(String firstName) {
@@ -180,9 +130,21 @@ public class User {
         this.lastName = lastName;
     }
 
-    public void setClient(boolean isClient) { this.isClient = isClient; }
+    public ClientProfile getClientProfile() {
+        return clientProfile;
+    }
 
-    public void setEmployee(boolean isEmployee) { this.isEmployee = isEmployee; }
+    public EmployeeProfile getEmployeeProfile() {
+        return employeeProfile;
+    }
+
+    public void setClientProfile(ClientProfile clientProfile) {
+        this.clientProfile = clientProfile;
+    }
+
+    public void setEmployeeProfile(EmployeeProfile employeeProfile) {
+        this.employeeProfile = employeeProfile;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -197,11 +159,16 @@ public class User {
 
         return this.uuid.equals(((User) o).uuid) &&
                 this.username.equals(((User) o).username) &&
-                this.employeeId.equals(((User) o).employeeId) &&
-                this.personalEmail.equals(((User) o).personalEmail) &&
-                this.employeeEmail.equals(((User) o).employeeEmail) &&
                 this.firstName.equals(((User) o).firstName) &&
                 this.middleName.equals(((User)o).middleName) &&
-                this.lastName.equals(((User)o).lastName);
+                this.lastName.equals(((User)o).lastName) &&
+                (
+                        (noneNull(this.clientProfile, ((User) o).clientProfile) && this.clientProfile.equals(((User) o).clientProfile)) ||
+                        allNull(this.clientProfile, ((User) o).clientProfile)
+                ) &&
+                (
+                        (noneNull(this.employeeProfile, ((User) o).employeeProfile) && this.employeeProfile.equals(((User) o).employeeProfile)) ||
+                        allNull(this.employeeProfile, ((User) o).employeeProfile)
+                );
     }
 }

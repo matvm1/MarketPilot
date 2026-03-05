@@ -320,8 +320,8 @@ public class RegistrationService {
             try {
                 if (pendingVerificationUserRepository.completeRegistration(registrationUserType, user.getUUID())) {
                         String recipientAddress = switch(registrationUserType) {
-                            case CLIENT -> user.getPersonalEmail();
-                            case EMPLOYEE -> user.getEmployeeEmail();
+                            case CLIENT -> user.getClientProfile().getEmail();
+                            case EMPLOYEE -> user.getEmployeeProfile().getEmail();
                         };
                         Map<String, Object> emailVars = new HashMap<>();
                         emailVars.put("username", user.getUsername());

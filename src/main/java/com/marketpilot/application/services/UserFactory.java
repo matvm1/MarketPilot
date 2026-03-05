@@ -5,6 +5,8 @@ import com.marketpilot.application.dto.user.UserEmployeeDTO;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
+import com.marketpilot.domain.entities.auth.profile.ClientProfile;
+import com.marketpilot.domain.entities.auth.profile.EmployeeProfile;
 
 import java.util.Set;
 import java.util.UUID;
@@ -12,10 +14,9 @@ import java.util.UUID;
 public class UserFactory {
     public User createClientUser(Set<Role> clientRoles, String username, String personalEmail,
                                  String firstName, String middleName, String lastName) {
-        User newUser = new User(null, username, personalEmail, null, firstName, middleName, lastName);
+        User newUser = new User(username, firstName, middleName, lastName, new ClientProfile(personalEmail), null);
         validateRolesAndGrant(newUser, clientRoles, UserType.CLIENT);
         newUser.setUUID(UUID.randomUUID());
-        newUser.setClient(true);
 
         return newUser;
     }
@@ -34,10 +35,9 @@ public class UserFactory {
 
     public User createEmployeeUser(String employeeId, Set<Role> employeeRoles, String username, String employeeEmail,
                                    String firstName, String middleName, String lastName) {
-        User newUser = new User(employeeId, username, null, employeeEmail, firstName, middleName, lastName);
+        User newUser = new User(username, firstName, middleName, lastName, null, new EmployeeProfile(employeeId, employeeEmail));
         validateRolesAndGrant(newUser, employeeRoles, UserType.EMPLOYEE);
         newUser.setUUID(UUID.randomUUID());
-        newUser.setEmployee(true);
 
         return newUser;
     }
@@ -63,10 +63,8 @@ public class UserFactory {
         if (employeeRoles.isEmpty())
             throw new IllegalArgumentException("employeeRoles cannot be empty");
 
-        existingClient.setEmployeeId(employeeId);
+        existingClient.setEmployeeProfile(new EmployeeProfile(employeeId, employeeEmail));
         validateRolesAndGrant(existingClient, employeeRoles, UserType.EMPLOYEE);
-        existingClient.setEmployeeEmail(employeeEmail);
-        existingClient.setEmployee(true);
 
         return existingClient;
     }
@@ -90,8 +88,7 @@ public class UserFactory {
             throw new IllegalArgumentException("clientRoles cannot be empty");
 
         validateRolesAndGrant(existingEmployee, clientRoles, UserType.CLIENT);
-        existingEmployee.setPersonalEmail(personalEmail);
-        existingEmployee.setClient(true);
+        existingEmployee.setClientProfile(new ClientProfile(personalEmail));
 
         return existingEmployee;
     }
@@ -105,14 +102,22 @@ public class UserFactory {
                 userClientDTO.getEmail());
     }
 
+    // TODO: Review if still needed after JPA refactor
+    // If keeping, add fromArgs() static method to profile classes which return null if the created profile is in an invalid state
     // use only when populating a User object from persisted data
+    // TODO: Remove isClient is Employee
     public User hydrate(UUID uuid, String employeeId, String username, String personalEmail, String employeeEmail,
                          String firstName, String middleName, String lastName, boolean isClient, boolean isEmployee) {
-        User user = new User(employeeId, username, personalEmail, employeeEmail, firstName, middleName, lastName);
+        ClientProfile clientProfile = null;
+        if (personalEmail != null)
+            clientProfile = new ClientProfile(personalEmail);
 
+        EmployeeProfile employeeProfile = null;
+        if (employeeId != null && employeeEmail != null)
+            employeeProfile = new EmployeeProfile(employeeId, employeeEmail);
+
+        User user = new User(username, firstName, middleName, lastName, clientProfile, employeeProfile);
         user.setUUID(uuid);
-        user.setClient(isClient);
-        user.setEmployee(isEmployee);
 
         return user;
     }
