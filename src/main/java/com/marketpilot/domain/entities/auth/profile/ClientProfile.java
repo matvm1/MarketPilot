@@ -27,6 +27,9 @@ public class ClientProfile {
             throw new IllegalArgumentException("email cannot be null");
         if (email.isBlank())
             throw new IllegalArgumentException("email cannot be blank");
+        EmailValidator emailValidator = EmailValidator.getInstance();
+        if (!emailValidator.isValid(email))
+            throw new IllegalStateException("email " + email + " is not a valid email");
 
         this.email = email;
     }
