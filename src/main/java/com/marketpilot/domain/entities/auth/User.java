@@ -1,8 +1,9 @@
 package com.marketpilot.domain.entities.auth;
 
+import com.marketpilot.domain.entities.PersistentEntity;
 import com.marketpilot.domain.entities.auth.profile.ClientProfile;
 import com.marketpilot.domain.entities.auth.profile.EmployeeProfile;
-import org.apache.commons.validator.routines.EmailValidator;
+import jakarta.persistence.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,16 +12,36 @@ import java.util.UUID;
 import static com.marketpilot.util.EqualityUtil.noneNull;
 import static com.marketpilot.util.EqualityUtil.allNull;
 
-public class User {
+@Entity
+@Table(
+        name = "APP_USER"
+)
+public class User extends PersistentEntity {
+    @Column(unique = true, updatable = false, nullable = false)
     private UUID uuid;
+
+    @ManyToMany
+    @JoinTable(
+            name = "APP_USER_ROLE",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
     private Set<Role> roles;
-    private final String username;
+
+    @Column(nullable = false, updatable = false, length = 50)
+    private String username;
+
+    @Column(nullable = false, length = 50)
     private String firstName;
+
+    @Column(length = 50)
     private String middleName;
+
+    @Column(nullable = false, length = 50)
     private String lastName;
 
-    private ClientProfile clientProfile;
-    private EmployeeProfile employeeProfile;
+    @Transient private ClientProfile clientProfile;
+    @Transient private EmployeeProfile employeeProfile;
 
     public User(String username, String firstName, String middleName, String lastName, ClientProfile clientProfile, EmployeeProfile employeeProfile) {
         if (allNull(clientProfile, employeeProfile))

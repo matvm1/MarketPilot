@@ -3,9 +3,12 @@ package com.marketpilot;
 import com.marketpilot.application.ports.auth.TotpService;
 import com.marketpilot.application.services.AuthenticationService;
 import com.marketpilot.application.services.RegistrationService;
+import com.marketpilot.application.services.UserFactory;
 import com.marketpilot.domain.entities.auth.Permission;
 import com.marketpilot.domain.entities.auth.Role;
+import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
+import com.marketpilot.domain.entities.auth.profile.ClientProfile;
 import com.marketpilot.util.BufferedConverter;
 import config.AppConfig;
 import jakarta.persistence.EntityManager;
@@ -22,7 +25,7 @@ import java.util.*;
 public class MarketPilotApplication {
     public static void main(String[] args) throws InterruptedException, SQLException {
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-        ctx.getEnvironment().setActiveProfiles("dev");
+        ctx.getEnvironment().setActiveProfiles("test");
         ctx.register(AppConfig.class);
         ctx.refresh();
         ctx.registerShutdownHook();
@@ -47,7 +50,7 @@ public class MarketPilotApplication {
         emf.getMetamodel().getEntities()
                 .forEach(entityType -> System.out.println(entityType.getName()));
 
-        //testJpaPersistence(em);
+        testJpaPersistence(em);
         testPersistedEntity(dataSource);
 
         Thread.currentThread().join();
@@ -80,9 +83,13 @@ public class MarketPilotApplication {
                 UserType.CLIENT
         );
 
+        UserFactory userFactory = new UserFactory();
+        User user = userFactory.createClientUser(Set.of(PERSONAL_INVESTOR_ROLE), "johnmdoe", "johnmdoe@outlook.com", "John", "M", "Doe");
+
         em.getTransaction().begin();
         try {
             em.persist(PERSONAL_INVESTOR_ROLE);
+            em.persist(user);
             em.getTransaction().commit();
             System.out.println("Persisted with id: " + PERSONAL_INVESTOR_ROLE.getId());
         } catch (Exception e) {
@@ -97,7 +104,7 @@ public class MarketPilotApplication {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
         List<Map<String,Object>> rows =
-                jdbcTemplate.queryForList("SELECT * FROM APP_ROLE_PERMISSION");
+                jdbcTemplate.queryForList("SELECT * FROM APP_USER");
 
         rows.forEach(System.out::println);
     }
