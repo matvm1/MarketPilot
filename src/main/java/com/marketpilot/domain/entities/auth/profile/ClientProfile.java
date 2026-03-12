@@ -1,8 +1,15 @@
 package com.marketpilot.domain.entities.auth.profile;
 
+import com.marketpilot.domain.entities.PersistentEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import org.apache.commons.validator.routines.EmailValidator;
 
-public class ClientProfile {
+@Entity
+@Table(name = "CLIENT_PROFILE")
+public class ClientProfile extends PersistentEntity {
+    @Column(nullable = false, unique = true)
     private String email;
 
     public ClientProfile(String email) {

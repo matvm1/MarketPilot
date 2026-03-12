@@ -40,7 +40,10 @@ public class User extends PersistentEntity {
     @Column(nullable = false, length = 50)
     private String lastName;
 
-    @Transient private ClientProfile clientProfile;
+    @OneToOne(cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @JoinColumn(name = "client_profile_id")
+    private ClientProfile clientProfile;
+
     @Transient private EmployeeProfile employeeProfile;
 
     public User(String username, String firstName, String middleName, String lastName, ClientProfile clientProfile, EmployeeProfile employeeProfile) {

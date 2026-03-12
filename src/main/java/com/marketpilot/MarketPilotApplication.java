@@ -104,7 +104,7 @@ public class MarketPilotApplication {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
         List<Map<String,Object>> rows =
-                jdbcTemplate.queryForList("SELECT * FROM APP_USER");
+                jdbcTemplate.queryForList("SELECT * FROM CLIENT_PROFILE");
 
         rows.forEach(System.out::println);
     }
