@@ -1,4 +1,4 @@
-package com.marketpilot.adapters.persistence.repo;
+package com.marketpilot.adapters.persistence.repo.ojdbc;
 
 import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
 import com.marketpilot.adapters.persistence.jdbc.Param;

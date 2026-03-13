@@ -1,6 +1,9 @@
 package config;
 
-import com.marketpilot.adapters.persistence.repo.*;
+import com.marketpilot.adapters.persistence.repo.ojdbc.OjdbcEmployeeRepository;
+import com.marketpilot.adapters.persistence.repo.ojdbc.OjdbcPendingVerificationUserRepository;
+import com.marketpilot.adapters.persistence.repo.ojdbc.OjdbcRoleRepository;
+import com.marketpilot.adapters.persistence.repo.ojdbc.OjdbcUserRepository;
 import com.marketpilot.application.ports.auth.RoleCache;
 import com.marketpilot.domain.repo.EmployeeRepository;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
