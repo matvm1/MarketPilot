@@ -44,7 +44,9 @@ public class User extends PersistentEntity {
     @JoinColumn(name = "client_profile_id")
     private ClientProfile clientProfile;
 
-    @Transient private EmployeeProfile employeeProfile;
+    @OneToOne(cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @JoinColumn(name = "employee_profile_id")
+    private EmployeeProfile employeeProfile;
 
     public User(String username, String firstName, String middleName, String lastName, ClientProfile clientProfile, EmployeeProfile employeeProfile) {
         if (allNull(clientProfile, employeeProfile))

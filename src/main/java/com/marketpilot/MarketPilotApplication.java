@@ -82,13 +82,17 @@ public class MarketPilotApplication {
                 }}),
                 UserType.CLIENT
         );
+        Role ANALYST_ROLE = new Role(Role.RoleName.Analyst, Set.of(Permission.PUBLISH_ARTICLE), UserType.EMPLOYEE);
 
         UserFactory userFactory = new UserFactory();
         User user = userFactory.createClientUser(Set.of(PERSONAL_INVESTOR_ROLE), "johnmdoe", "johnmdoe@outlook.com", "John", "M", "Doe");
+        user = userFactory.assignEmployeeAttributes(user, "ab123456", Set.of(ANALYST_ROLE),
+                "johnmdoe@company.com");
 
         em.getTransaction().begin();
         try {
             em.persist(PERSONAL_INVESTOR_ROLE);
+            em.persist(ANALYST_ROLE);
             em.persist(user);
             em.getTransaction().commit();
             System.out.println("Persisted with id: " + PERSONAL_INVESTOR_ROLE.getId());
@@ -104,7 +108,7 @@ public class MarketPilotApplication {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
         List<Map<String,Object>> rows =
-                jdbcTemplate.queryForList("SELECT * FROM CLIENT_PROFILE");
+                jdbcTemplate.queryForList("SELECT * FROM EMPLOYEE_PROFILE");
 
         rows.forEach(System.out::println);
     }
