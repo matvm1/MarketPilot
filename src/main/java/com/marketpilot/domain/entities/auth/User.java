@@ -13,9 +13,7 @@ import static com.marketpilot.util.EqualityUtil.noneNull;
 import static com.marketpilot.util.EqualityUtil.allNull;
 
 @Entity
-@Table(
-        name = "APP_USER"
-)
+@Table(name = "APP_USER")
 public class User extends PersistentEntity {
     @Column(unique = true, updatable = false, nullable = false)
     private UUID uuid;
