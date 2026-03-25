@@ -41,8 +41,15 @@ public class JpaRoleRepository implements RoleRepository {
     }
 
     @Override
-    public Optional<Role> findById(Long aLong) {
-        return Optional.empty();
+    public Optional<Role> findById(Long roleId) {
+        if (roleId < 0)
+            return Optional.empty();
+
+        Role result = entityManager.createQuery("SELECT r FROM Role r WHERE r.id = :roleId", Role.class)
+                .setParameter("roleId", roleId)
+                .getSingleResult();
+
+        return Optional.of(result);
     }
 
     @Override
