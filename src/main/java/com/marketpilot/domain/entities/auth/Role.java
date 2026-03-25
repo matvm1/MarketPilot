@@ -6,7 +6,8 @@ import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity(name = "APP_ROLE")
+@Entity
+@Table(name = "APP_ROLE")
 public class Role extends PersistentEntity {
     public enum RoleName {
         Admin,
