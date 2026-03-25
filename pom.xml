@@ -17,22 +17,16 @@
   <name>MarketPilot</name>
   <url>http://maven.apache.org</url>
 
-  <!-- DO NOT REMOVE - required by Surefire to locate mockito-core JAR -->
   <properties>
+    <!-- DO NOT REMOVE - required by Surefire to locate mockito-core JAR -->
     <argLine></argLine>
+    <!-- REQUIRED - Prevents vulnerability present in earlier versions of logback (malicious class instantiation) -->
+    <logback.version>1.5.25</logback.version>
   </properties>
 
   <!-- Use JUnit BOM to align all JUnit 5 dependencies -->
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.junit</groupId>
-        <artifactId>junit-bom</artifactId>
-        <version>5.13.4</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-
       <!-- Override ZXing dependency used by dev.samstevens.totp QR generator -->
       <dependency>
         <groupId>com.google.zxing</groupId>
@@ -147,6 +141,11 @@
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <version>2.4.240</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa-test</artifactId>
     </dependency>
   </dependencies>
 
