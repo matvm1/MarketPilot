@@ -115,11 +115,10 @@
       <version>3.2.4</version>
     </dependency>
 
-    <!-- Source: https://mvnrepository.com/artifact/org.springframework/spring-orm -->
+    <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa -->
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-orm</artifactId>
-      <version>7.0.5</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
       <scope>compile</scope>
     </dependency>
 
