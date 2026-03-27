@@ -45,11 +45,12 @@ public class JpaRoleRepository implements RoleRepository {
         if (roleId < 0)
             return Optional.empty();
 
-        Role result = entityManager.createQuery("SELECT r FROM Role r WHERE r.id = :roleId", Role.class)
+        return entityManager.createQuery("SELECT r FROM Role r WHERE r.id = :roleId", Role.class)
                 .setParameter("roleId", roleId)
-                .getSingleResult();
-
-        return Optional.ofNullable(result);
+                .setMaxResults(1)
+                .getResultList()
+                .stream()
+                .findFirst();
     }
 
     @Override
