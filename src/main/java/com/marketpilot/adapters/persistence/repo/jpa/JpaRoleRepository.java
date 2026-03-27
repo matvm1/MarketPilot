@@ -49,7 +49,7 @@ public class JpaRoleRepository implements RoleRepository {
                 .setParameter("roleId", roleId)
                 .getSingleResult();
 
-        return Optional.of(result);
+        return Optional.ofNullable(result);
     }
 
     @Override
