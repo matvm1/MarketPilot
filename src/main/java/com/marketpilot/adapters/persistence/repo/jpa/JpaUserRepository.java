@@ -51,8 +51,8 @@ public class JpaUserRepository implements UserRepository {
 
         String jpql = "SELECT u FROM User u " +
             (filteringEntity == 1 ? "JOIN u.clientProfile c " : filteringEntity == 2 ? "JOIN u.employeeProfile e " : "") +
-            "WHERE " + (filteringEntity == 0 ? "u" : filteringEntity == 1 ? "c" : "e") + "." + propertyName + " = :" + propertyName +  " AND " +
-            (userType == UserType.CLIENT ? "u.clientProfile IS NOT NULL" : "u.employeeProfile IS NOT NULL");
+            "WHERE " + (filteringEntity == 0 ? "u" : filteringEntity == 1 ? "c" : "e") + "." + propertyName + " = :" + propertyName +
+            (userType == UserType.CLIENT ? " AND u.clientProfile IS NOT NULL" : " AND u.employeeProfile IS NOT NULL");
 
         return entityManager.createQuery(jpql, User.class)
             .setParameter(propertyName, property)
