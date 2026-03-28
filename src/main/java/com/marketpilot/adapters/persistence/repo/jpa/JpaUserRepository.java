@@ -8,7 +8,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
@@ -19,40 +18,48 @@ public class JpaUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findByUUID(UserType userType, UUID uuid) {
-        if (userType == null || uuid == null)
-            return Optional.empty();
-
-        return entityManager.createQuery(
-                        "SELECT u FROM User u WHERE u.uuid = :uuid AND " +
-                                (userType == UserType.CLIENT
-                                        ? "u.clientProfile IS NOT NULL"
-                                        : "u.employeeProfile IS NOT NULL"),
-                        User.class)
-                .setParameter("uuid", uuid)
-                .setMaxResults(1)
-                .getResultList()
-                .stream()
-                .findFirst();
+        return findBy(userType, "uuid", uuid);
     }
 
     @Override
     public Optional<User> findByUsername(UserType userType, String username) {
-        return Optional.empty();
+        return findBy(userType, "username", username);
     }
 
     @Override
     public Optional<User> findByEmployeeId(String employeeId) {
-        return Optional.empty();
+        return findBy(UserType.EMPLOYEE, "employeeId", employeeId);
     }
 
     @Override
-    public Optional<User> findByPersonalEmail(String personalEmail) {
-        return Optional.empty();
+    public Optional<User> findByPersonalEmail(String email) {
+        return findBy(UserType.CLIENT, "email", email);
     }
 
     @Override
-    public Optional<User> findByEmployeeEmail(String employeeEmail) {
-        return Optional.empty();
+    public Optional<User> findByEmployeeEmail(String email) {
+        return findBy(UserType.EMPLOYEE, "email", email);
+    }
+
+    private Optional<User> findBy(UserType userType, String propertyName, Object property) {
+        if (property == null || ((property instanceof String) && ((String)property).isBlank()))
+            return Optional.empty();
+
+        int filteringEntity = userType == UserType.CLIENT && propertyName.equals("email") ? 1
+            : (propertyName.equals("employeeId") || propertyName.equals("email")) ? 2
+            : 0;
+
+        String jpql = "SELECT u FROM User u " +
+            (filteringEntity == 1 ? "JOIN u.clientProfile c " : filteringEntity == 2 ? "JOIN u.employeeProfile e " : "") +
+            "WHERE " + (filteringEntity == 0 ? "u" : filteringEntity == 1 ? "c" : "e") + "." + propertyName + " = :" + propertyName +  " AND " +
+            (userType == UserType.CLIENT ? "u.clientProfile IS NOT NULL" : "u.employeeProfile IS NOT NULL");
+
+        return entityManager.createQuery(jpql, User.class)
+            .setParameter(propertyName, property)
+            .setMaxResults(1)
+            .getResultList()
+            .stream()
+            .findFirst();
     }
 
     @Override
@@ -102,7 +109,11 @@ public class JpaUserRepository implements UserRepository {
 
     @Override
     public boolean save(User entity) {
-        return false;
+        if (entity == null)
+            return false;
+
+        entityManager.persist(entity);
+        return true;
     }
 
     @Override
