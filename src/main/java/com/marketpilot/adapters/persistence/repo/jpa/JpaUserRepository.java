@@ -63,11 +63,6 @@ public class JpaUserRepository implements UserRepository {
     }
 
     @Override
-    public boolean update(User user) {
-        return false;
-    }
-
-    @Override
     public boolean deleteByUUID(UUID uuid) {
         return false;
     }

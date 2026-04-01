@@ -122,12 +122,6 @@ public class OjdbcUserRepository implements UserRepository {
         return sql.toString();
     }
 
-
-    @Override
-    public boolean update(User user) {
-        return false;
-    }
-
     @Override
     public boolean deleteByUUID(UUID uuid) {
         return false;

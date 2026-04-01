@@ -15,7 +15,6 @@ public interface UserRepository extends BaseRepository<Long, User> {
     Optional<User> findByEmployeeId(String employeeId);
     Optional<User> findByPersonalEmail(String personalEmail);
     Optional<User> findByEmployeeEmail(String employeeEmail);
-    boolean update(User user);
     boolean deleteByUUID(UUID uuid);
     Optional<byte[]> getClientPasswordHash(UUID uuid);
     Optional<byte[]> getEmployeePasswordHash(UUID uuid);
