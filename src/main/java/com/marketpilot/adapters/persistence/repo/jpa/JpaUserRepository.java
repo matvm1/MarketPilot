@@ -7,9 +7,7 @@ import com.marketpilot.domain.repo.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
-import java.sql.SQLException;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.UUID;
 
 public class JpaUserRepository implements UserRepository {
@@ -65,36 +63,6 @@ public class JpaUserRepository implements UserRepository {
     @Override
     public boolean deleteByUUID(UUID uuid) {
         return false;
-    }
-
-    @Override
-    public Optional<byte[]> getClientPasswordHash(UUID uuid) {
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<byte[]> getEmployeePasswordHash(UUID uuid) {
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<char[]> getClientTotpSecret(UUID uuid) {
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<char[]> getEmployeeTotpSecret(UUID uuid) {
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<MfaType> getMfaType(UUID uuid) {
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<Properties> getAuthProperties(UserType userType, UUID uuid) throws SQLException {
-        return Optional.empty();
     }
 
     @Override

@@ -16,10 +16,4 @@ public interface UserRepository extends BaseRepository<Long, User> {
     Optional<User> findByPersonalEmail(String personalEmail);
     Optional<User> findByEmployeeEmail(String employeeEmail);
     boolean deleteByUUID(UUID uuid);
-    Optional<byte[]> getClientPasswordHash(UUID uuid);
-    Optional<byte[]> getEmployeePasswordHash(UUID uuid);
-    Optional<char[]> getClientTotpSecret(UUID uuid);
-    Optional<char[]> getEmployeeTotpSecret(UUID uuid);
-    Optional<MfaType> getMfaType(UUID uuid);
-    public Optional<Properties> getAuthProperties(UserType userType, UUID uuid) throws SQLException;
 }
