@@ -4,14 +4,20 @@ import com.marketpilot.adapters.persistence.util.SqlExceptionBiFunction;
 import com.marketpilot.domain.entities.auth.MfaType;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.AuthRepository;
+import com.marketpilot.util.BufferedConverter;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class SpringJdbcAuthRepository implements AuthRepository {
     private JdbcClient jdbcClient;
@@ -32,12 +38,12 @@ public class SpringJdbcAuthRepository implements AuthRepository {
 
     @Override
     public Optional<char[]> getClientTotpSecret(UUID uuid) {
-        return Optional.empty();
+        return getAuthProperty("CLIENT_TOTP_SECRET", uuid, tryExtract(ResultSet::getBytes), BufferedConverter::toChars);
     }
 
     @Override
     public Optional<char[]> getEmployeeTotpSecret(UUID uuid) {
-        return Optional.empty();
+        return getAuthProperty("EMPLOYEE_TOTP_SECRET", uuid, tryExtract(ResultSet::getBytes), BufferedConverter::toChars);
     }
 
     @Override
@@ -56,12 +62,17 @@ public class SpringJdbcAuthRepository implements AuthRepository {
         };
     }
 
-    private <U> Optional<U> getAuthProperty(String column, UUID uuid, BiFunction<ResultSet, String, U> biFunction) {
+    private <U> Optional<U> getAuthProperty(String column, UUID uuid, BiFunction<ResultSet, String, U> mapper) {
         String sql = "SELECT " + column + " FROM APP_USER WHERE UUID = :uuid";
         return jdbcClient.sql(sql)
                 .param("uuid", uuid)
-                .query((rs, rowNum) -> biFunction.apply(rs, column))
+                .query((rs, rowNum) -> mapper.apply(rs, column))
                 .optional();
+    }
+
+    private <T, U> Optional<U> getAuthProperty(String column, UUID uuid, BiFunction<ResultSet, String, T> mapper, Function<T, U> postProcessor) {
+        return getAuthProperty(column, uuid, mapper)
+                .map(postProcessor);
     }
 
     @Override
