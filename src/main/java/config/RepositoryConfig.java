@@ -5,16 +5,20 @@ import com.marketpilot.adapters.persistence.repo.ojdbc.OjdbcEmployeeRepository;
 import com.marketpilot.adapters.persistence.repo.ojdbc.OjdbcPendingVerificationUserRepository;
 import com.marketpilot.adapters.persistence.repo.ojdbc.OjdbcRoleRepository;
 import com.marketpilot.adapters.persistence.repo.ojdbc.OjdbcUserRepository;
+import com.marketpilot.adapters.persistence.repo.springjdbc.SpringJdbcAuthRepository;
 import com.marketpilot.application.ports.auth.RoleCache;
-import com.marketpilot.domain.repo.EmployeeRepository;
-import com.marketpilot.domain.repo.PendingVerificationUserRepository;
-import com.marketpilot.domain.repo.RoleRepository;
-import com.marketpilot.domain.repo.UserRepository;
+import com.marketpilot.domain.repo.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.simple.JdbcClient;
 
 @Configuration
 public class RepositoryConfig {
+    @Bean
+    public AuthRepository authRepository(JdbcClient jdbcClient) {
+        return new SpringJdbcAuthRepository(jdbcClient);
+    }
+
     @Bean
     public UserRepository userRepository(RoleRepository roleRepository) {
         return new OjdbcUserRepository(roleRepository);
