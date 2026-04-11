@@ -6,6 +6,7 @@ import oracle.ucp.jdbc.PoolDataSourceFactory;
 
 import org.h2.jdbcx.JdbcDataSource;
 import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
@@ -129,5 +130,10 @@ public class DataAccessConfig {
     @Bean
     PersistenceAnnotationBeanPostProcessor persistenceAnnotationBeanPostProcessor() {
         return new PersistenceAnnotationBeanPostProcessor();
+    }
+
+    @Bean
+    JdbcClient jdbcClient(DataSource dataSource) {
+        return JdbcClient.create(dataSource);
     }
 }
