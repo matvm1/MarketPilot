@@ -62,17 +62,26 @@ public class SpringJdbcAuthRepository implements AuthRepository {
         };
     }
 
-    private <U> Optional<U> getAuthProperty(String column, UUID uuid, BiFunction<ResultSet, String, U> mapper) {
-        String sql = "SELECT " + column + " FROM APP_USER WHERE UUID = :uuid";
+    private <U> Optional<U> getAuthProperty(String sql, String column, UUID uuid, BiFunction<ResultSet, String, U> mapper) {
         return jdbcClient.sql(sql)
                 .param("uuid", uuid)
                 .query((rs, rowNum) -> mapper.apply(rs, column))
                 .optional();
     }
 
-    private <T, U> Optional<U> getAuthProperty(String column, UUID uuid, BiFunction<ResultSet, String, T> mapper, Function<T, U> postProcessor) {
-        return getAuthProperty(column, uuid, mapper)
+    private <T, U> Optional<U> getAuthProperty(String sql, String column, UUID uuid, BiFunction<ResultSet, String, T> mapper, Function<T, U> postProcessor) {
+        return getAuthProperty(sql, column, uuid, mapper)
                 .map(postProcessor);
+    }
+
+    private <U> Optional<U> getAuthProperty(String column, UUID uuid, BiFunction<ResultSet, String, U> mapper) {
+        String sql = "SELECT " + column + " FROM APP_USER WHERE UUID = :uuid";
+        return getAuthProperty(sql, column, uuid, mapper);
+    }
+
+    private <T, U> Optional<U> getAuthProperty(String column, UUID uuid, BiFunction<ResultSet, String, T> mapper, Function<T, U> postProcessor) {
+        String sql = "SELECT " + column + " FROM APP_USER WHERE UUID = :uuid";
+        return getAuthProperty(sql, column, uuid, mapper, postProcessor);
     }
 
     @Override
