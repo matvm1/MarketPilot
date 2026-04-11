@@ -7,12 +7,8 @@ import com.marketpilot.domain.repo.AuthRepository;
 import com.marketpilot.util.BufferedConverter;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
