@@ -1,6 +1,7 @@
 package com.marketpilot.application.services;
 
 import com.marketpilot.domain.entities.auth.MfaType;
+import com.marketpilot.domain.repo.AuthRepository;
 import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
 import com.marketpilot.application.dto.auth.AuthenticationContext;
@@ -28,21 +29,24 @@ public class AuthenticationService {
         FAILURE
     }
 
+    private final AuthRepository authRepository;
     private final UserRepository userRepository;
     private final TwoFactorService totpService;
     private final PasswordHasher passwordHasher;
     private final SessionManager sessionManager;
 
-    public AuthenticationService(UserRepository userRepository, TwoFactorService totpService,
+    public AuthenticationService(AuthRepository authRepository, UserRepository userRepository, TwoFactorService totpService,
                                  PasswordHasher passwordHasher, SessionManager sessionManager) {
+        this.authRepository = authRepository;
         this.userRepository = userRepository;
         this.totpService = totpService;
         this.passwordHasher = passwordHasher;
         this.sessionManager = sessionManager;
     }
 
-    public AuthenticationService(UserRepository userRepository, TwoFactorService totpService,
+    public AuthenticationService(AuthRepository authRepository, UserRepository userRepository, TwoFactorService totpService,
                                  PasswordHasher passwordHasher) {
+        this.authRepository = authRepository;
         this.userRepository = userRepository;
         this.totpService = totpService;
         this.passwordHasher = passwordHasher;
@@ -55,14 +59,14 @@ public class AuthenticationService {
 
         return initiateAuthentication(usernameOrEmail, passwordLightHash, roleName,
                 userFinder,
-                userRepository::getClientPasswordHash,
+                authRepository::getClientPasswordHash,
                 UserType.CLIENT);
     }
 
     public Tuple<AuthenticationStatus, Optional<AuthenticationContext>> initiateEmployeeAuthentication(String employeeId, byte[] passwordLightHash, RoleName roleName) {
         return initiateAuthentication(employeeId, passwordLightHash, roleName,
                 userRepository::findByEmployeeId,
-                userRepository::getEmployeePasswordHash,
+                authRepository::getEmployeePasswordHash,
                 UserType.EMPLOYEE);
     }
 
@@ -101,7 +105,7 @@ public class AuthenticationService {
     public AuthenticationStatus completeAuthentication(User user, Role role, MfaCredential credentials) {
         boolean identifierAreValid = user != null && role != null;
 
-        MfaType mfaType = userRepository.getMfaType(user != null ? user.getUUID() : null)
+        MfaType mfaType = authRepository.getMfaType(user != null ? user.getUUID() : null)
                 .orElse(null);
 
         boolean isAuthenticated = false;
@@ -115,8 +119,8 @@ public class AuthenticationService {
                     if (mfaType == MfaType.TOTP && credentials instanceof TotpCredential) {
                         Optional<char[]> totpSecretOptional =
                                 switch (role.getUserType()) {
-                                    case CLIENT -> userRepository.getClientTotpSecret(user.getUUID());
-                                    case EMPLOYEE -> userRepository.getEmployeeTotpSecret(user.getUUID());
+                                    case CLIENT -> authRepository.getClientTotpSecret(user.getUUID());
+                                    case EMPLOYEE -> authRepository.getEmployeeTotpSecret(user.getUUID());
                                 };
                         ((TotpCredential) credentials).setSecret(totpSecretOptional.orElse(null));
                         if (totpService.verify(credentials)) {
