@@ -9,6 +9,7 @@ import com.marketpilot.application.ports.auth.TotpService;
 import com.marketpilot.application.ports.auth.TwoFactorService;
 import com.marketpilot.application.services.AuthenticationService;
 import com.marketpilot.application.services.UserSession;
+import com.marketpilot.domain.repo.AuthRepository;
 import com.marketpilot.domain.repo.UserRepository;
 import dev.samstevens.totp.code.HashingAlgorithm;
 import dev.samstevens.totp.time.SystemTimeProvider;
@@ -20,9 +21,9 @@ import java.util.Optional;
 @Configuration
 public class AuthServiceConfig {
     @Bean
-    public AuthenticationService authenticationService(UserRepository userRepository, TwoFactorService totpService,
+    public AuthenticationService authenticationService(AuthRepository authRepository, UserRepository userRepository, TwoFactorService totpService,
                                                        PasswordHasher passwordHasher, SessionManager sessionManager) {
-        return new AuthenticationService(userRepository, totpService, passwordHasher, sessionManager);
+        return new AuthenticationService(authRepository, userRepository, totpService, passwordHasher, sessionManager);
     }
 
     @Bean
