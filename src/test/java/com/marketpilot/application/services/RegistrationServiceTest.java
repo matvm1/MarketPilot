@@ -4,6 +4,7 @@ import com.marketpilot.application.ports.EmailEngine;
 import com.marketpilot.application.ports.VerificationCodeGenerator;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.RoleCache;
+import com.marketpilot.domain.repo.AuthRepository;
 import com.marketpilot.domain.repo.EmployeeRepository;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.domain.repo.UserRepository;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class RegistrationServiceTest {
     UserFactory userFactory;
+    @Mock private AuthRepository authRepository;
     @Mock private UserRepository userRepository;
     @Mock private PendingVerificationUserRepository pendingVerificationUserRepository;
     @Mock private EmployeeRepository employeeRepository;
@@ -62,7 +64,7 @@ public class RegistrationServiceTest {
     @BeforeEach
     void setUp() {
         userFactory = new UserFactory();
-        registrationService = new RegistrationService(userRepository, pendingVerificationUserRepository,
+        registrationService = new RegistrationService(authRepository, userRepository, pendingVerificationUserRepository,
                 employeeRepository, emailEngine, passwordHasher, userFactory, roleCache, verificationCodeGenerator);
 
         clientRoleNames = new RoleName[] {RoleName.PersonalInvestor};
@@ -94,7 +96,7 @@ public class RegistrationServiceTest {
     void initiateClientRegistration_returnsAlreadyRegisteredIfUsernameIsTaken() {
         stubDummyPasswordHashMatching();
         when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.of(existingClient));
-        when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
+        when(authRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistration("johnmdoe",
                         dummyPasswordLightHash, clientRoleNames, "johnmdoe1@outlook.com", "John", "M", "Doe"));
@@ -106,7 +108,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe1")).thenReturn(Optional.empty());
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
         when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe1")).thenReturn(Optional.empty());
-        when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
+        when(authRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistration("johnmdoe1",
                         dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
@@ -176,7 +178,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
         when(userRepository.findByPersonalEmail("johnmdoe@outlook.com")).thenReturn(Optional.of(existingClient));
         when(pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe")).thenReturn(Optional.empty());
-        when(userRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
+        when(authRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateClientRegistrationForExistingEmployee("johnmdoe",
                         dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com"));
@@ -240,7 +242,7 @@ public class RegistrationServiceTest {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(userRepository.findByEmployeeEmail("johnmdoe1@company.com")).thenReturn(Optional.empty());
         when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe1")).thenReturn(Optional.empty());
-        when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
+        when(authRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe1", dummyPasswordLightHash,
                         employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
@@ -251,7 +253,7 @@ public class RegistrationServiceTest {
         stubDummyPasswordHashMatching();
         when(employeeRepository.employeeIdExists("ab987654")).thenReturn(true);
         when(userRepository.findByUsername(UserType.EMPLOYEE,"johnmdoe")).thenReturn(Optional.of(existingEmployee));
-        when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
+        when(authRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab987654", "johnmdoe",
                         dummyPasswordLightHash, employeeRoleNames, "johnmdoe1@company.com", "John", "M", "Doe"));
@@ -263,7 +265,7 @@ public class RegistrationServiceTest {
         when(employeeRepository.employeeIdExists("ab987654")).thenReturn(true);
         when(userRepository.findByEmployeeEmail("johnmdoe@company.com")).thenReturn(Optional.of(existingEmployee));
         when(pendingVerificationUserRepository.findByUsername(UserType.EMPLOYEE, "johnmdoe1")).thenReturn(Optional.empty());
-        when(userRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
+        when(authRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         assertEquals(RegistrationStatus.ALREADY_REGISTERED,
                 registrationService.initiateEmployeeRegistration("ab987654", "johnmdoe1",
                         dummyPasswordLightHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
