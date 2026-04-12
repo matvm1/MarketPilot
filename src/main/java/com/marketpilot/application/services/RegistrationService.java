@@ -8,6 +8,7 @@ import com.marketpilot.application.ports.VerificationCodeGenerator;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.EmailEngine;
 import com.marketpilot.application.ports.auth.RoleCache;
+import com.marketpilot.domain.repo.AuthRepository;
 import com.marketpilot.domain.repo.EmployeeRepository;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.domain.repo.UserRepository;
@@ -34,6 +35,7 @@ public class RegistrationService {
         EXPIRED
     }
 
+    private final AuthRepository authRepository;
     private final UserRepository userRepository;
     private final PendingVerificationUserRepository pendingVerificationUserRepository;
     private final EmployeeRepository employeeRepository;
@@ -49,7 +51,8 @@ public class RegistrationService {
     private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email";
     private final String WELCOME_LETTER_TEMPLATE = "welcome_letter";
 
-    public RegistrationService(UserRepository userRepository,
+    public RegistrationService(AuthRepository authRepository,
+                               UserRepository userRepository,
                                PendingVerificationUserRepository pendingVerificationUserRepository,
                                EmployeeRepository employeeRepository,
                                EmailEngine emailEngine,
@@ -57,6 +60,7 @@ public class RegistrationService {
                                UserFactory userFactory,
                                RoleCache roleCache,
                                VerificationCodeGenerator verificationCodeGenerator) {
+        this.authRepository = authRepository;
         this.userRepository = userRepository;
         this.pendingVerificationUserRepository = pendingVerificationUserRepository;
         this.employeeRepository = employeeRepository;
@@ -76,7 +80,7 @@ public class RegistrationService {
                 null,
                 username, personalEmail, userClientDTO, passwordLightHash,
                 null,
-                userRepository::getClientPasswordHash,
+                authRepository::getClientPasswordHash,
                 null,
                 userRepository::findByPersonalEmail,
                 User::isClient,
@@ -101,7 +105,7 @@ public class RegistrationService {
                     existingEmployee,
                     username, personalEmail, userClientDTO, passwordLightHash,
                     null,
-                    userRepository::getClientPasswordHash,
+                    authRepository::getClientPasswordHash,
                     null,
                     userRepository::findByPersonalEmail,
                     User::isClient,
@@ -123,7 +127,7 @@ public class RegistrationService {
                 null,
                 employeeId, employeeEmail, userEmployeeDTO, passwordLightHash,
                 employeeRepository::employeeIdExists,
-                userRepository::getEmployeePasswordHash,
+                authRepository::getEmployeePasswordHash,
                 userRepository::findByEmployeeId,
                 userRepository::findByEmployeeEmail,
                 User::isEmployee,
@@ -147,7 +151,7 @@ public class RegistrationService {
                     existingClient,
                     employeeId, employeeEmail, userEmployeeDTO, passwordLightHash,
                     employeeRepository::employeeIdExists,
-                    userRepository::getEmployeePasswordHash,
+                    authRepository::getEmployeePasswordHash,
                     userRepository::findByEmployeeId,
                     userRepository::findByEmployeeEmail,
                     User::isEmployee,

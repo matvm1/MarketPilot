@@ -11,10 +11,7 @@ import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.RoleCache;
 import com.marketpilot.application.services.RegistrationService;
 import com.marketpilot.application.services.UserFactory;
-import com.marketpilot.domain.repo.EmployeeRepository;
-import com.marketpilot.domain.repo.PendingVerificationUserRepository;
-import com.marketpilot.domain.repo.RoleRepository;
-import com.marketpilot.domain.repo.UserRepository;
+import com.marketpilot.domain.repo.*;
 import com.marketpilot.util.SecureRandomVerificationCodeGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +23,8 @@ import java.util.Properties;
 @Configuration
 public class RegistrationServiceConfig {
     @Bean
-    public RegistrationService registrationService(UserRepository userRepository,
+    public RegistrationService registrationService(AuthRepository authRepository,
+                                                   UserRepository userRepository,
                                                    PendingVerificationUserRepository pendingVerificationUserRepository,
                                                    EmployeeRepository employeeRepository,
                                                    EmailEngine emailEngine,
@@ -34,8 +32,8 @@ public class RegistrationServiceConfig {
                                                    UserFactory userFactory,
                                                    RoleCache roleCache,
                                                    VerificationCodeGenerator verificationCodeGenerator) {
-        return new RegistrationService(userRepository, pendingVerificationUserRepository, employeeRepository, emailEngine, passwordHasher, userFactory,
-                roleCache, verificationCodeGenerator);
+        return new RegistrationService(authRepository, userRepository, pendingVerificationUserRepository, employeeRepository, emailEngine, passwordHasher,
+            userFactory, roleCache, verificationCodeGenerator);
     }
 
     @Bean
