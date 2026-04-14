@@ -1,6 +1,7 @@
 package config;
 
 import com.marketpilot.adapters.persistence.repo.jpa.JpaRoleRepository;
+import com.marketpilot.adapters.persistence.repo.jpa.JpaUserRepository;
 import com.marketpilot.adapters.persistence.repo.ojdbc.OjdbcEmployeeRepository;
 import com.marketpilot.adapters.persistence.repo.ojdbc.OjdbcPendingVerificationUserRepository;
 import com.marketpilot.adapters.persistence.repo.ojdbc.OjdbcRoleRepository;
@@ -22,7 +23,7 @@ public class RepositoryConfig {
 
     @Bean
     public UserRepository userRepository(RoleRepository roleRepository) {
-        return new OjdbcUserRepository(roleRepository);
+        return new JpaUserRepository();
     }
 
     @Bean
