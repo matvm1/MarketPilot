@@ -8,6 +8,9 @@ import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.util.Tuple;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
+import org.hibernate.type.StandardBasicTypes;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -18,15 +21,49 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
 
     @Override
     public Optional<Tuple<User, Map<String, Object>>> findByUsername(UserType userType, String username) {
-        String sql = "SELECT * FROM APP_USER WHERE USERNAME = :username AND " +
+        if (userType == null || username == null || username.isBlank())
+            return Optional.empty();
+
+        String registrationPropertyColumns = userType == UserType.CLIENT ? "CLIENT_REGISTRATION_CODE crc, CLIENT_REGISTRATION_EXPIRATION cre" :
+                "EMPLOYEE_REGISTRATION_CODE erc, EMPLOYEE_REGISTRATION_EXPIRATION ere";
+        // TODO: List all columns
+        String sql = "SELECT {u.*}, " + registrationPropertyColumns +
+                " FROM APP_USER u WHERE USERNAME = :username AND " +
                 (userType == UserType.CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID") +
+                " = " +
                 UserStatus.PENDING.getCode();
 
-        Object[] result = (Object[]) entityManager.createNativeQuery(sql, User.class)
-                .setParameter("username", username)
-                .getSingleResultOrNull();
+        Session session = entityManager.unwrap(Session.class);
+        NativeQuery<Object[]> query = session.createNativeQuery(sql, Object[].class)
+                .addEntity(User.class);
 
-        return Optional.ofNullable(result);
+        if (userType == UserType.CLIENT) {
+            query.addScalar("crc", StandardBasicTypes.STRING);
+            query.addScalar("cre", StandardBasicTypes.TIMESTAMP);
+        }
+        else {
+            query.addScalar("erc", StandardBasicTypes.STRING);
+            query.addScalar("ere", StandardBasicTypes.TIMESTAMP);
+        }
+
+        Optional<Object[]> result = query.setParameter("username", username)
+                .uniqueResultOptional();
+
+        if (result.isPresent()) {
+            Object[] row = result.get();
+            Map<String, Object> registrationProperties = new HashMap<>();
+            if (userType == UserType.CLIENT) {
+                registrationProperties.put("CLIENT_REGISTRATION_CODE", row[1]);
+                registrationProperties.put("CLIENT_REGISTRATION_EXPIRATION", row[2]);
+            }
+            else {
+                registrationProperties.put("EMPLOYEE_REGISTRATION_CODE", row[1]);
+                registrationProperties.put("EMPLOYEE_REGISTRATION_EXPIRATION", row[2]);
+            }
+            return Optional.of(new Tuple<>((User)row[0], registrationProperties));
+        }
+
+        return Optional.empty();
     }
 
     @Override

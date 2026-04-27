@@ -1,5 +1,7 @@
 package com.marketpilot;
 
+import com.marketpilot.adapters.persistence.repo.jpa.JpaPendingVerificationUserRepository;
+import com.marketpilot.application.dto.auth.UserStatus;
 import com.marketpilot.application.ports.auth.TotpService;
 import com.marketpilot.application.services.AuthenticationService;
 import com.marketpilot.application.services.RegistrationService;
@@ -9,6 +11,7 @@ import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.entities.auth.profile.ClientProfile;
+import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.util.BufferedConverter;
 import config.AppConfig;
 import jakarta.persistence.EntityManager;
@@ -19,6 +22,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.*;
 
 @SpringBootApplication
@@ -52,6 +56,9 @@ public class MarketPilotApplication {
 
         testJpaPersistence(em);
         testPersistedEntity(dataSource);
+
+        PendingVerificationUserRepository pendingVerificationUserRepository = ctx.getBean(JpaPendingVerificationUserRepository.class);
+        pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe");
 
         Thread.currentThread().join();
     }
@@ -94,6 +101,19 @@ public class MarketPilotApplication {
             em.persist(PERSONAL_INVESTOR_ROLE);
             em.persist(ANALYST_ROLE);
             em.persist(user);
+            em.flush();
+            String sql = """
+                UPDATE APP_USER
+                SET CLIENT_REGISTRATION_CODE = 'abc123',
+                CLIENT_REGISTRATION_EXPIRATION = ?,
+                CLIENT_USER_STATUS_ID = ?
+                WHERE username = ?
+            """;
+            em.createNativeQuery(sql)
+                    .setParameter(1, Instant.now())
+                    .setParameter(2, UserStatus.PENDING.getCode())
+                    .setParameter(3, "johnmdoe")
+                    .executeUpdate();
             em.getTransaction().commit();
             System.out.println("Persisted with id: " + PERSONAL_INVESTOR_ROLE.getId());
         } catch (Exception e) {

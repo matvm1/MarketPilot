@@ -1,5 +1,6 @@
 package config;
 
+import com.marketpilot.adapters.persistence.repo.jpa.JpaPendingVerificationUserRepository;
 import com.marketpilot.adapters.persistence.repo.jpa.JpaRoleRepository;
 import com.marketpilot.adapters.persistence.repo.jpa.JpaUserRepository;
 import com.marketpilot.adapters.persistence.repo.ojdbc.OjdbcEmployeeRepository;
@@ -33,7 +34,7 @@ public class RepositoryConfig {
 
     @Bean
     public PendingVerificationUserRepository pendingVerificationUserRepository(RoleCache roleCache) {
-        return new OjdbcPendingVerificationUserRepository(roleCache);
+        return new JpaPendingVerificationUserRepository();
     }
 
     @Bean
