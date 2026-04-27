@@ -1,5 +1,6 @@
 package config;
 
+import com.marketpilot.adapters.persistence.migration.PostConstructDdl;
 import  jakarta.persistence.EntityManagerFactory;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
@@ -135,5 +136,10 @@ public class DataAccessConfig {
     @Bean
     JdbcClient jdbcClient(DataSource dataSource) {
         return JdbcClient.create(dataSource);
+    }
+
+    @Bean
+    PostConstructDdl postConstructDdl(JdbcClient jdbcClient, EntityManagerFactory entityManagerFactory) {
+        return new PostConstructDdl(jdbcClient, entityManagerFactory);
     }
 }
