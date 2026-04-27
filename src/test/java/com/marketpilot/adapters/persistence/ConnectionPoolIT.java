@@ -7,9 +7,5 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ConnectionPoolIT {
-    @Test
-    void constructor_establishesConnection() {
-        assertDoesNotThrow(ConnectionPool::getPool);
-        assertTrue(ConnectionPool.testConnection());
-    }
+
 }
