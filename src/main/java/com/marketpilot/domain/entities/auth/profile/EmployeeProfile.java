@@ -10,6 +10,8 @@ import org.apache.commons.validator.routines.EmailValidator;
 @Entity
 @Table(name = "EMPLOYEE_PROFILE")
 public class EmployeeProfile extends PersistentEntity {
+    public EmployeeProfile() {}
+
     @Column(nullable = false, unique = true)
     private String employeeId;
     @Column(nullable = false, unique = true)

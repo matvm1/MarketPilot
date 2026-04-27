@@ -46,6 +46,8 @@ public class User extends PersistentEntity {
     @JoinColumn(name = "employee_profile_id")
     private EmployeeProfile employeeProfile;
 
+    protected User() {}
+
     public User(String username, String firstName, String middleName, String lastName, ClientProfile clientProfile, EmployeeProfile employeeProfile) {
         if (allNull(clientProfile, employeeProfile))
             throw new IllegalArgumentException("at least one profile must be provided");
