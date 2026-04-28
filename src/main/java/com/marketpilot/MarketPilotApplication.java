@@ -13,6 +13,7 @@ import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.entities.auth.profile.ClientProfile;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.util.BufferedConverter;
+import com.marketpilot.util.Tuple;
 import config.AppConfig;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -58,7 +59,11 @@ public class MarketPilotApplication {
         testPersistedEntity(dataSource);
 
         PendingVerificationUserRepository pendingVerificationUserRepository = ctx.getBean(JpaPendingVerificationUserRepository.class);
-        pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe");
+        Optional<Tuple<User, Map<String, Object>>> search = pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe");
+        if (search.isPresent())
+            System.out.println(search.get().t().getFullName());
+        else
+            System.out.println("123");
 
         Thread.currentThread().join();
     }
@@ -103,16 +108,14 @@ public class MarketPilotApplication {
             em.persist(user);
             em.flush();
             String sql = """
-                UPDATE APP_USER
-                SET CLIENT_REGISTRATION_CODE = 'abc123',
-                CLIENT_REGISTRATION_EXPIRATION = ?,
-                CLIENT_USER_STATUS_ID = ?
-                WHERE username = ?
+                INSERT INTO APP_USER_AUTH (USER_ID, CLIENT_REGISTRATION_CODE, CLIENT_REGISTRATION_EXPIRATION, CLIENT_USER_STATUS_ID)
+                VALUES (?, ?, ?, ?)
             """;
             em.createNativeQuery(sql)
-                    .setParameter(1, Instant.now())
-                    .setParameter(2, UserStatus.PENDING.getCode())
-                    .setParameter(3, "johnmdoe")
+                    .setParameter(1, user.getId())
+                    .setParameter(2, "abc123")
+                    .setParameter(3, Instant.now())
+                    .setParameter(4, UserStatus.PENDING.getCode())
                     .executeUpdate();
             em.getTransaction().commit();
             System.out.println("Persisted with id: " + PERSONAL_INVESTOR_ROLE.getId());

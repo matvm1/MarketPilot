@@ -28,8 +28,8 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
                 "EMPLOYEE_REGISTRATION_CODE erc, EMPLOYEE_REGISTRATION_EXPIRATION ere";
         // TODO: List all columns
         String sql = "SELECT {u.*}, " + registrationPropertyColumns +
-                " FROM APP_USER u WHERE USERNAME = :username AND " +
-                (userType == UserType.CLIENT ? "CLIENT_USER_STATUS_ID" : "EMPLOYEE_USER_STATUS_ID") +
+                " FROM APP_USER u JOIN APP_USER_AUTH au ON u.ID = au.USER_ID WHERE u.USERNAME = :username AND " +
+                (userType == UserType.CLIENT ? "au.CLIENT_USER_STATUS_ID" : "au.EMPLOYEE_USER_STATUS_ID") +
                 " = " +
                 UserStatus.PENDING.getCode();
 
@@ -66,8 +66,17 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
         return Optional.empty();
     }
 
+    // WIP
     @Override
     public boolean registerNewUser(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException {
+        if (userType == null || user == null || roles == null || passwordHash == null || verificationCode == null)
+            return false;
+
+        for (Role role : roles)
+            user.grantRole(role);
+
+        entityManager.persist(user);
+
         return false;
     }
 
