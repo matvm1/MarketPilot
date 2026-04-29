@@ -20,9 +20,10 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @ContextConfiguration(classes = MarketPilotApplication.class)
@@ -77,5 +78,16 @@ public class JpaPendingVerificationUserRepositoryTest {
     @Test
     public void registerNewUser_persistsUser() throws SQLException {
         assertTrue(pendingVerificationUserRepository.registerNewUser(UserType.CLIENT, clientUser, clientRoles, dummyPasswordHash, "abc123"));
+        Optional<Long> persistedUserId = jdbcClient.sql("SELECT ID FROM APP_USER WHERE USERNAME = :username")
+                .param("username", "johnmdoe")
+                .query(Long.class)
+                .optional();
+        assert(persistedUserId.isPresent());
+        assertEquals(clientUser.getId(), persistedUserId.get());
+        int clientUserRoleCount = jdbcClient.sql("SELECT COUNT(*) FROM APP_USER_ROLE WHERE USER_ID = :userId")
+                .param("userId", clientUser.getId())
+                .query(Integer.class)
+                .single();
+        assertEquals(clientRoles.size(), clientUserRoleCount);
     }
 }

@@ -100,6 +100,13 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
 
     @Override
     public boolean crossRegister(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException {
+        if (userType == null || user == null || roles == null || passwordHash == null || verificationCode == null)
+            return false;
+
+        int EXPIRATION_PERIOD_MINUTES = 30;
+        Timestamp expiration = Timestamp.from(Instant.now().plusSeconds(60 * EXPIRATION_PERIOD_MINUTES));
+
+
         return false;
     }
 
