@@ -75,6 +75,7 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
         if (userType == null || user == null || roles == null || passwordHash == null || verificationCode == null)
             return false;
 
+        // TODO: Assign roles in service layer
         for (Role role : roles)
             user.grantRole(role);
 
@@ -85,7 +86,7 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
 
         entityManager.flush();
         String sql = "INSERT INTO APP_USER_AUTH (" + String.join(", ", generateAuthColumns(userType)) +
-                ") VALUES (:userId, :isClientOrEmployee, :statusCode, :verificationCode, :expiration)";
+                ") VALUES (:userId, :isClientOrEmployee, :statusCode, :verificationCode, :expiration, :passwordHash)";
 
         int rowsAffected = entityManager.createNativeQuery(sql)
                 .setParameter("userId", user.getId())
@@ -93,6 +94,7 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
                 .setParameter("statusCode", UserStatus.PENDING.getCode())
                 .setParameter("verificationCode", verificationCode)
                 .setParameter("expiration", expiration)
+                .setParameter("passwordHash", passwordHash)
                 .executeUpdate();
 
         return rowsAffected == 1;
@@ -103,10 +105,16 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
         if (userType == null || user == null || roles == null || passwordHash == null || verificationCode == null)
             return false;
 
+        // TODO: Assign roles in service layer
+        for (Role role : roles)
+            user.grantRole(role);
+
+        entityManager.persist(user);
+
         int EXPIRATION_PERIOD_MINUTES = 30;
         Timestamp expiration = Timestamp.from(Instant.now().plusSeconds(60 * EXPIRATION_PERIOD_MINUTES));
 
-
+        entityManager.flush();
         return false;
     }
 
@@ -147,7 +155,7 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
 
     private final String[] generateAuthColumns(UserType userType) {
         String authColPrefix = (userType == UserType.CLIENT ? "CLIENT_" : "EMPLOYEE_");
-        String[] authCols = {null, null, "USER_STATUS_ID", "REGISTRATION_CODE", "REGISTRATION_EXPIRATION"};
+        String[] authCols = {null, null, "USER_STATUS_ID", "REGISTRATION_CODE", "REGISTRATION_EXPIRATION", "PASSWORD_HASH"};
         authCols = Arrays.stream(authCols)
                 .map(col -> authColPrefix + col)
                 .toArray(String[]::new);
