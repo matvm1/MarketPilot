@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Import;
 
 @Import({AuthServiceConfig.class,
         RegistrationServiceConfig.class,
-        RepositoryConfig.class,
         DataAccessConfig.class})
 public class AppConfig {
 

@@ -6,10 +6,12 @@ import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class JpaUserRepository implements UserRepository {
     @PersistenceContext
     private EntityManager entityManager;
