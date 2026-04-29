@@ -57,8 +57,8 @@ public class UserSessionTest {
 
     @Test
     void getEffectivePermissions_returnsCorrectFlatSetOfPermissions() {
-        assertEquals(TestRolePermissionSets.PERSONAL_INVESTOR_PERMISSIONS, investorSession.getPermissions());
-        assertEquals(TestRolePermissionSets.ANALYST_PERMISSIONS, analystSession.getPermissions());
+        assertEquals(TestRolePermissionSets.personalInvestorPermissions(), investorSession.getPermissions());
+        assertEquals(TestRolePermissionSets.analystPermissions(), analystSession.getPermissions());
     }
 
     @Test

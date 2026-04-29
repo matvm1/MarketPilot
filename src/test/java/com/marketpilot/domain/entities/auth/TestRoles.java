@@ -10,25 +10,25 @@ public final class TestRoles {
 
     public static final Role PUBLIC_USER = new Role(
             Role.RoleName.Public,
-            TestRolePermissionSets.AUTHENTICATED_BASE_PERMISSIONS,
+            TestRolePermissionSets.authenticatedBasePermissions(),
             UserType.CLIENT
     );
 
     public static final Role PERSONAL_INVESTOR_ROLE = new Role(
             Role.RoleName.PersonalInvestor,
-            TestRolePermissionSets.PERSONAL_INVESTOR_PERMISSIONS,
+            TestRolePermissionSets.personalInvestorPermissions(),
             UserType.CLIENT
     );
 
     public static final Role ANALYST_ROLE = new Role(
             Role.RoleName.Analyst,
-            TestRolePermissionSets.ANALYST_PERMISSIONS,
+            TestRolePermissionSets.analystPermissions(),
             UserType.EMPLOYEE
     );
 
     public static final Set<Permission> ALL_PERMISSIONS = Collections.unmodifiableSet(new HashSet<>() {{
-        addAll(TestRolePermissionSets.PERSONAL_INVESTOR_PERMISSIONS);
-        addAll(TestRolePermissionSets.ANALYST_PERMISSIONS);
+        addAll(TestRolePermissionSets.personalInvestorPermissions());
+        addAll(TestRolePermissionSets.analystPermissions());
     }});
 
     public static final Role ADMIN_ROLE = new Role(
