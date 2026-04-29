@@ -85,12 +85,14 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
 
         entityManager.flush();
         String sql = "INSERT INTO APP_USER_AUTH (" + String.join(", ", generateAuthColumns(userType)) +
-                ") VALUES (" +
-                (userType == UserType.CLIENT ? user.isClient() : user.isEmployee()) + ", " +
-                UserStatus.PENDING.getCode() + ", " +
-                verificationCode + ", " +
-                expiration + ")";
+                ") VALUES (:userId, :isClientOrEmployee, :statusCode, :verificationCode, :expiration)";
+
         int rowsAffected = entityManager.createNativeQuery(sql)
+                .setParameter("userId", user.getId())
+                .setParameter("isClientOrEmployee", userType == UserType.CLIENT ? user.isClient() : user.isEmployee())
+                .setParameter("statusCode", UserStatus.PENDING.getCode())
+                .setParameter("verificationCode", verificationCode)
+                .setParameter("expiration", expiration)
                 .executeUpdate();
 
         return rowsAffected == 1;
@@ -138,10 +140,12 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
 
     private final String[] generateAuthColumns(UserType userType) {
         String authColPrefix = (userType == UserType.CLIENT ? "CLIENT_" : "EMPLOYEE_");
-        String boolCol = userType == UserType.CLIENT ? "IS_CLIENT" : "IS_EMPLOYEE";
-        String[] authCols = {boolCol, "STATUS_ID", "REGISTRATION_CODE" + "REGISTRATION_EXPIRATION"};
-        return Arrays.stream(authCols)
+        String[] authCols = {null, null, "USER_STATUS_ID", "REGISTRATION_CODE", "REGISTRATION_EXPIRATION"};
+        authCols = Arrays.stream(authCols)
                 .map(col -> authColPrefix + col)
                 .toArray(String[]::new);
+        authCols[0] = "USER_ID";
+        authCols[1] = userType == UserType.CLIENT ? "IS_CLIENT" : "IS_EMPLOYEE";
+        return authCols;
     }
 }
