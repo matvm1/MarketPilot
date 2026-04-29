@@ -13,6 +13,8 @@ import org.hibernate.query.NativeQuery;
 import org.hibernate.type.StandardBasicTypes;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 
 public class JpaPendingVerificationUserRepository implements PendingVerificationUserRepository {
@@ -66,7 +68,6 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
         return Optional.empty();
     }
 
-    // WIP
     @Override
     public boolean registerNewUser(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException {
         if (userType == null || user == null || roles == null || passwordHash == null || verificationCode == null)
@@ -77,7 +78,20 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
 
         entityManager.persist(user);
 
-        return false;
+        int EXPIRATION_PERIOD_MINUTES = 30;
+        Timestamp expiration = Timestamp.from(Instant.now().plusSeconds(60 * EXPIRATION_PERIOD_MINUTES));
+
+        entityManager.flush();
+        String sql = "INSERT INTO APP_USER_AUTH (" + String.join(", ", generateAuthColumns(userType)) +
+                ") VALUES (" +
+                (userType == UserType.CLIENT ? user.isClient() : user.isEmployee()) + ", " +
+                UserStatus.PENDING.getCode() + ", " +
+                verificationCode + ", " +
+                expiration + ")";
+        int rowsAffected = entityManager.createNativeQuery(sql)
+                .executeUpdate();
+
+        return rowsAffected == 1;
     }
 
     @Override
@@ -118,5 +132,14 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
     @Override
     public int count() {
         return 0;
+    }
+
+    private final String[] generateAuthColumns(UserType userType) {
+        String authColPrefix = (userType == UserType.CLIENT ? "CLIENT_" : "EMPLOYEE_");
+        String boolCol = userType == UserType.CLIENT ? "IS_CLIENT" : "IS_EMPLOYEE";
+        String[] authCols = {boolCol, "STATUS_ID", "REGISTRATION_CODE" + "REGISTRATION_EXPIRATION"};
+        return Arrays.stream(authCols)
+                .map(col -> authColPrefix + col)
+                .toArray(String[]::new);
     }
 }
