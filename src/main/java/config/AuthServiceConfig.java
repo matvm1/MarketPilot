@@ -31,11 +31,6 @@ public class AuthServiceConfig {
         return new JavaTotpService(new SystemTimeProvider(), HashingAlgorithm.SHA256);
     }
 
-    @Bean
-    public PasswordHasher passwordHasher() {
-        return new Password4JHasher();
-    }
-
     //TODO
     @Bean
     public SessionManager sessionManager() {
