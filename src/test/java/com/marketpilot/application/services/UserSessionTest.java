@@ -25,22 +25,22 @@ public class UserSessionTest {
         UserFactory userFactory = new UserFactory();
         Set<Role> employeeRoles = new HashSet<>();
         //employeeRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
-        employeeRoles.add(TestRoles.ANALYST_ROLE);
+        employeeRoles.add(TestRoles.analystRole());
         investorAndAnalystUser = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe","johnmdoe@company.com",
                 "John", "M", "Doe");
 
         investorSessionStart = Instant.parse("2025-01-01T10:00:00Z");
-        investorSession = new UserSession(1, new AuthenticationContext(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), investorSessionStart);
+        investorSession = new UserSession(1, new AuthenticationContext(investorAndAnalystUser, TestRoles.personalInvestorRole()), investorSessionStart);
         // TODO: session state management - can't have a personal and employee session running at once
         analystSessionStart = Instant.parse("2025-01-02T10:00:00Z");
-        analystSession = new UserSession(2, new AuthenticationContext(investorAndAnalystUser, TestRoles.ANALYST_ROLE), analystSessionStart);
+        analystSession = new UserSession(2, new AuthenticationContext(investorAndAnalystUser, TestRoles.analystRole()), analystSessionStart);
     }
 
     //TODO: consider safer data type for ids (UUID?)
     @Test
     void constructor_throwsForNonPositiveId() {
         assertThrows(IllegalArgumentException.class, () ->
-                new UserSession(0, new AuthenticationContext(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), Instant.now()));
+                new UserSession(0, new AuthenticationContext(investorAndAnalystUser, TestRoles.personalInvestorRole()), Instant.now()));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class UserSessionTest {
     @Test
     void constructor_throwsForNullSessionStartInstant() {
         assertThrows(IllegalArgumentException.class, () ->
-                new UserSession(1, new AuthenticationContext(investorAndAnalystUser, TestRoles.PERSONAL_INVESTOR_ROLE), null));
+                new UserSession(1, new AuthenticationContext(investorAndAnalystUser, TestRoles.personalInvestorRole()), null));
     }
 
     @Test

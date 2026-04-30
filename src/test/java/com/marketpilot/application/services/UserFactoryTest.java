@@ -22,12 +22,12 @@ public class UserFactoryTest {
         userFactory = new UserFactory();
 
         clientRoles = new HashSet<>();
-        clientRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
+        clientRoles.add(TestRoles.personalInvestorRole());
         employeeRoles = new HashSet<>();
-        employeeRoles.add(TestRoles.ANALYST_ROLE);
+        employeeRoles.add(TestRoles.analystRole());
         investorAndAnalystRoles = new HashSet<>();
-        investorAndAnalystRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
-        investorAndAnalystRoles.add(TestRoles.ANALYST_ROLE);
+        investorAndAnalystRoles.add(TestRoles.personalInvestorRole());
+        investorAndAnalystRoles.add(TestRoles.analystRole());
 
         clientUser = userFactory.createClientUser(clientRoles, "johnmdoe", "johnmdoe@outlook.com",
                 "John", "M", "Doe");

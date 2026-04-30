@@ -51,9 +51,9 @@ public class AuthenticationServiceTest {
         authenticationService = new AuthenticationService(authRepository, userRepository, totpService, passwordHasher);
 
         clientRoles = new HashSet<>();
-        clientRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
+        clientRoles.add(TestRoles.personalInvestorRole());
         employeeRoles = new HashSet<>();
-        employeeRoles.add(TestRoles.ANALYST_ROLE);
+        employeeRoles.add(TestRoles.analystRole());
 
         existingClient = userFactory.createClientUser(clientRoles, "johnmdoe", "johnmdoe@outlook.com",
                 "John", "M", "Doe");
@@ -108,7 +108,7 @@ public class AuthenticationServiceTest {
                 .thenReturn(Optional.of(existingClient));
         when(authRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
-        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(existingClient, TestRoles.PERSONAL_INVESTOR_ROLE))),
+        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(existingClient, TestRoles.personalInvestorRole()))),
                 authenticationService.initiateClientAuthentication("johnmdoe", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
@@ -118,7 +118,7 @@ public class AuthenticationServiceTest {
                 .thenReturn(Optional.of(existingClient));
         when(authRepository.getClientPasswordHash(existingClient.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
-        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(existingClient, TestRoles.PERSONAL_INVESTOR_ROLE))),
+        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(existingClient, TestRoles.personalInvestorRole()))),
                 authenticationService.initiateClientAuthentication("johnmdoe@outlook.com", dummyPasswordLightHash, RoleName.PersonalInvestor));
     }
 
@@ -156,7 +156,7 @@ public class AuthenticationServiceTest {
         when(userRepository.findByEmployeeId("ab123456")).thenReturn(Optional.of(existingEmployee));
         when(authRepository.getEmployeePasswordHash(existingEmployee.getUUID())).thenReturn(Optional.of(dummyPasswordHashStored));
         when(passwordHasher.matches(dummyPasswordLightHash, dummyPasswordHashStored)).thenReturn(true);
-        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(existingEmployee, TestRoles.ANALYST_ROLE))),
+        assertEquals(Tuple.of(AuthenticationStatus.AWAITING_2FA, Optional.of(new AuthenticationContext(existingEmployee, TestRoles.analystRole()))),
                 authenticationService.initiateEmployeeAuthentication("ab123456", dummyPasswordLightHash, RoleName.Analyst));
     }
 
@@ -166,7 +166,7 @@ public class AuthenticationServiceTest {
         when(authRepository.getMfaType(null)).thenReturn(Optional.empty());
         assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
                 null,
-                TestRoles.PERSONAL_INVESTOR_ROLE,
+                TestRoles.personalInvestorRole(),
                 null));
     }
 
@@ -186,7 +186,7 @@ public class AuthenticationServiceTest {
         when(authRepository.getMfaType(existingClient.getUUID())).thenReturn(Optional.of(MfaType.NONE));
         assertEquals(AuthenticationStatus.SUCCESS, authenticationService.completeAuthentication(
                 existingClient,
-                TestRoles.PERSONAL_INVESTOR_ROLE,
+                TestRoles.personalInvestorRole(),
                 null));
     }
 
@@ -196,7 +196,7 @@ public class AuthenticationServiceTest {
         when(authRepository.getMfaType(existingClient.getUUID())).thenReturn(Optional.of(MfaType.TOTP));
         assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
                 existingClient,
-                TestRoles.PERSONAL_INVESTOR_ROLE,
+                TestRoles.personalInvestorRole(),
                 null));
     }
 
@@ -209,7 +209,7 @@ public class AuthenticationServiceTest {
                 .thenReturn(false);
         assertEquals(AuthenticationStatus.FAILURE, authenticationService.completeAuthentication(
                 existingClient,
-                TestRoles.PERSONAL_INVESTOR_ROLE,
+                TestRoles.personalInvestorRole(),
                 new TotpCredential("123456")));
     }
 
@@ -222,7 +222,7 @@ public class AuthenticationServiceTest {
                 .thenReturn(true);
         assertEquals(AuthenticationStatus.SUCCESS, authenticationService.completeAuthentication(
                 existingClient,
-                TestRoles.PERSONAL_INVESTOR_ROLE,
+                TestRoles.personalInvestorRole(),
                 new TotpCredential("123456")));
     }
 

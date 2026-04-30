@@ -1,6 +1,5 @@
 package com.marketpilot.domain.entities.auth;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,58 +7,39 @@ public final class TestRoles {
 
     private TestRoles() {}
 
-    public static final Role PUBLIC_USER = new Role(
-            Role.RoleName.Public,
-            TestRolePermissionSets.authenticatedBasePermissions(),
-            UserType.CLIENT
-    );
+    public static Role publicUser() {
+        return new Role(Role.RoleName.Public, TestRolePermissionSets.authenticatedBasePermissions(), UserType.CLIENT);
+    }
 
-    public static final Role PERSONAL_INVESTOR_ROLE = new Role(
-            Role.RoleName.PersonalInvestor,
-            TestRolePermissionSets.personalInvestorPermissions(),
-            UserType.CLIENT
-    );
+    public static Role personalInvestorRole() {
+        return new Role(Role.RoleName.PersonalInvestor, TestRolePermissionSets.personalInvestorPermissions(), UserType.CLIENT);
+    }
 
-    public static final Role ANALYST_ROLE = new Role(
-            Role.RoleName.Analyst,
-            TestRolePermissionSets.analystPermissions(),
-            UserType.EMPLOYEE
-    );
+    public static Role analystRole() {
+        return new Role(Role.RoleName.Analyst, TestRolePermissionSets.analystPermissions(), UserType.EMPLOYEE);
+    }
 
-    public static final Set<Permission> ALL_PERMISSIONS = Collections.unmodifiableSet(new HashSet<>() {{
-        addAll(TestRolePermissionSets.personalInvestorPermissions());
-        addAll(TestRolePermissionSets.analystPermissions());
-    }});
+    public static Role adminRole() {
+        // TODO: Mock Admin permissions per business rules
+        return new Role(Role.RoleName.Admin, allPermissions(), UserType.EMPLOYEE);
+    }
 
-    public static final Role ADMIN_ROLE = new Role(
-            Role.RoleName.Admin,
-            // TODO: Mock Admin permissions per business rules
-            ALL_PERMISSIONS,
-            UserType.EMPLOYEE
-    );
+    public static Set<Permission> allPermissions() {
+        Set<Permission> permissions = new HashSet<>();
+        permissions.addAll(TestRolePermissionSets.personalInvestorPermissions());
+        permissions.addAll(TestRolePermissionSets.analystPermissions());
+        return permissions;
+    }
 
     public static Set<Role> all() {
-        Set<Role> roles = new HashSet<>();
-        roles.add(PUBLIC_USER);
-        roles.add(PERSONAL_INVESTOR_ROLE);
-        roles.add(ADMIN_ROLE);
-        roles.add(ANALYST_ROLE);
-
-        return roles;
+        return new HashSet<>(Set.of(publicUser(), personalInvestorRole(), adminRole(), analystRole()));
     }
 
     public static Set<Role> allClient() {
-        Set<Role> roles = new HashSet<>();
-        roles.add(PUBLIC_USER);
-        roles.add(PERSONAL_INVESTOR_ROLE);
-
-        return roles;
+        return new HashSet<>(Set.of(publicUser(), personalInvestorRole()));
     }
-    public static Set<Role> allEmployee() {
-        Set<Role> roles = new HashSet<>();
-        roles.add(ADMIN_ROLE);
-        roles.add(ANALYST_ROLE);
 
-        return roles;
+    public static Set<Role> allEmployee() {
+        return new HashSet<>(Set.of(adminRole(), analystRole()));
     }
 }

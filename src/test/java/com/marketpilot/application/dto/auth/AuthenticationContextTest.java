@@ -14,7 +14,7 @@ class AuthenticationContextTest {
     @Test
     void constructor_throwsForNullPrincipal() {
         assertThrows(IllegalArgumentException.class, () ->
-                        new AuthenticationContext(null, TestRoles.PERSONAL_INVESTOR_ROLE));
+                        new AuthenticationContext(null, TestRoles.personalInvestorRole()));
     }
 
     @Test
