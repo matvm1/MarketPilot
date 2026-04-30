@@ -44,12 +44,17 @@ public class JpaPendingVerificationUserRepositoryTest {
 
     @BeforeEach
     public void setUp() {
-        roleRepository.save(TestRoles.PERSONAL_INVESTOR_ROLE);
+        Role personalInvestorRole = TestRoles.personalInvestorRole();
+        Role analystRole = TestRoles.analystRole();
+
+        roleRepository.save(personalInvestorRole);
+        roleRepository.save(analystRole);
 
         clientRoles = new HashSet<>();
-        clientRoles.add(TestRoles.PERSONAL_INVESTOR_ROLE);
+        clientRoles.add(personalInvestorRole);
+
         employeeRoles = new HashSet<>();
-        employeeRoles.add(TestRoles.ANALYST_ROLE);
+        employeeRoles.add(analystRole);
 
         userFactory = new UserFactory();
         clientUser = userFactory.createClientUser(clientRoles, "johnmdoe", "johnmdoe@outlook.com",
@@ -75,6 +80,7 @@ public class JpaPendingVerificationUserRepositoryTest {
     @Test
     public void crossRegister_persistsUser() throws SQLException {
         pendingVerificationUserRepository.registerNewUser(UserType.CLIENT, clientUser, clientRoles, dummyPasswordHash, "abc123");
-        pendingVerificationUserRepository.crossRegister(UserType.EMPLOYEE, clientUser, employeeRoles, dummyPasswordHash, "321cba");
+        assertTrue(pendingVerificationUserRepository.crossRegister(UserType.EMPLOYEE, clientUser, employeeRoles, dummyPasswordHash, "321cba"));
+        // TODO: Employee to client registration test, userStatus tests
     }
 }

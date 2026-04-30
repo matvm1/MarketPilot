@@ -17,6 +17,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Repository
 public class JpaPendingVerificationUserRepository implements PendingVerificationUserRepository {
@@ -115,7 +117,22 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
         Timestamp expiration = Timestamp.from(Instant.now().plusSeconds(60 * EXPIRATION_PERIOD_MINUTES));
 
         entityManager.flush();
-        return false;
+
+        String[] authCols = generateAuthColumns(userType);
+        String authSql = "UPDATE APP_USER_AUTH SET " +
+                IntStream.range(1, authCols.length).mapToObj(i -> authCols[i] + " = :p" + i)
+                        .collect(Collectors.joining(", ")) +
+                " WHERE USER_ID = :userId";
+        int rowsAffected = entityManager.createNativeQuery(authSql)
+                .setParameter("p1", userType == UserType.CLIENT ? user.isClient() : user.isEmployee())
+                .setParameter("p2", UserStatus.PENDING.getCode())
+                .setParameter("p3", verificationCode)
+                .setParameter("p4", expiration)
+                .setParameter("p5", passwordHash)
+                .setParameter("userId", user.getId())
+                .executeUpdate();
+
+        return rowsAffected == roles.size();
     }
 
     @Override
