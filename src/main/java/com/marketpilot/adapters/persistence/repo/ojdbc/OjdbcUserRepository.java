@@ -3,7 +3,6 @@ package com.marketpilot.adapters.persistence.repo.ojdbc;
 import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
 import com.marketpilot.adapters.persistence.jdbc.Param;
 import com.marketpilot.application.dto.auth.UserStatus;
-import com.marketpilot.domain.entities.auth.MfaType;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.Tuple;
 import com.marketpilot.application.services.UserFactory;
@@ -12,7 +11,6 @@ import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.domain.repo.UserRepository;
 
-import java.sql.SQLException;
 import java.util.*;
 
 import static com.marketpilot.adapters.persistence.jdbc.Param.*;
@@ -24,7 +22,6 @@ import static com.marketpilot.util.UuidUtil.uuidToBytes;
 public class OjdbcUserRepository implements UserRepository {
     private final UserFactory userFactory;
     private final RoleRepository roleRepository;
-    private final String ENTITY_TABLE_NAME = "APP_USER";
     private final String[] ENTITY_COLUMN_NAMES = {
             "ID",
             "UUID",
@@ -104,6 +101,7 @@ public class OjdbcUserRepository implements UserRepository {
 
     private String buildEntityFetchSql(UserType userType, String filterByColumn) {
         StringBuilder sql = new StringBuilder("SELECT ");
+        String ENTITY_TABLE_NAME = "APP_USER";
         sql.append(String.join(", ", ENTITY_COLUMN_NAMES))
                 .append(" FROM ")
                 .append(ENTITY_TABLE_NAME);

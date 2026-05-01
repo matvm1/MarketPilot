@@ -21,6 +21,7 @@ import static com.marketpilot.util.UuidUtil.bytesToUUID;
 import static com.marketpilot.util.UuidUtil.uuidToBytes;
 
 @Deprecated
+@SuppressWarnings("all")
 public class OjdbcPendingVerificationUserRepository implements PendingVerificationUserRepository {
     private final UserFactory userFactory;
     private final RoleCache roleCache;

@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Deprecated
+@SuppressWarnings("unused")
 public class OjdbcRoleCache implements RoleCache {
     private final RoleRepository roleRepository;
     private Map<Role.RoleName, Role> roleCache;
@@ -35,7 +36,7 @@ public class OjdbcRoleCache implements RoleCache {
                     rs -> rs.getInt("ID")
             ).orElseThrow();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 

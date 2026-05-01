@@ -2,10 +2,8 @@ package com.marketpilot.adapters.persistence.migration;
 
 import com.marketpilot.adapters.persistence.jdbc.Batch;
 import com.marketpilot.adapters.persistence.jdbc.JdbcExecutor;
-import com.marketpilot.adapters.persistence.jdbc.Param;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Set;
 
 import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
@@ -45,7 +43,7 @@ public class EnumSeederUtil {
         try {
             JdbcExecutor.executeUpdate(sql);
         } catch (SQLException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -58,7 +56,7 @@ public class EnumSeederUtil {
                 DELETE FROM %s
                 """, targetTableName));
         } catch (SQLException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         resetIdSequence(targetTableName);
@@ -89,7 +87,7 @@ public class EnumSeederUtil {
             JdbcExecutor.executeUpdateProc("reset_identity_seq", false,
                     stringP(1, targetTableName), stringP(2, "ID"));
         } catch (SQLException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 }

@@ -8,6 +8,7 @@ import java.sql.*;
 import java.util.*;
 
 @Deprecated
+@SuppressWarnings("all")
 public class JdbcExecutor {
     private static final PoolDataSource pool = ConnectionPool.getPool();
 
