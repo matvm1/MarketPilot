@@ -88,10 +88,11 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
 
         entityManager.flush();
         String sql = "INSERT INTO APP_USER_AUTH (" + String.join(", ", generateAuthColumns(userType)) +
-                ") VALUES (:userId, :isClientOrEmployee, :statusCode, :verificationCode, :expiration, :passwordHash)";
+                ") VALUES (:userId, :uuid, :isClientOrEmployee, :statusCode, :verificationCode, :expiration, :passwordHash)";
 
         int rowsAffected = entityManager.createNativeQuery(sql)
                 .setParameter("userId", user.getId())
+                .setParameter("uuid", user.getUUID())
                 .setParameter("isClientOrEmployee", userType == UserType.CLIENT ? user.isClient() : user.isEmployee())
                 .setParameter("statusCode", UserStatus.PENDING.getCode())
                 .setParameter("verificationCode", verificationCode)
@@ -120,15 +121,15 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
 
         String[] authCols = generateAuthColumns(userType);
         String authSql = "UPDATE APP_USER_AUTH SET " +
-                IntStream.range(1, authCols.length).mapToObj(i -> authCols[i] + " = :p" + i)
+                IntStream.range(2, authCols.length).mapToObj(i -> authCols[i] + " = :p" + i)
                         .collect(Collectors.joining(", ")) +
                 " WHERE USER_ID = :userId";
         int rowsAffected = entityManager.createNativeQuery(authSql)
-                .setParameter("p1", userType == UserType.CLIENT ? user.isClient() : user.isEmployee())
-                .setParameter("p2", UserStatus.PENDING.getCode())
-                .setParameter("p3", verificationCode)
-                .setParameter("p4", expiration)
-                .setParameter("p5", passwordHash)
+                .setParameter("p2", userType == UserType.CLIENT ? user.isClient() : user.isEmployee())
+                .setParameter("p3", UserStatus.PENDING.getCode())
+                .setParameter("p4", verificationCode)
+                .setParameter("p5", expiration)
+                .setParameter("p6", passwordHash)
                 .setParameter("userId", user.getId())
                 .executeUpdate();
 
@@ -172,12 +173,13 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
 
     private final String[] generateAuthColumns(UserType userType) {
         String authColPrefix = (userType == UserType.CLIENT ? "CLIENT_" : "EMPLOYEE_");
-        String[] authCols = {null, null, "USER_STATUS_ID", "REGISTRATION_CODE", "REGISTRATION_EXPIRATION", "PASSWORD_HASH"};
+        String[] authCols = {null, null, null, "USER_STATUS_ID", "REGISTRATION_CODE", "REGISTRATION_EXPIRATION", "PASSWORD_HASH"};
         authCols = Arrays.stream(authCols)
                 .map(col -> authColPrefix + col)
                 .toArray(String[]::new);
         authCols[0] = "USER_ID";
-        authCols[1] = userType == UserType.CLIENT ? "IS_CLIENT" : "IS_EMPLOYEE";
+        authCols[1] = "UUID";
+        authCols[2] = userType == UserType.CLIENT ? "IS_CLIENT" : "IS_EMPLOYEE";
         return authCols;
     }
 }
