@@ -184,7 +184,7 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
         return 0;
     }
 
-    private final String[] generateAuthColumns(UserType userType) {
+    private String[] generateAuthColumns(UserType userType) {
         String authColPrefix = (userType == UserType.CLIENT ? "CLIENT_" : "EMPLOYEE_");
         String[] authCols = {null, null, null, "USER_STATUS_ID", "REGISTRATION_CODE", "REGISTRATION_EXPIRATION", "PASSWORD_HASH"};
         authCols = Arrays.stream(authCols)

@@ -1,6 +1,5 @@
 package com.marketpilot.adapters.persistence.repo.jpa;
 
-import com.marketpilot.domain.entities.auth.MfaType;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.UserRepository;

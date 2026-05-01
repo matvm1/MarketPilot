@@ -73,6 +73,7 @@ public class RegistrationServiceConfig {
         return new UserFactory();
     }
 
+    // TODO: Rely on JPA query caches
     @Bean
     public RoleCache roleCache(RoleRepository roleRepository) {
         return new OjdbcRoleCache(roleRepository);

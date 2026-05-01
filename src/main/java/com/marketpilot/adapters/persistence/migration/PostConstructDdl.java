@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 
 // TODO: Manage schema with migrations
 public class PostConstructDdl {
-    private JdbcClient jdbcClient;
+    private final JdbcClient jdbcClient;
 
     public PostConstructDdl(JdbcClient jdbcClient, EntityManagerFactory entityManagerFactory) {
         this.jdbcClient = jdbcClient;
