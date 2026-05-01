@@ -1,14 +1,13 @@
 package com.marketpilot.adapters.persistence.migration;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.persistence.EntityManagerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 // TODO: Manage schema with migrations
 public class PostConstructDdl {
     private final JdbcClient jdbcClient;
 
-    public PostConstructDdl(JdbcClient jdbcClient, EntityManagerFactory entityManagerFactory) {
+    public PostConstructDdl(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
     }
 

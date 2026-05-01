@@ -139,7 +139,7 @@ public class DataAccessConfig {
     }
 
     @Bean
-    PostConstructDdl postConstructDdl(JdbcClient jdbcClient, EntityManagerFactory entityManagerFactory) {
-        return new PostConstructDdl(jdbcClient, entityManagerFactory);
+    PostConstructDdl postConstructDdl(JdbcClient jdbcClient) {
+        return new PostConstructDdl(jdbcClient);
     }
 }

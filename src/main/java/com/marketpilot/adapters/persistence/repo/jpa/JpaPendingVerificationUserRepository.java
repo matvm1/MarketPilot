@@ -73,7 +73,7 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
     }
 
     @Override
-    public boolean registerNewUser(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException {
+    public boolean registerNewUser(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) {
         if (userType == null || user == null || roles == null || passwordHash == null || verificationCode == null)
             return false;
 
@@ -104,7 +104,7 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
     }
 
     @Override
-    public boolean crossRegister(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException {
+    public boolean crossRegister(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) {
         if (userType == null || user == null || roles == null || passwordHash == null || verificationCode == null)
             return false;
 
@@ -137,7 +137,7 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
     }
 
     @Override
-    public boolean completeRegistration(UserType userType, UUID userUUID) throws SQLException {
+    public boolean completeRegistration(UserType userType, UUID userUUID) {
         String[] authCols = generateAuthColumns(userType);
         String authUpdate = "UPDATE APP_USER_AUTH SET " +
                 IntStream.range(3, 6).mapToObj(i -> authCols[i] + " = :p" + i)
