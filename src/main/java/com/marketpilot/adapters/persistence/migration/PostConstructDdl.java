@@ -19,6 +19,7 @@ public class PostConstructDdl {
         jdbcClient.sql("""
                 CREATE TABLE APP_USER_AUTH (
                     USER_ID        NUMBER PRIMARY KEY,
+                    UUID         RAW(16) NOT NULL,
                     IS_CLIENT    BOOLEAN DEFAULT FALSE NOT NULL,
                     CLIENT_PASSWORD_HASH RAW(200) NULL,
                     CLIENT_REGISTRATION_CODE       VARCHAR2(16),
