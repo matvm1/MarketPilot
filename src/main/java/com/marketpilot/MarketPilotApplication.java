@@ -2,6 +2,7 @@ package com.marketpilot;
 
 import com.marketpilot.adapters.persistence.repo.jpa.JpaPendingVerificationUserRepository;
 import com.marketpilot.application.dto.auth.UserStatus;
+import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.TotpService;
 import com.marketpilot.application.services.AuthenticationService;
 import com.marketpilot.application.services.RegistrationService;
@@ -46,94 +47,8 @@ public class MarketPilotApplication {
         System.out.println(registrationService.initiateClientRegistration("user", null, null,
                 "user@marketpilot.com", "user", "", "1"));
          */
-        DataSource dataSource = ctx.getBean(DataSource.class);
-        System.out.println(dataSource.getConnection().getMetaData());
-
-        EntityManagerFactory emf = (EntityManagerFactory) ctx.getBean("entityManagerFactory");
-        EntityManager em = emf.createEntityManager();
-
-        emf.getMetamodel().getEntities()
-                .forEach(entityType -> System.out.println(entityType.getName()));
-
-        testJpaPersistence(em);
-        testPersistedEntity(dataSource);
-
-        PendingVerificationUserRepository pendingVerificationUserRepository = ctx.getBean(JpaPendingVerificationUserRepository.class);
-        Optional<Tuple<User, Map<String, Object>>> search = pendingVerificationUserRepository.findByUsername(UserType.CLIENT, "johnmdoe");
-        if (search.isPresent())
-            System.out.println(search.get().t().getFullName());
-        else
-            System.out.println("123");
 
         Thread.currentThread().join();
-    }
-
-    private static void testJpaPersistence(EntityManager em) {
-        final Set<Permission> AUTHENTICATED_BASE_PERMISSIONS = Set.of(
-                Permission.VIEW_QUOTE,
-                Permission.VIEW_ARTICLE,
-                Permission.VIEW_SECURITY_RATING,
-                Permission.CREATE_WATCHLIST,
-                Permission.DELETE_WATCHLIST
-        );
-
-        final Set<Permission> INVESTOR_TRANSACTION_PERMISSIONS = Set.of(
-                Permission.CREATE_BROKERAGE_ACCOUNT,
-                Permission.CLOSE_BROKERAGE_ACCOUNT,
-                Permission.LINK_BROKERAGE_ACCOUNT_TO_EXTERNAL,
-                Permission.TRANSFER_FUNDS,
-                Permission.PLACE_TRADE,
-                Permission.VIEW_PORTFOLIO
-        );
-
-        final Role PERSONAL_INVESTOR_ROLE = new Role(
-                Role.RoleName.Analyst,
-                Collections.unmodifiableSet(new HashSet<>() {{
-                    addAll(AUTHENTICATED_BASE_PERMISSIONS);
-                    addAll(INVESTOR_TRANSACTION_PERMISSIONS);
-                }}),
-                UserType.CLIENT
-        );
-        Role ANALYST_ROLE = new Role(Role.RoleName.Analyst, Set.of(Permission.PUBLISH_ARTICLE), UserType.EMPLOYEE);
-
-        UserFactory userFactory = new UserFactory();
-        User user = userFactory.createClientUser(Set.of(PERSONAL_INVESTOR_ROLE), "johnmdoe", "johnmdoe@outlook.com", "John", "M", "Doe");
-        user = userFactory.assignEmployeeAttributes(user, "ab123456", Set.of(ANALYST_ROLE),
-                "johnmdoe@company.com");
-
-        em.getTransaction().begin();
-        try {
-            em.persist(PERSONAL_INVESTOR_ROLE);
-            em.persist(ANALYST_ROLE);
-            em.persist(user);
-            em.flush();
-            String sql = """
-                INSERT INTO APP_USER_AUTH (USER_ID, CLIENT_REGISTRATION_CODE, CLIENT_REGISTRATION_EXPIRATION, CLIENT_USER_STATUS_ID)
-                VALUES (?, ?, ?, ?)
-            """;
-            em.createNativeQuery(sql)
-                    .setParameter(1, user.getId())
-                    .setParameter(2, "abc123")
-                    .setParameter(3, Instant.now())
-                    .setParameter(4, UserStatus.PENDING.getCode())
-                    .executeUpdate();
-            em.getTransaction().commit();
-            System.out.println("Persisted with id: " + PERSONAL_INVESTOR_ROLE.getId());
-        } catch (Exception e) {
-            em.getTransaction().rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
-    private static void testPersistedEntity(DataSource dataSource) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-
-        List<Map<String,Object>> rows =
-                jdbcTemplate.queryForList("SELECT * FROM EMPLOYEE_PROFILE");
-
-        rows.forEach(System.out::println);
     }
 }
     
