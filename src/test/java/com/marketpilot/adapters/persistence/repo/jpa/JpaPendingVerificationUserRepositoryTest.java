@@ -37,6 +37,7 @@ public class JpaPendingVerificationUserRepositoryTest {
 
     private UserFactory userFactory;
     private User clientUser;
+    private User employeeUser;
     private Set<Role> clientRoles;
     private Set<Role> employeeRoles;
 
@@ -59,6 +60,8 @@ public class JpaPendingVerificationUserRepositoryTest {
         userFactory = new UserFactory();
         clientUser = userFactory.createClientUser(clientRoles, "johnmdoe", "johnmdoe@outlook.com",
                 "John", "M", "Doe");
+        employeeUser = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", "johnmdoe@company.com",
+                "John", "M", "Doe");
     }
 
     @Test
@@ -78,9 +81,14 @@ public class JpaPendingVerificationUserRepositoryTest {
     }
 
     @Test
-    public void crossRegister_persistsUser() throws SQLException {
+    public void crossRegister_persistsEmployeeUser() throws SQLException {
         pendingVerificationUserRepository.registerNewUser(UserType.CLIENT, clientUser, clientRoles, dummyPasswordHash, "abc123");
         assertTrue(pendingVerificationUserRepository.crossRegister(UserType.EMPLOYEE, clientUser, employeeRoles, dummyPasswordHash, "321cba"));
-        // TODO: Employee to client registration test, userStatus tests
+    }
+
+    @Test
+    public void crossRegister_persistsClientUser() throws SQLException {
+        pendingVerificationUserRepository.registerNewUser(UserType.EMPLOYEE, employeeUser, employeeRoles, dummyPasswordHash, "abc123");
+        assertTrue(pendingVerificationUserRepository.crossRegister(UserType.CLIENT, employeeUser, clientRoles, dummyPasswordHash, "321cba"));
     }
 }
