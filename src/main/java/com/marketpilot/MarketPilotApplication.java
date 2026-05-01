@@ -9,7 +9,7 @@ import java.util.*;
 
 @SpringBootApplication
 public class MarketPilotApplication {
-    public static void main(String[] args) throws InterruptedException, SQLException {
+    public static void main(String[] args) throws InterruptedException {
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
         ctx.getEnvironment().setActiveProfiles("test");
         ctx.register(AppConfig.class);

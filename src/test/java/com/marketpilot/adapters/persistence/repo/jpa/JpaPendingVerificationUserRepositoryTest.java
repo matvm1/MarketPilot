@@ -34,7 +34,6 @@ public class JpaPendingVerificationUserRepositoryTest {
     @Autowired private PendingVerificationUserRepository pendingVerificationUserRepository;
     @Autowired private RoleRepository roleRepository;
 
-    private UserFactory userFactory;
     private User clientUser;
     private User employeeUser;
     private Set<Role> clientRoles;
@@ -56,7 +55,7 @@ public class JpaPendingVerificationUserRepositoryTest {
         employeeRoles = new HashSet<>();
         employeeRoles.add(analystRole);
 
-        userFactory = new UserFactory();
+        UserFactory userFactory = new UserFactory();
         clientUser = userFactory.createClientUser(clientRoles, "johnmdoe", "johnmdoe@outlook.com",
                 "John", "M", "Doe");
         employeeUser = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", "johnmdoe@company.com",
