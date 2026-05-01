@@ -14,6 +14,7 @@ import java.util.*;
 import static com.marketpilot.adapters.persistence.jdbc.Param.longP;
 import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
 
+@Deprecated
 public class OjdbcRoleRepository implements RoleRepository {
 
     @Override

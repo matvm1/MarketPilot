@@ -20,6 +20,8 @@ import static com.marketpilot.adapters.persistence.jdbc.Param.*;
 import static com.marketpilot.util.UuidUtil.bytesToUUID;
 import static com.marketpilot.util.UuidUtil.uuidToBytes;
 
+@Deprecated
+@SuppressWarnings("all")
 public class OjdbcPendingVerificationUserRepository implements PendingVerificationUserRepository {
     private final UserFactory userFactory;
     private final RoleCache roleCache;
@@ -127,7 +129,6 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
     }
 
     // registers a new user
-    // TODO: Test
     @Override
     public boolean registerNewUser(UserType userType, User user, Set<Role> roles, byte[] passwordHash, String verificationCode) throws SQLException {
         if (userType == null)
@@ -206,7 +207,6 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
         return generatedKeys.length == 1 && rolesInserted == roles.size();
     }
 
-    // TODO: Test
     private long[] registerClientAsEmployee(User user, byte[] passwordHash, String verificationCode, Timestamp expiration) throws SQLException {
         return JdbcExecutor.executeInsert("""
                 UPDATE APP_USER
@@ -230,7 +230,6 @@ public class OjdbcPendingVerificationUserRepository implements PendingVerificati
         );
     }
 
-    // TODO: Test
     private long[] registerEmployeeAsClient(User user, byte[] passwordHash, String verificationCode, Timestamp expiration) throws SQLException {
         return JdbcExecutor.executeInsert("""
                 UPDATE APP_USER

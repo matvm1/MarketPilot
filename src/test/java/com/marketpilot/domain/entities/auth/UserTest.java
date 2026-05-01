@@ -5,11 +5,13 @@ import com.marketpilot.domain.entities.auth.profile.EmployeeProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Comparator;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserTest {
+public class UserTest {
     private User testUser;
     private UUID testUUID;
     private ClientProfile dummyClientProfile = new ClientProfile("johnmdoe@outlook.com");
@@ -19,7 +21,7 @@ class UserTest {
     void setUp() {
         testUser = new User("johnmdoe", "John", "M", "Doe", new ClientProfile("johnmdoe@outlook.com"), new EmployeeProfile("ab123456", "johnmdoe@company.com"));
 
-        testUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        testUser.grantRole(TestRoles.personalInvestorRole());
         testUUID = UUID.randomUUID();
         testUser.setUUID(testUUID);
     }
@@ -98,13 +100,13 @@ class UserTest {
 
     @Test
     void hasRole_returnsFalseIfUserDoesNotHaveRole() {
-        testUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        testUser.grantRole(TestRoles.personalInvestorRole());
         assertFalse(testUser.hasRole(Role.RoleName.Analyst));
     }
 
     @Test
     void hasRole_returnsTrueIfUserHasRole() {
-        testUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        testUser.grantRole(TestRoles.personalInvestorRole());
         assertTrue(testUser.hasRole(Role.RoleName.PersonalInvestor));
     }
 
@@ -168,7 +170,7 @@ class UserTest {
     void equals_returnsFalseIfRolesAreDifferent() {
         User otherUser = new User("johnmdoe", "John", "M", "Doe", dummyClientProfile, dummyEmployeeProfile);
 
-        otherUser.grantRole(TestRoles.ANALYST_ROLE);
+        otherUser.grantRole(TestRoles.analystRole());
         otherUser.setUUID(testUUID);
 
         assertNotEquals(testUser, otherUser);
@@ -178,7 +180,7 @@ class UserTest {
     void equals_returnsFalseIfUuidIsDifferent() {
         User otherUser = new User("johnmdoe", "John", "M", "Doe", dummyClientProfile, dummyEmployeeProfile);
 
-        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.grantRole(TestRoles.personalInvestorRole());
         otherUser.setUUID(UUID.randomUUID());
 
         assertNotEquals(testUser, otherUser);
@@ -188,7 +190,7 @@ class UserTest {
     void equals_returnsFalseIfUsernameIsDifferent() {
         User otherUser = new User("janedoe", "John", "M", "Doe", dummyClientProfile, dummyEmployeeProfile);
 
-        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.grantRole(TestRoles.personalInvestorRole());
         otherUser.setUUID(testUUID);
 
         assertNotEquals(testUser, otherUser);
@@ -199,7 +201,7 @@ class UserTest {
         User otherUser = new User("johnmdoe", "John", "M", "Doe", dummyClientProfile, new EmployeeProfile("cd789012", "johnmdoe@company.com"));
 
         // Grant same role and UUID to isolate employeeId difference
-        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.grantRole(TestRoles.personalInvestorRole());
         otherUser.setUUID(testUUID);
 
         assertNotEquals(testUser, otherUser);
@@ -209,7 +211,7 @@ class UserTest {
     void equals_returnsFalseIfPersonalEmailIsDifferent() {
         User otherUser = new User("johnmdoe", "John", "M", "Doe", new ClientProfile("john.doe@gmail.com"), dummyEmployeeProfile);
 
-        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.grantRole(TestRoles.personalInvestorRole());
         otherUser.setUUID(testUUID);
 
         assertNotEquals(testUser, otherUser);
@@ -219,7 +221,7 @@ class UserTest {
     void equals_returnsFalseIfEmployeeEmailIsDifferent() {
         User otherUser = new User("johnmdoe", "John", "M", "Doe", dummyClientProfile, new EmployeeProfile("cd789012", "john.mdoe@company.com"));
 
-        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.grantRole(TestRoles.personalInvestorRole());
         otherUser.setUUID(testUUID);
 
         assertNotEquals(testUser, otherUser);
@@ -229,7 +231,7 @@ class UserTest {
     void equals_returnsFalseIfFirstNameIsDifferent() {
         User otherUser = new User("johnmdoe", "Jane", "M", "Doe", dummyClientProfile, dummyEmployeeProfile);
 
-        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.grantRole(TestRoles.personalInvestorRole());
         otherUser.setUUID(testUUID);
 
         assertNotEquals(testUser, otherUser);
@@ -239,7 +241,7 @@ class UserTest {
     void equals_returnsFalseIfMiddleNameIsDifferent() {
         User otherUser = new User("johnmdoe", "John", "L", "Doe", dummyClientProfile, dummyEmployeeProfile);
 
-        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.grantRole(TestRoles.personalInvestorRole());
         otherUser.setUUID(testUUID);
 
         assertNotEquals(testUser, otherUser);
@@ -249,7 +251,7 @@ class UserTest {
     void equals_returnsFalseIfLastNameIsDifferent() {
         User otherUser = new User("johnmdoe", "John", "M", "Smith", dummyClientProfile, dummyEmployeeProfile);
 
-        otherUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        otherUser.grantRole(TestRoles.personalInvestorRole());
         otherUser.setUUID(testUUID);
 
         assertNotEquals(testUser, otherUser);
@@ -264,7 +266,7 @@ class UserTest {
     void equals_returnsTrueIfAllFieldsAreEqual() {
         User identicalUser = new User("johnmdoe", "John", "M", "Doe", dummyClientProfile, dummyEmployeeProfile);
 
-        identicalUser.grantRole(TestRoles.PERSONAL_INVESTOR_ROLE);
+        identicalUser.grantRole(TestRoles.personalInvestorRole());
         identicalUser.setUUID(testUUID);
 
         assertEquals(testUser, identicalUser);

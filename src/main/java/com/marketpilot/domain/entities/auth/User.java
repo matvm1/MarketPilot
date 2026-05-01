@@ -5,9 +5,7 @@ import com.marketpilot.domain.entities.auth.profile.ClientProfile;
 import com.marketpilot.domain.entities.auth.profile.EmployeeProfile;
 import jakarta.persistence.*;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static com.marketpilot.util.EqualityUtil.noneNull;
 import static com.marketpilot.util.EqualityUtil.allNull;
@@ -46,6 +44,8 @@ public class User extends PersistentEntity {
     @JoinColumn(name = "employee_profile_id")
     private EmployeeProfile employeeProfile;
 
+    protected User() {}
+
     public User(String username, String firstName, String middleName, String lastName, ClientProfile clientProfile, EmployeeProfile employeeProfile) {
         if (allNull(clientProfile, employeeProfile))
             throw new IllegalArgumentException("at least one profile must be provided");
@@ -63,7 +63,7 @@ public class User extends PersistentEntity {
             throw new IllegalArgumentException("lastName cannot be empty");
 
         this.username = username;
-        this.roles = new HashSet<>();
+        this.roles = new TreeSet<>(Comparator.comparing(Role::getRoleName));
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;

@@ -1,12 +1,9 @@
 package com.marketpilot.domain.repo;
 
-import com.marketpilot.domain.entities.auth.MfaType;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 
-import java.sql.SQLException;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.UUID;
 
 public interface UserRepository extends BaseRepository<Long, User> {

@@ -3,9 +3,11 @@ package com.marketpilot.adapters.persistence.repo.springjdbc;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.repo.EmployeeRepository;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
 public class SpringJdbcEmployeeRepository implements EmployeeRepository {
     private final JdbcClient jdbcClient;
 

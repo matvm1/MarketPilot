@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
 
+@Deprecated
 public class OjdbcEmployeeRepository implements EmployeeRepository {
     @Override
     public boolean employeeIdExists(String employeeId) {

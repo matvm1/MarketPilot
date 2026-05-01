@@ -6,6 +6,7 @@ import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.domain.repo.AuthRepository;
 import com.marketpilot.util.BufferedConverter;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,6 +16,7 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+@Repository
 public class SpringJdbcAuthRepository implements AuthRepository {
     private JdbcClient jdbcClient;
 

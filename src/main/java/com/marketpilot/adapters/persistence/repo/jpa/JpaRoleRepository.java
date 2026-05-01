@@ -4,12 +4,14 @@ import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.repo.RoleRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.stereotype.Repository;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
 // TODO: Implementations for several methods
+@Repository
 public class JpaRoleRepository implements RoleRepository {
     @PersistenceContext
     private EntityManager entityManager;

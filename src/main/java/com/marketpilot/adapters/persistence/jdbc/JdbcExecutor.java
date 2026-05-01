@@ -7,10 +7,8 @@ import oracle.ucp.jdbc.PoolDataSource;
 import java.sql.*;
 import java.util.*;
 
-// Do not expose outside MarketPilot project
-//TODO: validate incoming sql
-//TODO: unit tests, integration tests
-//TODO: Spring-managed connections
+@Deprecated
+@SuppressWarnings("all")
 public class JdbcExecutor {
     private static final PoolDataSource pool = ConnectionPool.getPool();
 
@@ -28,8 +26,6 @@ public class JdbcExecutor {
             return Optional.empty();
         }
         catch (SQLException e) {
-            //TODO: Rollback? Commit?
-            //TODO: Log
             e.printStackTrace();
             throw new RuntimeException("Could not execute query:\n" + sql);
         }
@@ -49,8 +45,6 @@ public class JdbcExecutor {
             return dataCache.isEmpty() ? Optional.empty() : Optional.of(dataCache);
         }
         catch (SQLException e) {
-            //TODO: Rollback? Commit?
-            //TODO: Log
             e.printStackTrace();
             throw new RuntimeException("Could not execute query:\n" + sql);
         }
@@ -109,8 +103,6 @@ public class JdbcExecutor {
             return Optional.empty();
         }
         catch (SQLException e) {
-            //TODO: Rollback? Commit?
-            //TODO: Log
             e.printStackTrace();
             throw new RuntimeException("Could not execute query:\n" + sql);
         }
@@ -134,8 +126,6 @@ public class JdbcExecutor {
             return dataCache.isEmpty() ? Optional.empty() : Optional.of(dataCache);
         }
         catch (SQLException e) {
-            //TODO: Rollback? Commit?
-            //TODO: Log
             e.printStackTrace();
             throw new RuntimeException("Could not execute query:\n" + sql);
         }
