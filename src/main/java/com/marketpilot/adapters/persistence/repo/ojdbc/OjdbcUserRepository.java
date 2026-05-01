@@ -20,6 +20,7 @@ import static com.marketpilot.domain.entities.auth.UserType.CLIENT;
 import static com.marketpilot.util.UuidUtil.bytesToUUID;
 import static com.marketpilot.util.UuidUtil.uuidToBytes;
 
+@Deprecated
 public class OjdbcUserRepository implements UserRepository {
     private final UserFactory userFactory;
     private final RoleRepository roleRepository;

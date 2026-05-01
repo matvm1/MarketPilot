@@ -10,6 +10,7 @@ import java.util.Set;
 
 import static com.marketpilot.adapters.persistence.jdbc.Param.stringP;
 
+@Deprecated
 public class EnumSeederUtil {
     private final static Set<String> allowedTables = Set.of(
             "app_permission",

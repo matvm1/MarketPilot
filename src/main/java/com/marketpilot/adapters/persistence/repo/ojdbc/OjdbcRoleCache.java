@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Deprecated
 public class OjdbcRoleCache implements RoleCache {
     private final RoleRepository roleRepository;
     private Map<Role.RoleName, Role> roleCache;
@@ -18,7 +19,6 @@ public class OjdbcRoleCache implements RoleCache {
 
     public OjdbcRoleCache(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
-        // TODO
         //this.load();
     }
 

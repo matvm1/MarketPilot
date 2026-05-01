@@ -16,6 +16,7 @@ import static com.marketpilot.adapters.persistence.jdbc.Param.intP;
 import static com.marketpilot.domain.entities.auth.UserType.CLIENT;
 import static com.marketpilot.util.UuidUtil.uuidToBytes;
 
+@Deprecated
 public class OjdbcAuthRepository implements AuthRepository {
     @Override
     public Optional<byte[]> getClientPasswordHash(UUID uuid) {
@@ -103,7 +104,6 @@ public class OjdbcAuthRepository implements AuthRepository {
         return mfaTypeIdOptional.map(MfaType::fromCode);
     }
 
-    // TODO: Add USER_STATUS ids
     public Optional<Properties> getAuthProperties(UserType userType, UUID uuid) throws SQLException {
         if (userType == null || uuid == null)
             return Optional.empty();
