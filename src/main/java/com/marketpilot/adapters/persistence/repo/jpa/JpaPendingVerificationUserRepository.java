@@ -138,7 +138,20 @@ public class JpaPendingVerificationUserRepository implements PendingVerification
 
     @Override
     public boolean completeRegistration(UserType userType, UUID userUUID) throws SQLException {
-        return false;
+        String[] authCols = generateAuthColumns(userType);
+        String authUpdate = "UPDATE APP_USER_AUTH SET " +
+                IntStream.range(3, 6).mapToObj(i -> authCols[i] + " = :p" + i)
+                        .collect(Collectors.joining(", ")) +
+                " WHERE UUID = :userUuid AND " + authCols[3] + " = :pendingStatusId";
+        int rowsAffected = entityManager.createNativeQuery(authUpdate)
+                .setParameter("p3", UserStatus.ACTIVE.getCode())
+                .setParameter("p4", null)
+                .setParameter("p5", null)
+                .setParameter("userUuid", userUUID)
+                .setParameter("pendingStatusId", UserStatus.PENDING.getCode())
+                .executeUpdate();
+
+        return rowsAffected == 1;
     }
 
     @Override
