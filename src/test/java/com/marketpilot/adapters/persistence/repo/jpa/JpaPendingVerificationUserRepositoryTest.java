@@ -1,6 +1,7 @@
 package com.marketpilot.adapters.persistence.repo.jpa;
 
 import com.marketpilot.MarketPilotApplication;
+import com.marketpilot.application.dto.auth.UserStatus;
 import com.marketpilot.application.services.UserFactory;
 import com.marketpilot.domain.entities.auth.*;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
@@ -18,9 +19,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.sql.Timestamp;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -90,5 +90,46 @@ public class JpaPendingVerificationUserRepositoryTest {
     public void crossRegister_persistsClientUser() throws SQLException {
         pendingVerificationUserRepository.registerNewUser(UserType.EMPLOYEE, employeeUser, employeeRoles, dummyPasswordHash, "abc123");
         assertTrue(pendingVerificationUserRepository.crossRegister(UserType.CLIENT, employeeUser, clientRoles, dummyPasswordHash, "321cba"));
+    }
+
+    @Test
+    public void completeRegistration_SetsAuthFieldsToActiveForClient() throws SQLException {
+        pendingVerificationUserRepository.registerNewUser(UserType.CLIENT, clientUser, clientRoles, dummyPasswordHash, "abc123");
+        assertTrue(pendingVerificationUserRepository.completeRegistration(UserType.CLIENT, clientUser.getUUID()));
+        Map<String, Object> results = jdbcClient.sql("SELECT CLIENT_USER_STATUS_ID, CLIENT_REGISTRATION_CODE, CLIENT_REGISTRATION_EXPIRATION " +
+                        "FROM APP_USER_AUTH " +
+                        "WHERE USER_ID = :userId")
+                .param("userId", clientUser.getId())
+                .query((rs, rownum) -> {
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("CLIENT_USER_STATUS_ID", rs.getInt(1));
+                            map.put("CLIENT_REGISTRATION_CODE", rs.getString(2));
+                            map.put("CLIENT_REGISTRATION_EXPIRATION", rs.getTimestamp(3));
+                            return map;
+                        }).single();
+        assertEquals(UserStatus.ACTIVE.getCode(), results.get("CLIENT_USER_STATUS_ID"));
+        assertNull(results.get("CLIENT_REGISTRATION_CODE"));
+        assertNull(results.get("CLIENT_REGISTRATION_EXPIRATION"));
+    }
+
+
+    @Test
+    public void completeRegistration_SetsAuthFieldsToActiveForEmployee() throws SQLException {
+        pendingVerificationUserRepository.registerNewUser(UserType.EMPLOYEE, employeeUser, employeeRoles, dummyPasswordHash, "abc123");
+        assertTrue(pendingVerificationUserRepository.completeRegistration(UserType.EMPLOYEE, employeeUser.getUUID()));
+        Map<String, Object> results = jdbcClient.sql("SELECT EMPLOYEE_USER_STATUS_ID, EMPLOYEE_REGISTRATION_CODE, EMPLOYEE_REGISTRATION_EXPIRATION " +
+                        "FROM APP_USER_AUTH " +
+                        "WHERE USER_ID = :userId")
+                .param("userId", employeeUser.getId())
+                .query((rs, rownum) -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("EMPLOYEE_USER_STATUS_ID", rs.getInt(1));
+                    map.put("EMPLOYEE_REGISTRATION_CODE", rs.getString(2));
+                    map.put("EMPLOYEE_REGISTRATION_EXPIRATION", rs.getTimestamp(3));
+                    return map;
+                }).single();
+        assertEquals(UserStatus.ACTIVE.getCode(), results.get("EMPLOYEE_USER_STATUS_ID"));
+        assertNull(results.get("EMPLOYEE_REGISTRATION_CODE"));
+        assertNull(results.get("EMPLOYEE_REGISTRATION_EXPIRATION"));
     }
 }
