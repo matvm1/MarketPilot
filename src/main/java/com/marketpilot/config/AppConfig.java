@@ -1,4 +1,4 @@
-package config;
+package com.marketpilot.config;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;

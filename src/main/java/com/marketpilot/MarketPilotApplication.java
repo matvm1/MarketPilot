@@ -1,10 +1,9 @@
 package com.marketpilot;
 
-import config.AppConfig;
+import com.marketpilot.config.AppConfig;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.sql.SQLException;
 import java.util.*;
 
 @SpringBootApplication

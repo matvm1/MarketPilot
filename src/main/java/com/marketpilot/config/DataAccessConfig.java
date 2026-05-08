@@ -1,4 +1,4 @@
-package config;
+package com.marketpilot.config;
 
 import com.marketpilot.adapters.persistence.migration.PostConstructDdl;
 import  jakarta.persistence.EntityManagerFactory;

@@ -1,4 +1,4 @@
-package config;
+package com.marketpilot.config;
 
 import com.marketpilot.adapters.PebbleHtmlTemplateEngine;
 import com.marketpilot.adapters.SjmEmailEngine;
