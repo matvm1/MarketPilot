@@ -7,6 +7,7 @@ import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
+import integration.BaseIT;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -23,21 +24,14 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class AuthenticationServiceIT {
+public class AuthenticationServiceIT extends BaseIT {
     @Autowired private JdbcClient jdbcClient;
     @Autowired private AuthenticationService authenticationService;
-    @Autowired private RoleRepository roleRepository;
 
     private static User expectedClient;
     private static User expectedEmployee;
     private static final String clientEmail = "clientEmail@provider.com";
     private static final String employeeEmail = "employeeEmail@provider.com";
-    private static Role personalInvestorRole;
-    private static Role analystRole;
     private static final byte[] dummyPasswordHash = BufferedConverter.toBytes("xcusdhfgvasj@#njkhbf@nmdsejkhf%jnkjkbhjsd!!@$%bn1sdasd2n19xvds71ns3");
 
     private static Set<Role> clientRoles;
@@ -47,9 +41,6 @@ public class AuthenticationServiceIT {
     public void setUp() {
         personalInvestorRole = TestRoles.personalInvestorRole();
         analystRole = TestRoles.analystRole();
-
-        roleRepository.save(personalInvestorRole);
-        roleRepository.save(analystRole);
 
         clientRoles = new HashSet<>();
         clientRoles.add(personalInvestorRole);
