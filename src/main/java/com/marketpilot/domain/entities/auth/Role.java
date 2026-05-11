@@ -26,6 +26,8 @@ public class Role extends PersistentEntity {
         }
     }
 
+    public Role() {}
+
     @Enumerated(EnumType.ORDINAL) private RoleName roleName;
     @Enumerated(EnumType.ORDINAL) private UserType userType;
     @ElementCollection
