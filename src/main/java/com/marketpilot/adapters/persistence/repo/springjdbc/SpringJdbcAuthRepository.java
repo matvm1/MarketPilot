@@ -75,7 +75,7 @@ public class SpringJdbcAuthRepository implements AuthRepository {
     }
 
     private <U> Optional<U> getAuthProperty(String column, UUID uuid, BiFunction<ResultSet, String, U> mapper) {
-        String sql = "SELECT " + column + " FROM APP_USER WHERE UUID = :uuid";
+        String sql = "SELECT " + column + " FROM APP_USER_AUTH WHERE UUID = :uuid";
         return getAuthProperty(sql, column, uuid, mapper);
     }
 
