@@ -2,7 +2,7 @@ package com.marketpilot.application.services;
 
 import com.marketpilot.application.dto.auth.AuthenticationContext;
 import com.marketpilot.domain.entities.auth.Role;
-import integration.BaseRegistrationIT;
+import integration.RegistrationFixtureIT;
 import objects.TestAuthProperties;
 import objects.TestRoles;
 import com.marketpilot.util.Tuple;
@@ -15,7 +15,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AuthenticationServiceIT extends BaseRegistrationIT {
+public class AuthenticationServiceIT extends RegistrationFixtureIT {
     @Autowired private JdbcClient jdbcClient;
     @Autowired private AuthenticationService authenticationService;
 

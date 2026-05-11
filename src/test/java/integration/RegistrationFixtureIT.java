@@ -14,7 +14,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Set;
 
-public class BaseRegistrationIT extends BaseIT {
+public class RegistrationFixtureIT extends BaseFixtureIT {
     @Autowired private EntityManager entityManager;
     @Autowired private JdbcClient jdbcClient;
     @Autowired private UserRepository userRepository;

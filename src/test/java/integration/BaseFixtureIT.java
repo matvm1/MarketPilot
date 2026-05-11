@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public abstract class BaseIT {
+public abstract class BaseFixtureIT {
     @Autowired private RoleRepository roleRepository;
     @Autowired private TransactionTemplate transactionTemplate;
 
