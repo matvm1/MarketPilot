@@ -1,6 +1,7 @@
 package integration;
 
 import com.marketpilot.application.dto.auth.UserStatus;
+import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.services.UserFactory;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.repo.UserRepository;
@@ -18,6 +19,7 @@ public class BaseRegistrationIT extends BaseIT {
     @Autowired private JdbcClient jdbcClient;
     @Autowired private UserRepository userRepository;
     @Autowired private TransactionTemplate transactionTemplate;
+    @Autowired private PasswordHasher passwordHasher;
 
     protected User clientUser;
     protected User employeeUser;
@@ -75,7 +77,7 @@ public class BaseRegistrationIT extends BaseIT {
             int jdbcResult = jdbcClient.sql(authSql)
                     .param("userId", clientUser.getId())
                     .param("uuid", clientUser.getUUID())
-                    .param("clientPasswordHash", TestAuthProperties.dummyPassword())
+                    .param("clientPasswordHash", passwordHasher.hash(TestAuthProperties.dummyPassword()))
                     .param("clientTotpSecret", TestAuthProperties.totpSecret())
                     .param("userStatusId", UserStatus.ACTIVE.getCode())
                     .update();
