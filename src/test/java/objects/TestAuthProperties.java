@@ -5,7 +5,7 @@ import com.marketpilot.util.BufferedConverter;
 public class TestAuthProperties {
     private TestAuthProperties() {}
 
-    public static byte[] dummyPasswordHash() {
+    public static byte[] dummyPassword() {
         return BufferedConverter.toBytes("xcusdhfgvasj@#njkhbf@nmdsejkhf%jnkjkbhjsd!!@$%bn1sdasd2n19xvds71ns3");
     }
 

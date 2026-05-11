@@ -1,10 +1,8 @@
 package integration;
 
 import com.marketpilot.application.dto.auth.UserStatus;
-import com.marketpilot.application.services.RegistrationService;
 import com.marketpilot.application.services.UserFactory;
 import com.marketpilot.domain.entities.auth.User;
-import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.domain.repo.UserRepository;
 import jakarta.persistence.EntityManager;
 import objects.TestAuthProperties;
@@ -77,7 +75,7 @@ public class BaseRegistrationIT extends BaseIT {
             int jdbcResult = jdbcClient.sql(authSql)
                     .param("userId", clientUser.getId())
                     .param("uuid", clientUser.getUUID())
-                    .param("clientPasswordHash", TestAuthProperties.dummyPasswordHash())
+                    .param("clientPasswordHash", TestAuthProperties.dummyPassword())
                     .param("clientTotpSecret", TestAuthProperties.totpSecret())
                     .param("userStatusId", UserStatus.ACTIVE.getCode())
                     .update();
