@@ -31,8 +31,8 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
         UserFactory userFactory = new UserFactory();
         clientUser = userFactory.createClientUser(Set.of(personalInvestorRole), "quinnj", "quinnjordan@personal.com",
                 "Quinn", "A", "Jordan");
-        employeeUser = userFactory.createEmployeeUser("ab123456", Set.of(analystRole), "quinnj", "quinnjordan@company.com",
-                "Quinn", "A", "Jordan");
+        employeeUser = userFactory.createEmployeeUser("ab123456", Set.of(analystRole), "amorgan", "amorgan@company.com",
+                "Alex", "A", "Morgan");
 
         transactionTemplate.execute(status -> {
             boolean persistenceResult = userRepository.save(clientUser) && userRepository.save(employeeUser);
@@ -60,29 +60,47 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
                     ) VALUES (
                         :userId,
                         :uuid,
-                        TRUE,
+                        :isClient,
                         :clientPasswordHash,
                         '0p9o8i7u',
                         NULL,
                         :clientTotpSecret,
-                        :userStatusId,
-                        FALSE,
+                        :clientUserStatusId,
+                        :isEmp,
+                        :empPasswordHash,
+                        '0p9o8i7u',
                         NULL,
-                        NULL,
-                        NULL,
-                        NULL,
-                        NULL
+                        :empTotpSecret,
+                        :empUserStatusId
                     )""";
 
-            int jdbcResult = jdbcClient.sql(authSql)
+            int jdbcResult1 = jdbcClient.sql(authSql)
                     .param("userId", clientUser.getId())
                     .param("uuid", clientUser.getUUID())
+                    .param("isClient", true)
                     .param("clientPasswordHash", passwordHasher.hash(TestAuthProperties.dummyPassword()))
                     .param("clientTotpSecret", TestAuthProperties.totpSecret())
-                    .param("userStatusId", UserStatus.ACTIVE.getCode())
+                    .param("clientUserStatusId", UserStatus.ACTIVE.getCode())
+                    .param("isEmp", false)
+                    .param("empPasswordHash", null)
+                    .param("empTotpSecret", null)
+                    .param("empUserStatusId", null)
                     .update();
 
-            if (jdbcResult != 1)
+            int jdbcResult2 = jdbcClient.sql(authSql)
+                    .param("userId", employeeUser.getId())
+                    .param("uuid", employeeUser.getUUID())
+                    .param("isClient", false)
+                    .param("clientPasswordHash", null)
+                    .param("clientTotpSecret", null)
+                    .param("clientUserStatusId", null)
+                    .param("isEmp", true)
+                    .param("empPasswordHash", passwordHasher.hash(TestAuthProperties.dummyPassword()))
+                    .param("empTotpSecret", TestAuthProperties.totpSecret())
+                    .param("empUserStatusId", UserStatus.ACTIVE.getCode())
+                    .update();
+
+            if (jdbcResult1 != 1 || jdbcResult2 != 1)
                 throw new IllegalStateException("Failed to persist test user authentication properties with jdbcClient");
 
             return null;
