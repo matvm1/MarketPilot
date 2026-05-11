@@ -30,7 +30,7 @@ public class Role extends PersistentEntity {
 
     @Enumerated(EnumType.ORDINAL) private RoleName roleName;
     @Enumerated(EnumType.ORDINAL) private UserType userType;
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "APP_ROLE_PERMISSION",
             joinColumns = @JoinColumn(name = "role_id")

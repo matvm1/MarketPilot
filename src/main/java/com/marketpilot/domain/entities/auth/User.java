@@ -16,7 +16,7 @@ public class User extends PersistentEntity {
     @Column(unique = true, updatable = false, nullable = false)
     private UUID uuid;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "APP_USER_ROLE",
             joinColumns = @JoinColumn(name = "user_id"),
