@@ -25,7 +25,7 @@ public class AuthenticationServiceIT extends BaseRegistrationIT {
     @Test
     public void initiateClientAuthentication_succeedsForValidCredentials() {
         Tuple<AuthenticationService.AuthenticationStatus, Optional<AuthenticationContext>> result =
-                authenticationService.initiateClientAuthentication(clientEmail, TestAuthProperties.dummyPasswordHash(), Role.RoleName.PersonalInvestor);
+                authenticationService.initiateClientAuthentication(clientEmail, TestAuthProperties.dummyPassword(), Role.RoleName.PersonalInvestor);
         assertEquals(AuthenticationService.AuthenticationStatus.AWAITING_2FA, result.t());
         assertTrue(result.u().isPresent());
         assertEquals(clientUser, result.u().get().principal());
