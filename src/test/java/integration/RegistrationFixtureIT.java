@@ -2,6 +2,7 @@ package integration;
 
 import com.marketpilot.application.dto.auth.UserStatus;
 import com.marketpilot.application.ports.auth.PasswordHasher;
+import com.marketpilot.application.ports.auth.TotpService;
 import com.marketpilot.application.services.UserFactory;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.repo.UserRepository;
@@ -20,6 +21,7 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
     @Autowired private UserRepository userRepository;
     @Autowired private TransactionTemplate transactionTemplate;
     @Autowired private PasswordHasher passwordHasher;
+    @Autowired private TotpService totpService;
 
     protected User clientUser;
     protected User employeeUser;
@@ -79,7 +81,7 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
                     .param("uuid", clientUser.getUUID())
                     .param("isClient", true)
                     .param("clientPasswordHash", passwordHasher.hash(TestAuthProperties.dummyPassword()))
-                    .param("clientTotpSecret", TestAuthProperties.totpSecret())
+                    .param("clientTotpSecret", totpService.generateSecret())
                     .param("clientUserStatusId", UserStatus.ACTIVE.getCode())
                     .param("isEmp", false)
                     .param("empPasswordHash", null)
@@ -96,7 +98,7 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
                     .param("clientUserStatusId", null)
                     .param("isEmp", true)
                     .param("empPasswordHash", passwordHasher.hash(TestAuthProperties.dummyPassword()))
-                    .param("empTotpSecret", TestAuthProperties.totpSecret())
+                    .param("empTotpSecret", totpService.generateSecret())
                     .param("empUserStatusId", UserStatus.ACTIVE.getCode())
                     .update();
 
