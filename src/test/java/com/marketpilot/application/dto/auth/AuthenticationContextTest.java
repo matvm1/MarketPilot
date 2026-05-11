@@ -1,6 +1,6 @@
 package com.marketpilot.application.dto.auth;
 
-import com.marketpilot.domain.entities.auth.TestRoles;
+import objects.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

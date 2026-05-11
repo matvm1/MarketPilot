@@ -2,6 +2,7 @@ package com.marketpilot.application.services;
 
 import com.marketpilot.application.dto.auth.AuthenticationContext;
 import com.marketpilot.domain.entities.auth.*;
+import objects.TestRoles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

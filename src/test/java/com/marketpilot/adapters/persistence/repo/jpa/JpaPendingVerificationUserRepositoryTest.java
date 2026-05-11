@@ -7,6 +7,7 @@ import com.marketpilot.domain.entities.auth.*;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.util.BufferedConverter;
+import objects.TestRoles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

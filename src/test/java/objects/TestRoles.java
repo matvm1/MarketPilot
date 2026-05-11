@@ -1,4 +1,9 @@
-package com.marketpilot.domain.entities.auth;
+package objects;
+
+import com.marketpilot.domain.entities.auth.Permission;
+import com.marketpilot.domain.entities.auth.Role;
+import com.marketpilot.domain.entities.auth.TestRolePermissionSets;
+import com.marketpilot.domain.entities.auth.UserType;
 
 import java.util.HashSet;
 import java.util.Set;

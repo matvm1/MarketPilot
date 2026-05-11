@@ -2,11 +2,10 @@ package com.marketpilot.domain.entities.auth;
 
 import com.marketpilot.domain.entities.auth.profile.ClientProfile;
 import com.marketpilot.domain.entities.auth.profile.EmployeeProfile;
+import objects.TestRoles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Comparator;
-import java.util.TreeSet;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;

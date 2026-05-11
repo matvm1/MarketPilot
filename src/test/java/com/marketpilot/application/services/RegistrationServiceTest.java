@@ -10,7 +10,7 @@ import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.domain.repo.UserRepository;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
-import com.marketpilot.domain.entities.auth.TestRoles;
+import objects.TestRoles;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.BufferedConverter;

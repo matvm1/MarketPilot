@@ -11,6 +11,7 @@ import com.marketpilot.application.services.AuthenticationService.Authentication
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
+import objects.TestRoles;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

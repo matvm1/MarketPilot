@@ -1,9 +1,8 @@
 package integration;
 
 import com.marketpilot.domain.entities.auth.Role;
-import com.marketpilot.domain.entities.auth.TestRoles;
+import objects.TestRoles;
 import com.marketpilot.domain.repo.RoleRepository;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +10,6 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
