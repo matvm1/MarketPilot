@@ -23,17 +23,18 @@ import java.util.Properties;
 @Configuration
 public class RegistrationServiceConfig {
     @Bean
-    public RegistrationService registrationService(AuthRepository authRepository,
+    public RegistrationService registrationService(RoleRepository roleRepository,
+                                                   AuthRepository authRepository,
                                                    UserRepository userRepository,
                                                    PendingVerificationUserRepository pendingVerificationUserRepository,
                                                    EmployeeRepository employeeRepository,
                                                    EmailEngine emailEngine,
                                                    PasswordHasher passwordHasher,
                                                    UserFactory userFactory,
-                                                   RoleCache roleCache,
                                                    VerificationCodeGenerator verificationCodeGenerator) {
-        return new RegistrationService(authRepository, userRepository, pendingVerificationUserRepository, employeeRepository, emailEngine, passwordHasher,
-            userFactory, roleCache, verificationCodeGenerator);
+        return new RegistrationService(roleRepository, authRepository, userRepository, pendingVerificationUserRepository, employeeRepository, emailEngine,
+                passwordHasher,
+            userFactory, verificationCodeGenerator);
     }
 
     @Bean
@@ -71,12 +72,6 @@ public class RegistrationServiceConfig {
     @Bean
     public UserFactory userFactory() {
         return new UserFactory();
-    }
-
-    // TODO: Rely on JPA query caches
-    @Bean
-    public RoleCache roleCache(RoleRepository roleRepository) {
-        return new OjdbcRoleCache(roleRepository);
     }
 
     @Bean

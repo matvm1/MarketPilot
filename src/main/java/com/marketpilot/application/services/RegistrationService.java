@@ -7,11 +7,7 @@ import com.marketpilot.application.dto.user.UserEmployeeDTO;
 import com.marketpilot.application.ports.VerificationCodeGenerator;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.EmailEngine;
-import com.marketpilot.application.ports.auth.RoleCache;
-import com.marketpilot.domain.repo.AuthRepository;
-import com.marketpilot.domain.repo.EmployeeRepository;
-import com.marketpilot.domain.repo.PendingVerificationUserRepository;
-import com.marketpilot.domain.repo.UserRepository;
+import com.marketpilot.domain.repo.*;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
@@ -35,6 +31,7 @@ public class RegistrationService {
         EXPIRED
     }
 
+    private final RoleRepository roleRepository;
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
     private final PendingVerificationUserRepository pendingVerificationUserRepository;
@@ -42,7 +39,6 @@ public class RegistrationService {
     private final EmailEngine emailEngine;
     private final PasswordHasher passwordHasher;
     private final UserFactory userFactory;
-    private final RoleCache roleCache;
     private final VerificationCodeGenerator verificationCodeGenerator;
 
     private final int VERIFICATION_CODE_LENGTH = 8;
@@ -51,29 +47,34 @@ public class RegistrationService {
     private final String VERIFICATION_EMAIL_TEMPLATE = "verification_email";
     private final String WELCOME_LETTER_TEMPLATE = "welcome_letter";
 
-    public RegistrationService(AuthRepository authRepository,
+    public RegistrationService(RoleRepository roleRepository,
+                               AuthRepository authRepository,
                                UserRepository userRepository,
                                PendingVerificationUserRepository pendingVerificationUserRepository,
                                EmployeeRepository employeeRepository,
                                EmailEngine emailEngine,
                                PasswordHasher passwordHasher,
                                UserFactory userFactory,
-                               RoleCache roleCache,
                                VerificationCodeGenerator verificationCodeGenerator) {
         this.authRepository = authRepository;
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.pendingVerificationUserRepository = pendingVerificationUserRepository;
         this.employeeRepository = employeeRepository;
         this.emailEngine = emailEngine;
         this.passwordHasher = passwordHasher;
         this.userFactory = userFactory;
-        this.roleCache = roleCache;
         this.verificationCodeGenerator = verificationCodeGenerator;
     }
 
     public RegistrationStatus initiateClientRegistration(String username, byte[] passwordLightHash, Role.RoleName[] clientRoleNames, String personalEmail,
                                                          String firstName, String middleName, String lastName) {
-        UserClientDTO userClientDTO = new UserClientDTO(username, roleCache.fetch(clientRoleNames), personalEmail, firstName, middleName, lastName);
+        Set<Role> roles = fetchRoles(clientRoleNames);
+        if (roles == null)
+            return RegistrationStatus.FAILURE;
+
+        UserClientDTO userClientDTO = new UserClientDTO(username, roles, personalEmail, firstName, middleName,
+                lastName);
         BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) -> userFactory.createClientUser((UserClientDTO) b);
 
         return initiateRegistration(UserType.CLIENT,
@@ -92,11 +93,14 @@ public class RegistrationService {
     // assumes employee has been authenticated
     public RegistrationStatus initiateClientRegistrationForExistingEmployee(String username, byte[] passwordLightHash, Role.RoleName[] clientRoleNames,
                                                                             String personalEmail) {
-
         Optional<User> existingEmployeeOptional = userRepository.findByUsername(UserType.EMPLOYEE, username);
         if (existingEmployeeOptional.isPresent()) {
             User existingEmployee = existingEmployeeOptional.get();
-            UserClientDTO userClientDTO = new UserClientDTO(username, roleCache.fetch(clientRoleNames), personalEmail,
+            Set<Role> roles = fetchRoles(clientRoleNames);
+            if (roles == null)
+                return RegistrationStatus.FAILURE;
+
+            UserClientDTO userClientDTO = new UserClientDTO(username, roles, personalEmail,
                     existingEmployee.getFirstName(), existingEmployee.getMiddleName(), existingEmployee.getLastName());
             BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) ->
                     userFactory.assignClientAttributes(existingEmployee, (UserClientDTO) b);
@@ -119,7 +123,11 @@ public class RegistrationService {
 
     public RegistrationStatus initiateEmployeeRegistration(String employeeId, String username, byte[] passwordLightHash, Role.RoleName[] employeeRoleNames,
                                                            String employeeEmail, String firstName, String middleName, String lastName) {
-        UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, roleCache.fetch(employeeRoleNames), employeeEmail,
+        Set<Role> roles = fetchRoles(employeeRoleNames);
+        if (roles == null)
+            return RegistrationStatus.FAILURE;
+
+        UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, roles, employeeEmail,
                 firstName, middleName, lastName);
         BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) -> userFactory.createEmployeeUser((UserEmployeeDTO) b);
 
@@ -142,7 +150,11 @@ public class RegistrationService {
         Optional<User> existingClientOptional = userRepository.findByUsername(UserType.CLIENT, username);
         if (existingClientOptional.isPresent()) {
             User existingClient = existingClientOptional.get();
-            UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, roleCache.fetch(employeeRoleNames), employeeEmail,
+            Set<Role> roles = fetchRoles(employeeRoleNames);
+            if (roles == null)
+                return RegistrationStatus.FAILURE;
+
+            UserEmployeeDTO userEmployeeDTO = new UserEmployeeDTO(employeeId, username, roles, employeeEmail,
                     existingClient.getFirstName(), existingClient.getMiddleName(), existingClient.getLastName());
             BiFunction<User, UserAbstractDTO, User> userFactoryAction = (a, b) ->
                     userFactory.assignEmployeeAttributes(existingClient, (UserEmployeeDTO) b);
@@ -346,6 +358,14 @@ public class RegistrationService {
         if (isRegistrationExpired)
             return RegistrationStatus.EXPIRED;
         return RegistrationStatus.FAILURE;
+    }
+
+    private Set<Role> fetchRoles(Role.RoleName[] roleNames) {
+        Optional<Set<Role>> rolesOptional = roleRepository.findByRoleNames(Set.of(roleNames));
+        if (rolesOptional.isEmpty() || rolesOptional.get().isEmpty())
+            return null;
+
+        return rolesOptional.get();
     }
 
     private static void fillZero(byte[] arr) {
