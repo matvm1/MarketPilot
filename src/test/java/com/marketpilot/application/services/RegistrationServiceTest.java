@@ -4,10 +4,7 @@ import com.marketpilot.application.ports.EmailEngine;
 import com.marketpilot.application.ports.VerificationCodeGenerator;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.RoleCache;
-import com.marketpilot.domain.repo.AuthRepository;
-import com.marketpilot.domain.repo.EmployeeRepository;
-import com.marketpilot.domain.repo.PendingVerificationUserRepository;
-import com.marketpilot.domain.repo.UserRepository;
+import com.marketpilot.domain.repo.*;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import objects.TestRoles;
@@ -34,13 +31,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class RegistrationServiceTest {
     UserFactory userFactory;
+    @Mock private RoleRepository roleRepository;
     @Mock private AuthRepository authRepository;
     @Mock private UserRepository userRepository;
     @Mock private PendingVerificationUserRepository pendingVerificationUserRepository;
     @Mock private EmployeeRepository employeeRepository;
     @Mock private EmailEngine emailEngine;
     @Mock private PasswordHasher passwordHasher;
-    @Mock private RoleCache roleCache;
     @Mock private VerificationCodeGenerator verificationCodeGenerator;
 
     private RegistrationService registrationService;
@@ -64,17 +61,17 @@ public class RegistrationServiceTest {
     @BeforeEach
     void setUp() {
         userFactory = new UserFactory();
-        registrationService = new RegistrationService(authRepository, userRepository, pendingVerificationUserRepository,
-                employeeRepository, emailEngine, passwordHasher, userFactory, roleCache, verificationCodeGenerator);
+        registrationService = new RegistrationService(roleRepository, authRepository, userRepository, pendingVerificationUserRepository,
+                employeeRepository, emailEngine, passwordHasher, userFactory, verificationCodeGenerator);
 
         clientRoleNames = new RoleName[] {RoleName.PersonalInvestor};
         employeeRoleNames = new RoleName[] {RoleName.Analyst};
 
-        when(roleCache.fetch(clientRoleNames)).thenReturn(TestRoles.allClient());
-        when(roleCache.fetch(employeeRoleNames)).thenReturn(TestRoles.allEmployee());
+        when(roleRepository.findByRoleNames(Set.of(clientRoleNames))).thenReturn(Optional.of(Set.of(TestRoles.personalInvestorRole())));
+        when(roleRepository.findByRoleNames(Set.of(employeeRoleNames))).thenReturn(Optional.of(Set.of(TestRoles.analystRole())));
 
-        clientRoles = roleCache.fetch(clientRoleNames);
-        employeeRoles = roleCache.fetch(employeeRoleNames);
+        clientRoles = roleRepository.findByRoleNames(Set.of(clientRoleNames)).orElseThrow();
+        employeeRoles = roleRepository.findByRoleNames(Set.of(employeeRoleNames)).orElseThrow();
 
         existingClient = userFactory.createClientUser(clientRoles, "johnmdoe", "johnmdoe@outlook.com",
                 "John", "M", "Doe");
@@ -138,7 +135,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateClientRegistration_returnsFailureIfRoleNotFound() {
-        roleCache = null;
+        when(roleRepository.findByRoleNames(Set.of(clientRoleNames))).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateClientRegistration("johnmdoe",
                         dummyPasswordLightHash, clientRoleNames, "johnmdoe@outlook.com", "John", "M", "Doe"));
@@ -305,7 +302,7 @@ public class RegistrationServiceTest {
 
     @Test
     void initiateEmployeeRegistration_throwsIfRoleNotFound() {
-        roleCache = null;
+        when(roleRepository.findByRoleNames(Set.of(employeeRoleNames))).thenReturn(Optional.empty());
         assertEquals(RegistrationStatus.FAILURE,
                 registrationService.initiateEmployeeRegistration("ab123456", "johnmdoe",
                         dummyPasswordHash, employeeRoleNames, "johnmdoe@company.com", "John", "M", "Doe"));
