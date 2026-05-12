@@ -7,6 +7,7 @@ import com.marketpilot.application.services.UserFactory;
 import com.marketpilot.domain.entities.auth.MfaType;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.repo.UserRepository;
+import com.marketpilot.util.BufferedConverter;
 import jakarta.persistence.EntityManager;
 import objects.TestAuthProperties;
 import org.junit.jupiter.api.BeforeAll;
@@ -91,7 +92,7 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
                     .param("mfaTypeId", MfaType.TOTP.getCode())
                     .param("isClient", true)
                     .param("clientPasswordHash", passwordHasher.hash(TestAuthProperties.dummyPassword()))
-                    .param("clientTotpSecret", clientTotpSecret)
+                    .param("clientTotpSecret", BufferedConverter.toBytes(clientTotpSecret))
                     .param("clientUserStatusId", UserStatus.ACTIVE.getCode())
                     .param("isEmp", false)
                     .param("empPasswordHash", null)
@@ -109,7 +110,7 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
                     .param("clientUserStatusId", null)
                     .param("isEmp", true)
                     .param("empPasswordHash", passwordHasher.hash(TestAuthProperties.dummyPassword()))
-                    .param("empTotpSecret", employeeTotpSecret)
+                    .param("empTotpSecret", BufferedConverter.toBytes(employeeTotpSecret))
                     .param("empUserStatusId", UserStatus.ACTIVE.getCode())
                     .update();
 
