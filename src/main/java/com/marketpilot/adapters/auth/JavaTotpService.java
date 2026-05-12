@@ -46,8 +46,7 @@ public class JavaTotpService implements TotpService {
         // May have DB schema implications
         CodeGenerator codeGenerator = new DefaultCodeGenerator(hashingAlgorithm);
         CodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
-
-        return verifier.isValidCode(Arrays.toString(((TotpCredential) credentials).getSecret()), ((TotpCredential)credentials).getCode());
+        return verifier.isValidCode(new String(((TotpCredential) credentials).getSecret()), ((TotpCredential)credentials).getCode());
     }
 
     @Override
