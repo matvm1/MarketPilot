@@ -27,6 +27,9 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
     protected User clientUser;
     protected User employeeUser;
 
+    protected String clientTotpSecret;
+    protected String employeeTotpSecret;
+
     @BeforeAll
     public void setUp() {
         super.setUp();
@@ -43,6 +46,9 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
 
             if (!persistenceResult)
                 throw new IllegalArgumentException("Failed to persist test users with userRepository");
+
+            clientTotpSecret = totpService.generateSecret();
+            employeeTotpSecret = totpService.generateSecret();
 
             String authSql = """
                     INSERT INTO APP_USER_AUTH (
@@ -85,7 +91,7 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
                     .param("mfaTypeId", MfaType.TOTP.getCode())
                     .param("isClient", true)
                     .param("clientPasswordHash", passwordHasher.hash(TestAuthProperties.dummyPassword()))
-                    .param("clientTotpSecret", totpService.generateSecret())
+                    .param("clientTotpSecret", clientTotpSecret)
                     .param("clientUserStatusId", UserStatus.ACTIVE.getCode())
                     .param("isEmp", false)
                     .param("empPasswordHash", null)
@@ -103,7 +109,7 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
                     .param("clientUserStatusId", null)
                     .param("isEmp", true)
                     .param("empPasswordHash", passwordHasher.hash(TestAuthProperties.dummyPassword()))
-                    .param("empTotpSecret", totpService.generateSecret())
+                    .param("empTotpSecret", employeeTotpSecret)
                     .param("empUserStatusId", UserStatus.ACTIVE.getCode())
                     .update();
 
