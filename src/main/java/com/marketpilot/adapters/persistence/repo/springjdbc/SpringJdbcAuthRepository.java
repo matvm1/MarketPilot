@@ -46,9 +46,7 @@ public class SpringJdbcAuthRepository implements AuthRepository {
 
     @Override
     public Optional<MfaType> getMfaType(UUID uuid) {
-        String sql = "SELECT mfa.NAME FROM MFA_TYPE mfa JOIN APP_USER u ON mfa.ID = u.MFA_TYPE_ID WHERE UUID = :uuid";
-        return getAuthProperty(sql, "MFA_TYPE", uuid, tryExtract(ResultSet::getString), MfaType::valueOf);
-
+        return getAuthProperty("MFATYPE_ID", uuid, tryExtract(ResultSet::getString), MfaType::valueOf);
     }
 
     private <U> BiFunction<ResultSet, String, U> tryExtract(SqlExceptionBiFunction<ResultSet, String, U> biFunction) {
@@ -80,7 +78,7 @@ public class SpringJdbcAuthRepository implements AuthRepository {
     }
 
     private <T, U> Optional<U> getAuthProperty(String column, UUID uuid, BiFunction<ResultSet, String, T> mapper, Function<T, U> postProcessor) {
-        String sql = "SELECT " + column + " FROM APP_USER WHERE UUID = :uuid";
+        String sql = "SELECT " + column + " FROM APP_USER_AUTH WHERE UUID = :uuid";
         return getAuthProperty(sql, column, uuid, mapper, postProcessor);
     }
 
