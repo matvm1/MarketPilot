@@ -46,7 +46,7 @@ public class SpringJdbcAuthRepository implements AuthRepository {
 
     @Override
     public Optional<MfaType> getMfaType(UUID uuid) {
-        return getAuthProperty("MFATYPE_ID", uuid, tryExtract(ResultSet::getString), MfaType::valueOf);
+        return getAuthProperty("MFATYPE_ID", uuid, tryExtract(ResultSet::getInt), MfaType::fromCode);
     }
 
     private <U> BiFunction<ResultSet, String, U> tryExtract(SqlExceptionBiFunction<ResultSet, String, U> biFunction) {
