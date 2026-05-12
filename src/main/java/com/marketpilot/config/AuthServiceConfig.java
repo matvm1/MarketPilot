@@ -24,8 +24,8 @@ import java.util.Optional;
 public class AuthServiceConfig {
     @Bean
     public AuthenticationService authenticationService(AuthRepository authRepository, UserRepository userRepository, TwoFactorService totpService,
-                                                       PasswordHasher passwordHasher, SessionManager sessionManager) {
-        return new AuthenticationService(authRepository, userRepository, totpService, passwordHasher, sessionManager);
+                                                       PasswordHasher passwordHasher) {
+        return new AuthenticationService(authRepository, userRepository, totpService, passwordHasher);
     }
 
     @Bean
@@ -36,26 +36,5 @@ public class AuthServiceConfig {
     @Bean
     public TotpService totpService(TimeProvider timeProvider, @Value("${totp.hashing-algorithm}") HashingAlgorithm hashingAlgorithm) {
         return new JavaTotpService(timeProvider, hashingAlgorithm);
-    }
-
-    //TODO
-    @Bean
-    public SessionManager sessionManager() {
-        return new SessionManager() {
-            @Override
-            public Optional<UserSession> createSession(AuthenticationContext authenticationContext) {
-                return Optional.empty();
-            }
-
-            @Override
-            public Optional<UserSession> getSession(int sessionId) {
-                return Optional.empty();
-            }
-
-            @Override
-            public void invalidate(int sessionId) {
-
-            }
-        };
     }
 }
