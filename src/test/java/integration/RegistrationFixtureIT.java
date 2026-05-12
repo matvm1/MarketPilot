@@ -4,6 +4,7 @@ import com.marketpilot.application.dto.auth.UserStatus;
 import com.marketpilot.application.ports.auth.PasswordHasher;
 import com.marketpilot.application.ports.auth.TotpService;
 import com.marketpilot.application.services.UserFactory;
+import com.marketpilot.domain.entities.auth.MfaType;
 import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.repo.UserRepository;
 import jakarta.persistence.EntityManager;
@@ -47,6 +48,7 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
                     INSERT INTO APP_USER_AUTH (
                         USER_ID,
                         UUID,
+                        MFATYPE_ID,
                         IS_CLIENT,
                         CLIENT_PASSWORD_HASH,
                         CLIENT_REGISTRATION_CODE,
@@ -62,6 +64,7 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
                     ) VALUES (
                         :userId,
                         :uuid,
+                        :mfaTypeId,
                         :isClient,
                         :clientPasswordHash,
                         '0p9o8i7u',
@@ -79,6 +82,7 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
             int jdbcResult1 = jdbcClient.sql(authSql)
                     .param("userId", clientUser.getId())
                     .param("uuid", clientUser.getUUID())
+                    .param("mfaTypeId", MfaType.TOTP)
                     .param("isClient", true)
                     .param("clientPasswordHash", passwordHasher.hash(TestAuthProperties.dummyPassword()))
                     .param("clientTotpSecret", totpService.generateSecret())
@@ -92,6 +96,7 @@ public class RegistrationFixtureIT extends BaseFixtureIT {
             int jdbcResult2 = jdbcClient.sql(authSql)
                     .param("userId", employeeUser.getId())
                     .param("uuid", employeeUser.getUUID())
+                    .param("mfaTypeId", MfaType.TOTP)
                     .param("isClient", false)
                     .param("clientPasswordHash", null)
                     .param("clientTotpSecret", null)
