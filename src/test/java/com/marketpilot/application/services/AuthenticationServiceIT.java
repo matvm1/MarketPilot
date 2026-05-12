@@ -1,13 +1,19 @@
 package com.marketpilot.application.services;
 
 import com.marketpilot.application.dto.auth.AuthenticationContext;
+import com.marketpilot.application.dto.auth.credentials.TotpCredential;
 import com.marketpilot.domain.entities.auth.Role;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.code.HashingAlgorithm;
+import dev.samstevens.totp.exceptions.CodeGenerationException;
+import dev.samstevens.totp.time.TimeProvider;
 import integration.RegistrationFixtureIT;
 import objects.TestAuthProperties;
 import objects.TestRoles;
 import com.marketpilot.util.Tuple;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 import java.util.Optional;
@@ -18,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class AuthenticationServiceIT extends RegistrationFixtureIT {
     @Autowired private JdbcClient jdbcClient;
     @Autowired private AuthenticationService authenticationService;
+    @Autowired private TimeProvider timeProvider;
+    @Value("${totp.hashing-algorithm}") private HashingAlgorithm hashingAlgorithm;
 
     private static final String clientEmail = "quinnjordan@personal.com";
     private static final String employeeId = "ab123456";
@@ -41,5 +49,15 @@ public class AuthenticationServiceIT extends RegistrationFixtureIT {
         assertTrue(result.u().isPresent());
         assertEquals(employeeUser, result.u().get().principal());
         assertEquals(TestRoles.analystRole(), result.u().get().role());
+    }
+
+    @Test
+    public void completeAuthentication_succeedsForValidClient2Fa() throws CodeGenerationException {
+        long counter = Math.floorDiv(timeProvider.getTime(), 30);
+        String totpCode = new DefaultCodeGenerator(hashingAlgorithm).generate(clientTotpSecret, counter);
+        AuthenticationService.AuthenticationStatus result = authenticationService.completeAuthentication(clientUser, personalInvestorRole,
+                new TotpCredential(totpCode));
+        totpCode = null;
+        assertEquals(AuthenticationService.AuthenticationStatus.SUCCESS, result);
     }
 }
