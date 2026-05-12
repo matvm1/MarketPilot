@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AuthenticationServiceIT extends RegistrationFixtureIT {
-    @Autowired private JdbcClient jdbcClient;
     @Autowired private AuthenticationService authenticationService;
     @Autowired private TimeProvider timeProvider;
     @Value("${totp.hashing-algorithm}") private HashingAlgorithm hashingAlgorithm;
@@ -56,6 +55,16 @@ public class AuthenticationServiceIT extends RegistrationFixtureIT {
         long counter = Math.floorDiv(timeProvider.getTime(), 30);
         String totpCode = new DefaultCodeGenerator(hashingAlgorithm).generate(clientTotpSecret, counter);
         AuthenticationService.AuthenticationStatus result = authenticationService.completeAuthentication(clientUser, personalInvestorRole,
+                new TotpCredential(totpCode));
+        totpCode = null;
+        assertEquals(AuthenticationService.AuthenticationStatus.SUCCESS, result);
+    }
+
+    @Test
+    public void completeAuthentication_succeedsForValidEmployee2Fa() throws CodeGenerationException {
+        long counter = Math.floorDiv(timeProvider.getTime(), 30);
+        String totpCode = new DefaultCodeGenerator(hashingAlgorithm).generate(employeeTotpSecret, counter);
+        AuthenticationService.AuthenticationStatus result = authenticationService.completeAuthentication(employeeUser, analystRole,
                 new TotpCredential(totpCode));
         totpCode = null;
         assertEquals(AuthenticationService.AuthenticationStatus.SUCCESS, result);
