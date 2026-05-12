@@ -15,6 +15,8 @@ import com.marketpilot.domain.repo.UserRepository;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.Role.RoleName;
 import com.marketpilot.domain.entities.auth.User;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -53,6 +55,7 @@ public class AuthenticationService {
         this.sessionManager = null;
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Tuple<AuthenticationStatus, Optional<AuthenticationContext>> initiateClientAuthentication(String usernameOrEmail, byte[] passwordLightHash, RoleName roleName) {
         Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(UserType.CLIENT, identifier)
                 .or(() -> userRepository.findByPersonalEmail(identifier));
@@ -63,6 +66,7 @@ public class AuthenticationService {
                 UserType.CLIENT);
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Tuple<AuthenticationStatus, Optional<AuthenticationContext>> initiateEmployeeAuthentication(String employeeId, byte[] passwordLightHash, RoleName roleName) {
         return initiateAuthentication(employeeId, passwordLightHash, roleName,
                 userRepository::findByEmployeeId,
@@ -102,6 +106,7 @@ public class AuthenticationService {
         return new Tuple<>(AuthenticationStatus.FAILURE, Optional.empty());
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public AuthenticationStatus completeAuthentication(User user, Role role, MfaCredential credentials) {
         boolean identifierAreValid = user != null && role != null;
 
