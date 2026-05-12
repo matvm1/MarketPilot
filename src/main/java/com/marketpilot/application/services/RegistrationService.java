@@ -13,6 +13,8 @@ import com.marketpilot.domain.entities.auth.User;
 import com.marketpilot.domain.entities.auth.UserType;
 import com.marketpilot.util.BufferedConverter;
 import com.marketpilot.util.Tuple;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -67,6 +69,7 @@ public class RegistrationService {
         this.verificationCodeGenerator = verificationCodeGenerator;
     }
 
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public RegistrationStatus initiateClientRegistration(String username, byte[] passwordLightHash, Role.RoleName[] clientRoleNames, String personalEmail,
                                                          String firstName, String middleName, String lastName) {
         Set<Role> roles = fetchRoles(clientRoleNames);
@@ -121,6 +124,7 @@ public class RegistrationService {
         return RegistrationStatus.FAILURE;
     }
 
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public RegistrationStatus initiateEmployeeRegistration(String employeeId, String username, byte[] passwordLightHash, Role.RoleName[] employeeRoleNames,
                                                            String employeeEmail, String firstName, String middleName, String lastName) {
         Set<Role> roles = fetchRoles(employeeRoleNames);
