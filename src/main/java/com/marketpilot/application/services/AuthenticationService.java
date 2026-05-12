@@ -55,7 +55,7 @@ public class AuthenticationService {
         this.sessionManager = null;
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public Tuple<AuthenticationStatus, Optional<AuthenticationContext>> initiateClientAuthentication(String usernameOrEmail, byte[] passwordLightHash, RoleName roleName) {
         Function<String, Optional<User>> userFinder = identifier -> userRepository.findByUsername(UserType.CLIENT, identifier)
                 .or(() -> userRepository.findByPersonalEmail(identifier));
@@ -66,7 +66,7 @@ public class AuthenticationService {
                 UserType.CLIENT);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public Tuple<AuthenticationStatus, Optional<AuthenticationContext>> initiateEmployeeAuthentication(String employeeId, byte[] passwordLightHash, RoleName roleName) {
         return initiateAuthentication(employeeId, passwordLightHash, roleName,
                 userRepository::findByEmployeeId,
