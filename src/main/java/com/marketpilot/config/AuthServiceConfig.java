@@ -14,6 +14,7 @@ import com.marketpilot.domain.repo.UserRepository;
 import dev.samstevens.totp.code.HashingAlgorithm;
 import dev.samstevens.totp.time.SystemTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,8 +34,8 @@ public class AuthServiceConfig {
     }
 
     @Bean
-    public TotpService totpService(TimeProvider timeProvider) {
-        return new JavaTotpService(timeProvider, HashingAlgorithm.SHA256);
+    public TotpService totpService(TimeProvider timeProvider, @Value("${totp.hashing-algorithm}") HashingAlgorithm hashingAlgorithm) {
+        return new JavaTotpService(timeProvider, hashingAlgorithm);
     }
 
     //TODO
