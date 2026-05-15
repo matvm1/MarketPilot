@@ -120,7 +120,7 @@ public class DataAccessConfig {
     @Bean(name = "entityManagerFactory")
     @Profile("test")
     LocalContainerEntityManagerFactoryBean emfTest(DataSource dataSource) {
-        return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", Database.H2, "create-drop", true);
+        return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", Database.ORACLE, "create-drop", true);
     }
 
     @Bean
