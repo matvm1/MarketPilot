@@ -1,13 +1,12 @@
 package com.marketpilot.adapters.persistence.repo.jpa;
 
-import com.marketpilot.MarketPilotApplication;
 import com.marketpilot.application.dto.auth.UserStatus;
 import com.marketpilot.application.services.UserFactory;
 import com.marketpilot.domain.entities.auth.*;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.util.BufferedConverter;
-import config.DataAccessConfig;
+import integration.OracleTestBase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,21 +15,20 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 
-import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase.Replace.NONE;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({DataAccessConfig.class, JpaPendingVerificationUserRepository.class, JpaRoleRepository.class})
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import({JpaPendingVerificationUserRepository.class, JpaRoleRepository.class})
+@AutoConfigureTestDatabase(replace = NONE)
 @Sql(scripts = "/sql/schema-ddl.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-public class JpaPendingVerificationUserRepositoryTest {
+public class JpaPendingVerificationUserRepositoryTest extends OracleTestBase {
     @Autowired private JdbcClient jdbcClient;
     @Autowired private PendingVerificationUserRepository pendingVerificationUserRepository;
     @Autowired private RoleRepository roleRepository;
