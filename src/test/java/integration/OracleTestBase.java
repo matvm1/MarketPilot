@@ -11,7 +11,7 @@ public class OracleTestBase {
             .withDatabaseName("testdb")
             .withUsername("testuser")
             .withPassword("testpw")
-            .withStartupTimeout(Duration.ofMinutes(5));
+            .withStartupTimeout(Duration.ofMinutes(3));
 
     static { oracleContainer.start(); }
 
