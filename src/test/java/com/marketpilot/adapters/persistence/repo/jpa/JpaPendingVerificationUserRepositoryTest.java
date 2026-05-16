@@ -6,29 +6,24 @@ import com.marketpilot.domain.entities.auth.*;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.util.BufferedConverter;
-import integration.OracleTestBase;
+import integration.infrastructure.OracleDataJpaTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase.Replace.NONE;
 
-@DataJpaTest
-@ActiveProfiles("test")
 @Import({JpaPendingVerificationUserRepository.class, JpaRoleRepository.class})
-@AutoConfigureTestDatabase(replace = NONE)
-@Sql(scripts = "/sql/schema-ddl.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-public class JpaPendingVerificationUserRepositoryTest extends OracleTestBase {
+@OracleDataJpaTest
+public class JpaPendingVerificationUserRepositoryTest {
     @Autowired private JdbcClient jdbcClient;
     @Autowired private PendingVerificationUserRepository pendingVerificationUserRepository;
     @Autowired private RoleRepository roleRepository;
@@ -59,6 +54,14 @@ public class JpaPendingVerificationUserRepositoryTest extends OracleTestBase {
                 "John", "M", "Doe");
         employeeUser = userFactory.createEmployeeUser("ab123456", employeeRoles, "johnmdoe", "johnmdoe@company.com",
                 "John", "M", "Doe");
+    }
+
+    @Test
+    void checkDatasource(@Autowired DataSource dataSource) throws SQLException {
+        Connection connection = dataSource.getConnection();
+        System.out.println("DB URL: " + connection.getMetaData().getURL());
+        System.out.println("DB Product: " + connection.getMetaData().getDatabaseProductName());
+        System.out.println("DB Version: " + connection.getMetaData().getDatabaseProductVersion());
     }
 
     @Test
