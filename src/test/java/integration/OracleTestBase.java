@@ -11,7 +11,8 @@ public class OracleTestBase {
             .withDatabaseName("testdb")
             .withUsername("testuser")
             .withPassword("testpw")
-            .withStartupTimeout(Duration.ofMinutes(3));
+            .withStartupTimeout(Duration.ofMinutes(3))
+            .withInitScript("sql/schema-ddl.sql");
 
     static { oracleContainer.start(); }
 
