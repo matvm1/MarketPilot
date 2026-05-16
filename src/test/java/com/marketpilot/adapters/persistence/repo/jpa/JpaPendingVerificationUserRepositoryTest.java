@@ -57,14 +57,6 @@ public class JpaPendingVerificationUserRepositoryTest {
     }
 
     @Test
-    void checkDatasource(@Autowired DataSource dataSource) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        System.out.println("DB URL: " + connection.getMetaData().getURL());
-        System.out.println("DB Product: " + connection.getMetaData().getDatabaseProductName());
-        System.out.println("DB Version: " + connection.getMetaData().getDatabaseProductVersion());
-    }
-
-    @Test
     public void registerNewUser_persistsUser() throws SQLException {
         assertTrue(pendingVerificationUserRepository.registerNewUser(UserType.CLIENT, clientUser, clientRoles, dummyPasswordHash, "abc123"));
         Optional<Long> persistedUserId = jdbcClient.sql("SELECT ID FROM APP_USER WHERE USERNAME = :username")
