@@ -6,23 +6,20 @@ import com.marketpilot.domain.entities.auth.*;
 import com.marketpilot.domain.repo.PendingVerificationUserRepository;
 import com.marketpilot.domain.repo.RoleRepository;
 import com.marketpilot.util.BufferedConverter;
-import integration.infrastructure.OracleDataJpaTest;
+import integration.infrastructure.JpaDatabaseFidelityTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.test.context.ActiveProfiles;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Import({JpaPendingVerificationUserRepository.class, JpaRoleRepository.class})
-@OracleDataJpaTest
+@JpaDatabaseFidelityTest
 public class JpaPendingVerificationUserRepositoryTest {
     @Autowired private JdbcClient jdbcClient;
     @Autowired private PendingVerificationUserRepository pendingVerificationUserRepository;

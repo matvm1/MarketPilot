@@ -14,4 +14,4 @@ import java.lang.annotation.Target;
 @DataJpaTest
 @ActiveProfiles({"test"})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public @interface OracleDataJpaTest { }
+public @interface JpaDatabaseFidelityTest { }

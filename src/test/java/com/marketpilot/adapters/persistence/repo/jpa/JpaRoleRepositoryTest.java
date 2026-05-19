@@ -3,7 +3,7 @@ package com.marketpilot.adapters.persistence.repo.jpa;
 import com.marketpilot.domain.entities.auth.Permission;
 import com.marketpilot.domain.entities.auth.Role;
 import com.marketpilot.domain.entities.auth.UserType;
-import integration.infrastructure.OracleDataJpaTest;
+import integration.infrastructure.JpaDatabaseFidelityTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -12,7 +12,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@OracleDataJpaTest
+@JpaDatabaseFidelityTest
 @Import(JpaRoleRepository.class)
 class JpaRoleRepositoryTest {
 

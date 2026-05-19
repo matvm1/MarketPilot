@@ -11,7 +11,7 @@ import java.util.List;
 public class OracleContainerContextCustomizerFactory implements ContextCustomizerFactory {
     @Override
     public @Nullable ContextCustomizer createContextCustomizer(Class<?> testClass, List<ContextConfigurationAttributes> configAttributes) {
-        if (!AnnotationUtils.isAnnotated(testClass, OracleDataJpaTest.class))
+        if (!AnnotationUtils.isAnnotated(testClass, JpaDatabaseFidelityTest.class))
             return null;
 
         return new OracleContainerContextCustomizer();
