@@ -9,24 +9,34 @@ import org.testcontainers.oracle.OracleContainer;
 import java.time.Duration;
 
 public class OracleContainerContextCustomizer implements ContextCustomizer {
-    private static final OracleContainer oracle = new OracleContainer("gvenzl/oracle-free:23-slim-faststart")
-            .withDatabaseName("marketpilot")
-            .withUsername("marketpilot")
-            .withPassword("marketpilot")
-            .withStartupTimeout(Duration.ofMinutes(3))
-            .withInitScript("sql/schema-ddl.sql");
+    private static final String MODE = System.getProperty("test.db", "h2");
+
+    private static final OracleContainer oracle;
 
     static {
-        oracle.start();
+        if (MODE.equalsIgnoreCase("oracle")) {
+            oracle = new OracleContainer("gvenzl/oracle-free:23-slim-faststart")
+                .withDatabaseName("marketpilot")
+                .withUsername("marketpilot")
+                .withPassword("marketpilot")
+                .withStartupTimeout(Duration.ofMinutes(3))
+                .withInitScript("sql/schema-ddl.sql");
+            oracle.start();
+        }
+        else {
+            oracle = null;
+        }
     }
 
     @Override
     public void customizeContext(ConfigurableApplicationContext context, MergedContextConfiguration mergedConfig) {
-        TestPropertyValues.of(
-            "spring.datasource.url=" + oracle.getJdbcUrl(),
-            "spring.datasource.username=" + oracle.getUsername(),
-            "spring.datasource.password=" + oracle.getPassword()
-        )
-        .applyTo(context);
+        if (oracle != null && oracle.isRunning()) {
+            TestPropertyValues.of(
+                "spring.datasource.url=" + oracle.getJdbcUrl(),
+                "spring.datasource.username=" + oracle.getUsername(),
+               "spring.datasource.password=" + oracle.getPassword()
+            )
+            .applyTo(context);
+        }
     }
 }
