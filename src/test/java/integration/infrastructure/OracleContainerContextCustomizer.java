@@ -19,8 +19,7 @@ public class OracleContainerContextCustomizer implements ContextCustomizer {
                 .withDatabaseName("marketpilot")
                 .withUsername("marketpilot")
                 .withPassword("marketpilot")
-                .withStartupTimeout(Duration.ofMinutes(3))
-                .withInitScript("sql/schema-ddl.sql");
+                .withStartupTimeout(Duration.ofMinutes(3));
             oracle.start();
         }
         else {
@@ -30,6 +29,7 @@ public class OracleContainerContextCustomizer implements ContextCustomizer {
 
     @Override
     public void customizeContext(ConfigurableApplicationContext context, MergedContextConfiguration mergedConfig) {
+        // TODO: prevent schema-ddl from running multiple times
         if (oracle != null && oracle.isRunning()) {
             TestPropertyValues.of(
                 "spring.datasource.url=" + oracle.getJdbcUrl(),
@@ -37,6 +37,16 @@ public class OracleContainerContextCustomizer implements ContextCustomizer {
                "spring.datasource.password=" + oracle.getPassword()
             )
             .applyTo(context);
+        }
+        // TODO: enable local/PR/integration builds
+        else if (MODE.equalsIgnoreCase("h2oracle")) {
+            TestPropertyValues.of(
+                    "spring.datasource.url=jdbc:h2:mem:testdb;MODE=Oracle;DB_CLOSE_DELAY=-1",
+                    "spring.datasource.driver-class-name=org.h2.Driver",
+                    "spring.datasource.username=sa",
+                    "spring.datasource.password=",
+                    "spring.jpa.database-platform=org.hibernate.dialect.OracleDialect"
+            ).applyTo(context);
         }
     }
 }

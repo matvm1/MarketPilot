@@ -24,9 +24,7 @@ import java.util.Properties;
 
 @Configuration
 public class DataAccessConfig {
-    @Bean(name = "dataSource")
-    @Profile("dev")
-    DataSource devDataSource() {
+    public DataSource persistentH2DataSource() {
         JdbcDataSource ds = new JdbcDataSource();
 
         ds.setURL("jdbc:h2:~/devdb;DB_CLOSE_DELAY=-1;MODE=Oracle");
@@ -36,9 +34,7 @@ public class DataAccessConfig {
         return ds;
     }
 
-    @Bean(name = "dataSource")
-    @Profile("test")
-    DataSource testDataSource() {
+    public DataSource inMemH2DataSource() {
         JdbcDataSource ds = new JdbcDataSource();
 
         ds.setURL("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=Oracle");
@@ -102,7 +98,7 @@ public class DataAccessConfig {
         em.setJpaVendorAdapter(vendorAdapter);
 
         Properties props = new Properties();
-        props.put("hibernate.hbm2ddl.auto", ddlAuto);
+        props.put("hibernate.hbm2ddl.auto", "validate");
         props.put("hibernate.show_sql", showSql);
         props.put("hibernate.format_sql", showSql);
         em.setJpaProperties(props);
@@ -112,13 +108,13 @@ public class DataAccessConfig {
 
     @Bean(name = "entityManagerFactory")
     @Profile("dev")
-    LocalContainerEntityManagerFactoryBean emfDev(DataSource dataSource) {
-        return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", Database.H2, "update", true);
+    public LocalContainerEntityManagerFactoryBean persistentDataSourceEmf(DataSource dataSource) {
+        return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", Database.ORACLE, "update", true);
     }
 
     @Bean(name = "entityManagerFactory")
     @Profile("test")
-    LocalContainerEntityManagerFactoryBean emfTest(DataSource dataSource) {
+    public LocalContainerEntityManagerFactoryBean inMemDataSourceEmf(DataSource dataSource) {
         return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", Database.ORACLE, "create-drop", true);
     }
 
