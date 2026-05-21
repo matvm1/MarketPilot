@@ -8,13 +8,21 @@ import org.testcontainers.oracle.OracleContainer;
 
 import java.time.Duration;
 
+// mvn install/test:
+// -Dtest.env=local                  -> in-mem H2 w/Oracle dialect
+// -Dtest.env=local -Dtest.db=oracle -> shared oracle-free testcontainer
+// -Dtest.env=ci                     -> in-mem H2 w/Oracle dialect
+// -Dtest.env=integration            -> shared oracle-free testcontainer
 public class OracleContainerContextCustomizer implements ContextCustomizer {
-    private static final String MODE = System.getProperty("test.db", "h2");
+    private static final String ENV = System.getProperty("test.env", "local");
+    // TODO: couple default mode with ENV, or remove default and throw exception if improper configuration
+    private static final String MODE = System.getProperty("test.db", "h2oracle");
 
     private static final OracleContainer oracle;
 
+    // TODO: disposable container per test for higher fidelity integration/stage tier builds
     static {
-        if (MODE.equalsIgnoreCase("oracle")) {
+        if (MODE.equalsIgnoreCase("oracle") || ENV.equalsIgnoreCase("integration")) {
             oracle = new OracleContainer("gvenzl/oracle-free:23-slim-faststart")
                 .withDatabaseName("marketpilot")
                 .withUsername("marketpilot")
@@ -30,17 +38,18 @@ public class OracleContainerContextCustomizer implements ContextCustomizer {
 
     @Override
     public void customizeContext(ConfigurableApplicationContext context, MergedContextConfiguration mergedConfig) {
-        // TODO: prevent schema-ddl from running multiple times
         if (oracle != null && oracle.isRunning()) {
             TestPropertyValues.of(
                 "spring.datasource.url=" + oracle.getJdbcUrl(),
                 "spring.datasource.username=" + oracle.getUsername(),
                "spring.datasource.password=" + oracle.getPassword()
-            )
-            .applyTo(context);
+            ).applyTo(context);
         }
-        // TODO: enable local/PR/integration builds
-        else if (MODE.equalsIgnoreCase("h2oracle")) {
+        else if (oracle == null &&
+                (MODE.equalsIgnoreCase("h2oracle") ||
+                ENV.equalsIgnoreCase("local") ||
+                ENV.equalsIgnoreCase("ci"))
+        ) {
             TestPropertyValues.of(
                     "spring.datasource.url=jdbc:h2:mem:testdb;MODE=Oracle;DB_CLOSE_DELAY=-1",
                     "spring.datasource.driver-class-name=org.h2.Driver",
