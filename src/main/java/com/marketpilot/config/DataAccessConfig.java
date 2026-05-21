@@ -108,13 +108,13 @@ public class DataAccessConfig {
 
     @Bean(name = "entityManagerFactory")
     @Profile("dev")
-    public LocalContainerEntityManagerFactoryBean persistentDataSourceEmf(DataSource dataSource) {
+    LocalContainerEntityManagerFactoryBean persistentDataSourceEmf(DataSource dataSource) {
         return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", Database.ORACLE, "update", true);
     }
 
     @Bean(name = "entityManagerFactory")
     @Profile("test")
-    public LocalContainerEntityManagerFactoryBean inMemDataSourceEmf(DataSource dataSource) {
+    LocalContainerEntityManagerFactoryBean inMemDataSourceEmf(DataSource dataSource) {
         return buildEMF(dataSource, "com.marketpilot.domain.entities.auth", "mp-auth-unit", Database.ORACLE, "create-drop", true);
     }
 
