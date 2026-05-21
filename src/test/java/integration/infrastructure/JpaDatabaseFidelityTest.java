@@ -2,6 +2,8 @@ package integration.infrastructure;
 
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.stereotype.Repository;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.lang.annotation.ElementType;
@@ -12,6 +14,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @DataJpaTest
+@ComponentScan(
+        basePackages = "com.marketpilot.adapters.persistence.repo.jpa",
+        useDefaultFilters = false,
+        includeFilters = @ComponentScan.Filter(Repository.class)
+)
 @ActiveProfiles({"test"})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public @interface JpaDatabaseFidelityTest { }

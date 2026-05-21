@@ -18,7 +18,6 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Import({JpaPendingVerificationUserRepository.class, JpaRoleRepository.class})
 @JpaDatabaseFidelityTest
 public class JpaPendingVerificationUserRepositoryTest {
     @Autowired private JdbcClient jdbcClient;
