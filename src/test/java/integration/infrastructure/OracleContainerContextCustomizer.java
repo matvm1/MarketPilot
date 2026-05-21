@@ -19,7 +19,8 @@ public class OracleContainerContextCustomizer implements ContextCustomizer {
                 .withDatabaseName("marketpilot")
                 .withUsername("marketpilot")
                 .withPassword("marketpilot")
-                .withStartupTimeout(Duration.ofMinutes(3));
+                .withStartupTimeout(Duration.ofMinutes(3))
+                .withInitScript("sql/schema-ddl.sql");
             oracle.start();
         }
         else {
@@ -45,7 +46,9 @@ public class OracleContainerContextCustomizer implements ContextCustomizer {
                     "spring.datasource.driver-class-name=org.h2.Driver",
                     "spring.datasource.username=sa",
                     "spring.datasource.password=",
-                    "spring.jpa.database-platform=org.hibernate.dialect.OracleDialect"
+                    "spring.jpa.database-platform=org.hibernate.dialect.OracleDialect",
+                    "spring.sql.init.mode=always",
+                    "spring.sql.init.schema-locations=classpath:sql/schema-ddl.sql"
             ).applyTo(context);
         }
     }
