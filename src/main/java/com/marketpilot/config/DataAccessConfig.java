@@ -24,6 +24,7 @@ import java.util.Properties;
 
 @Configuration
 public class DataAccessConfig {
+    // See OracleContainerContextCustomizer for dev datasource registration
     public DataSource persistentH2DataSource() {
         JdbcDataSource ds = new JdbcDataSource();
 
@@ -34,6 +35,7 @@ public class DataAccessConfig {
         return ds;
     }
 
+    // See OracleContainerContextCustomizer for test datasource registration
     public DataSource inMemH2DataSource() {
         JdbcDataSource ds = new JdbcDataSource();
 
